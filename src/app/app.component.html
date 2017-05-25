@@ -55,9 +55,9 @@
             <tr><th></th><th></th><th></th><th>{{a.investment.cost | number:'1.0-0'}}</th></tr>
             <tr style="height: 0.5em"></tr>
             <tr *ngFor="let e of a.return.expeditures">
-              <td>{{e.amount | number}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number}}</td>
+              <td>{{e.amount | number:'1.2-2'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.2-2'}}</td>
             </tr>
-            <tr><th></th><th></th><th></th><th>{{a.return.cost | number}}</th></tr>
+            <tr><th></th><th></th><th></th><th>{{a.return.cost | number:'1.2-2'}}</th></tr>
           </tbody>
         </table>
         {{a.name}}
