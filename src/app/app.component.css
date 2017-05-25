@@ -1,7 +1,12 @@
+.panel {
+	float: left;
+	margin-right: 3em;
+}
+
 .tooltip {
 	display:none;
 	position: absolute;
-	left: 150px;
+	left: 550px;
 
 	background: #e0e0e0;
 	padding: 2px;

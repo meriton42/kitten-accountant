@@ -10,7 +10,7 @@ function readGameState() : GameState {
 		state.level[b] = state.level[b] || 0;
 	}
 	state.workers = state.workers || <any>{};
-	for (const j of JobNames) {
+	for (const j of jobNames) {
 		state.workers[j] = state.workers[j] || 0;
 	}
 	return state;
@@ -44,9 +44,9 @@ export const resourceNames : Res[] = [
 ]
 
 export type Job = "farmer" | "woodcutter" | "miner" | "scientist";
-export const JobNames : Job[] = ["farmer", "woodcutter", "miner", "scientist"];
+export const jobNames : Job[] = ["farmer", "woodcutter", "miner", "scientist"];
 
-export type Building = "CatnipField" | "Pasture";
-export const buildingNames : Building[] = ["CatnipField", "Pasture"];
+export type Building = "CatnipField" | "Pasture" | "Hut";
+export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut"];
 
 export const state = readGameState();

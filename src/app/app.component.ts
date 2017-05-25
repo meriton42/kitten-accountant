@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { resourceNames, Res, state, Building, saveGameState, resetGameState } from "app/game-state";
+import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job } from "app/game-state";
 import { economyReport, Action } from "app/economy";
 
 @Component({
@@ -11,7 +11,9 @@ export class AppComponent implements OnInit {
   title = 'app works!';
 
   resourceNames = resourceNames;
+  jobNames = jobNames;
   level = state.level;
+  workers = state.workers;
 
   price: {[R in Res]: number};
   actions: Action[];
@@ -29,6 +31,13 @@ export class AppComponent implements OnInit {
 
   forget() {
     resetGameState();
+  }
+
+  addWorker(job: Job, count: number) {
+    state.workers[job] += count;
+    state.workers.farmer -= count;
+    this.update();
+    return false; // suppress context menu
   }
 
   build(name: Building, count: number) {

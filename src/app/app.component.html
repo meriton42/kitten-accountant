@@ -4,15 +4,23 @@
 
 <a href="" style="float:right" (click)="forget()">Reset</a>
 
-<table class="table">
+<table class="panel">
+  <thead>
+    <tr><th style="text-align: left" colspan="2">Jobs</th></tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let j of jobNames" (click)="addWorker(j, 1)" (contextmenu)="addWorker(j, -1)">
+      <td>{{workers[j]}}</td>
+      <td style="text-align: left">{{j}}</td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="panel table">
   <thead>
     <tr>
-      <td>
-        Resource
-      </td>
-      <td>
-        Price
-      </td>
+      <th>Resource</th>
+      <th>Price</th>
     </tr>
   </thead>
   <tbody>
@@ -24,7 +32,7 @@
 </table>
 
 
-<table class="table">
+<table class="panel table">
   <thead>
     <tr>
       <th>

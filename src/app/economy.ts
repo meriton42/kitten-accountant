@@ -34,12 +34,25 @@ function productionDelta(change: (state: GameState) => void): {[R in Res]: numbe
 
 function production(state: GameState) : {[R in Res]: number} {
 	let {level, workers} = state;
+
+	const kittens = level.Hut * 2;
+	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0);
+
+	let idle = kittens;
+	for (let j in workers) {
+		idle -= workers[j];
+	}
+	if (idle > 0) {
+		workers.farmer += idle; // so additional kittens are known to contribute production
+	}
+
 	return {
 		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
-					+ workers.farmer * 5,
-		wood: workers.woodcutter * 0.05,
-		minerals: workers.miner * 0.1,
-		science: workers.scientist * 0.2,
+					+ workers.farmer * 5 * happiness
+					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for diminishing returns
+		wood: workers.woodcutter * 0.05 * happiness,
+		minerals: workers.miner * 0.1 * happiness,
+		science: workers.scientist * 0.2 * happiness,
 		iron: 0
 	};
 }
@@ -92,7 +105,9 @@ function updateActions() {
 	actions = [
 		new Action("CatnipField", [[10, "catnip"]], 1.12),
 		new Action("Pasture", [[100, "catnip"], [10, "wood"]]),
+		new Action("Hut", [[5, "wood"]], 2.5),
 	];
+	actions.sort((a,b) => a.roi - b.roi);
 }
 
 export function economyReport() {
