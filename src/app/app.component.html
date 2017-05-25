@@ -2,6 +2,8 @@
   Kitten Accountant
 </h1>
 
+<button style="float:right" (click)="forget()">Reset</button>
+
 <table>
   <thead>
     <tr>
@@ -16,7 +18,7 @@
   <tbody>
     <tr *ngFor="let r of resourceNames">
       <td>{{r}}</td>
-      <td>{{price[r]}}</td>
+      <td>{{price[r] | number:'1.2-2'}}</td>
     </tr>
   </tbody>
 </table>
@@ -34,20 +36,26 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let b of buildings">
-      <td></td>
+    <tr *ngFor="let a of actions" (click)="build(a.name, 1)" (contextmenu)="build(a.name, -1)">
+      <td>{{a.investment.cost / a.return.cost | number:'1.0-0'}}</td>
       <td>
         <table class="tooltip">
           <tbody>
-            <tr *ngFor="let e of b.investment.expeditures">
-              <td>{{e.amount}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost}}</td>
+            <tr *ngFor="let e of a.investment.expeditures">
+              <td>{{e.amount | number:'1.0-0'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
             </tr>
+            <tr><th></th><th></th><th></th><th>{{a.investment.cost | number:'1.0-0'}}</th></tr>
+            <tr style="height: 0.5em"></tr>
+            <tr *ngFor="let e of a.return.expeditures">
+              <td>{{e.amount | number}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number}}</td>
+            </tr>
+            <tr><th></th><th></th><th></th><th>{{a.return.cost | number}}</th></tr>
           </tbody>
-          <tfoot>
-            <tr><th></th><th></th><th></th><th>{{b.investment.investment}}</th></tr>
-          </tfoot>
         </table>
-        {{b.name}}
+        {{a.name}}
+      </td>
+      <td>
+        {{level[a.name]}}
       </td>
     </tr>
   </tbody>
