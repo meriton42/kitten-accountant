@@ -96,6 +96,9 @@ export class Action {
 			}
 		}
 		this.roi = this.investment.cost / this.return.cost;
+		if (this.roi < 0) {
+			this.roi = Infinity;
+		}
 	}
 }
 
