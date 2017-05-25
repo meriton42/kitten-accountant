@@ -18,3 +18,9 @@ th, td {
 tr:hover {
 	background: #e0e0e0;
 }
+
+table.table > tbody > tr > th,
+table.table > tbody > tr > td {
+	padding-left: .3em;
+	padding-right: .3em;
+}

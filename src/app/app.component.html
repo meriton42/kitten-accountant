@@ -2,9 +2,9 @@
   Kitten Accountant
 </h1>
 
-<button style="float:right" (click)="forget()">Reset</button>
+<a href="" style="float:right" (click)="forget()">Reset</a>
 
-<table>
+<table class="table">
   <thead>
     <tr>
       <td>
@@ -24,7 +24,7 @@
 </table>
 
 
-<table>
+<table class="table">
   <thead>
     <tr>
       <th>
@@ -37,7 +37,7 @@
   </thead>
   <tbody>
     <tr *ngFor="let a of actions" (click)="build(a.name, 1)" (contextmenu)="build(a.name, -1)">
-      <td>{{a.investment.cost / a.return.cost | number:'1.0-0'}}</td>
+      <td>{{a.roi | number:'1.0-0'}}</td>
       <td>
         <table class="tooltip">
           <tbody>

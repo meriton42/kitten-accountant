@@ -67,6 +67,7 @@ class Investment {
 export class Action {
 	investment : Investment;
 	return: Investment;
+	roi: number;
 
 	constructor(private name : Building, private initialConstructionResources: [number, Res][], private priceRatio = 1.15) {
 		this.investment = new Investment();
@@ -81,6 +82,7 @@ export class Action {
 				this.return.add(new Expediture(delta[r], r));
 			}
 		}
+		this.roi = this.investment.cost / this.return.cost;
 	}
 }
 
