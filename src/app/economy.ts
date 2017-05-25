@@ -10,7 +10,7 @@ function updateEconomy() {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
-		science: wage / workerProduction("scientist", "science"),
+		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
 	};
 	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1;
@@ -49,10 +49,10 @@ function production(state: GameState) : {[R in Res]: number} {
 	return {
 		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
 					+ workers.farmer * 5 * happiness
-					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for diminishing returns
+					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness and diminishing returns
 		wood: workers.woodcutter * 0.05 * happiness,
 		minerals: workers.miner * 0.1 * happiness,
-		science: workers.scientist * 0.2 * happiness,
+		science: workers.scholar * 0.18 * happiness * (1 + 0.1 * level.Library),
 		iron: 0
 	};
 }
@@ -82,7 +82,7 @@ export class Action {
 	return: Investment;
 	roi: number;
 
-	constructor(private name : Building, private initialConstructionResources: [number, Res][], private priceRatio = 1.15) {
+	constructor(private name : Building, private initialConstructionResources: [number, Res][], private priceRatio) {
 		this.investment = new Investment();
 		for (const [number, res] of this.initialConstructionResources) {
 			this.investment.add(new Expediture(number * Math.pow(this.priceRatio, state.level[name]), res));
@@ -104,8 +104,9 @@ function updateActions() {
 	// buildings
 	actions = [
 		new Action("CatnipField", [[10, "catnip"]], 1.12),
-		new Action("Pasture", [[100, "catnip"], [10, "wood"]]),
+		new Action("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new Action("Hut", [[5, "wood"]], 2.5),
+		new Action("Library", [[25, "wood"]], 1.15),
 	];
 	actions.sort((a,b) => a.roi - b.roi);
 }
