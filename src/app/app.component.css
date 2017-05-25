@@ -1,0 +1,20 @@
+.tooltip {
+	display:none;
+	position: absolute;
+	left: 150px;
+
+	background: #e0e0e0;
+	padding: 2px;
+}
+
+:hover > .tooltip {
+	display:block;
+}
+
+th, td {
+	text-align: right;
+}
+
+tr:hover {
+	background: #e0e0e0;
+}

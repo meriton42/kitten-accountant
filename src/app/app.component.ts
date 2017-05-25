@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { ResourceNames, Res, state } from "app/game-state";
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,12 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'app works!';
+
+  resourceNames = ResourceNames;
+
+  price = state.price;
+
+  buildings = state.buildings;
+
+  constructor() {}
 }

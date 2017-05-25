@@ -1,3 +1,54 @@
 <h1>
-  {{title}}
+  Kitten Accountant
 </h1>
+
+<table>
+  <thead>
+    <tr>
+      <td>
+        Resource
+      </td>
+      <td>
+        Price
+      </td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let r of resourceNames">
+      <td>{{r}}</td>
+      <td>{{price[r]}}</td>
+    </tr>
+  </tbody>
+</table>
+
+
+<table>
+  <thead>
+    <tr>
+      <th>
+        RoI
+      </th>
+      <th>
+        building
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let b of buildings">
+      <td></td>
+      <td>
+        <table class="tooltip">
+          <tbody>
+            <tr *ngFor="let e of b.investment.expeditures">
+              <td>{{e.amount}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost}}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><th></th><th></th><th></th><th>{{b.investment.investment}}</th></tr>
+          </tfoot>
+        </table>
+        {{b.name}}
+      </td>
+    </tr>
+  </tbody>
+</table>
