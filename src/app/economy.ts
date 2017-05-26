@@ -50,7 +50,7 @@ function production(state: GameState) : {[R in Res]: number} {
 		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
 					+ workers.farmer * 5 * happiness
 					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness and diminishing returns
-		wood: workers.woodcutter * 0.05 * happiness,
+		wood: workers.woodcutter * 0.09 * happiness,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine),
 		science: workers.scholar * 0.18 * happiness * (1 + 0.1 * level.Library),
 		iron: 0
