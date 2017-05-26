@@ -49,19 +49,57 @@ export function clone<T>(original : T) : T {
 	}
 }
 
-export type Res = "catnip" | "wood" | "minerals" | "iron"| "science";
+function keyNames<T>(o: T): Array<keyof T> {
+	const keys : Array<keyof T> = <any>[];
+	for (let k in o) {
+		keys.push(k);
+	}
+	return keys;
+}
 
-export const resourceNames : Res[] = [
-	"catnip", "wood", "minerals", "iron", "science"
-]
+const x = null;
+const resources = {
+	catnip: x,
+	wood: x,
+	minerals: x,
+	iron: x,
+	science: x
+};
+const job = {
+	farmer: x,
+	woodcutter: x,
+	miner: x,
+	scholar: x
+}
+const building = {
+	CatnipField: x,
+	Pasture: x,
+	Hut: x,
+	Library: x,
+	Academy: x,
+	Mine: x,
+	LumberMill: x,
+	Workshop: x,
+	Smelter: x,
+}
+const upgrade = {
+	MineralHoes: x,
+	IronHoes: x,
+	MineralAxe: x,
+	IronAxe: x,
+	ReinforcedSaw: x,
+}
 
-export type Job = "farmer" | "woodcutter" | "miner" | "scholar";
-export const jobNames : Job[] = ["farmer", "woodcutter", "miner", "scholar"];
+export type Res = keyof typeof resources;
+export const resourceNames = keyNames(resources);
 
-export type Building = "CatnipField" | "Pasture" | "Hut" | "Library" | "Academy" | "Mine" | "LumberMill" | "Workshop" | "Smelter";
-export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library", "Academy", "Mine", "LumberMill", "Workshop", "Smelter"];
+export type Job = keyof typeof job;
+export const jobNames = keyNames(job);
 
-export type Upgrade = "MineralHoes" | "IronHoes" | "MineralAxe" | "IronAxe" | "ReinforcedSaw";
-export const upgradeNames : Upgrade[] = ["MineralHoes", "IronHoes", "MineralAxe", "IronAxe", "ReinforcedSaw"];
+export type Building = keyof typeof building;
+export const buildingNames = keyNames(building);
+
+export type Upgrade = keyof typeof upgrade;
+export const upgradeNames = keyNames(upgrade);
 
 export const state = readGameState();
