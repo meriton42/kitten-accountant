@@ -12,7 +12,9 @@ export class AppComponent implements OnInit {
 
   resourceNames = resourceNames;
   jobNames = jobNames;
+
   level = state.level;
+  upgrades = state.upgrades;
   workers = state.workers;
 
   price: {[R in Res]: number};
@@ -42,9 +44,23 @@ export class AppComponent implements OnInit {
     return false; // suppress context menu
   }
 
-  build(name: Building, count: number) {
-    state.level[name] += count;
+  apply(action: Action) {
+    action.applyTo(state);
+    this.update();
+  }
+
+  undo(action: Action) {
+    action.undo();
     this.update();
     return false; // suppress context menu
+  } 
+
+  set showResearchedUpgrades(newValue: boolean) {
+    state.showResearchedUpgrades = newValue;
+    this.update();
+  }
+
+  get showResearchedUpgrades() {
+    return state.showResearchedUpgrades;
   }
 }

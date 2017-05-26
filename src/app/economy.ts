@@ -1,4 +1,4 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames } from "app/game-state";
+import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade } from "app/game-state";
 
 let currentProduction: {[R in Res]: number};
 let price: {[R in Res]: number};
@@ -33,7 +33,7 @@ function productionDelta(change: (state: GameState) => void): {[R in Res]: numbe
 }
 
 function production(state: GameState) : {[R in Res]: number} {
-	let {level, workers} = state;
+	let {level, upgrades, workers} = state;
 
 	const kittens = level.Hut * 2;
 	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0);
@@ -48,9 +48,9 @@ function production(state: GameState) : {[R in Res]: number} {
 
 	return {
 		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
-					+ workers.farmer * 5 * happiness
-					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness and diminishing returns
-		wood: workers.woodcutter * 0.09 * happiness,
+					+ workers.farmer * 5 * happiness * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
+					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness > 100 and diminishing Pasture returns
+		wood: workers.woodcutter * 0.09 * happiness * (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)),
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine),
 		science: workers.scholar * 0.18 * happiness * (1 + 0.1 * level.Library),
 		iron: 0
@@ -77,41 +77,100 @@ class Investment {
 		}
 }
 
-export class Action {
-	investment : Investment;
-	return: Investment;
+export abstract class Action {
+	investment = new Investment();
+	return = new Investment();
 	roi: number;
 
-	constructor(private name : Building, private initialConstructionResources: [number, Res][], private priceRatio) {
-		this.investment = new Investment();
-		for (const [number, res] of this.initialConstructionResources) {
-			this.investment.add(new Expediture(number * Math.pow(this.priceRatio, state.level[name]), res));
+	constructor(public name: string, resourceInvestment: [number, Res][], resourceMultiplier = 1) {
+		for (const [number, res] of resourceInvestment) {
+			this.investment.add(new Expediture(number * resourceMultiplier, res));
 		}
 
-		this.return = new Investment();
-		const delta = productionDelta(state => state.level[name]++)
+		const delta = productionDelta(state => this.applyTo(state))
 		for (const r of resourceNames) {
 			if (delta[r]) {
 				this.return.add(new Expediture(delta[r], r));
 			}
 		}
+
 		this.roi = this.investment.cost / this.return.cost;
 		if (this.roi < 0) {
 			this.roi = Infinity;
 		}
 	}
+
+	available() {
+		for (const xp of this.investment.expeditures) {
+			if (!currentProduction[xp.res]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	abstract applyTo(state: GameState): void;
+	
+	abstract undo();
+
+	abstract stateInfo() : string;
 }
 
+class BuildingAction extends Action {
+	constructor(name: Building, private initialConstructionResources: [number, Res][], priceRatio: number) {
+		super(name, initialConstructionResources, Math.pow(priceRatio, state.level[name]));
+	}
+
+	stateInfo() {
+		return state.level[this.name];
+	}
+
+	applyTo(state: GameState) {
+		state.level[this.name]++;
+	}
+
+	undo() {
+		state.level[this.name]--;
+	}
+}
+
+class UpgradeAction extends Action {
+	constructor(name: Upgrade, resourceCost: [number, Res][]) {
+		super(name, resourceCost);
+	}
+
+	stateInfo() {
+		return state.upgrades[this.name] ? "R" : " ";
+	}
+
+  available() {
+		return super.available() && state.level.Workshop && (state.showResearchedUpgrades || !state.upgrades[this.name]);
+	}
+
+	applyTo(state: GameState) {
+		state.upgrades[this.name] = true;
+	}
+
+	undo() {
+		state.upgrades[this.name] = false;
+	}
+}
 
 function updateActions() {
-	// buildings
 	actions = [
-		new Action("CatnipField", [[10, "catnip"]], 1.12),
-		new Action("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
-		new Action("Hut", [[5, "wood"]], 2.5),
-		new Action("Library", [[25, "wood"]], 1.15),
-		new Action("Mine", [[100, "wood"]], 1.15),
+		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
+		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
+		new BuildingAction("Hut", [[5, "wood"]], 2.5),
+		new BuildingAction("Library", [[25, "wood"]], 1.15),
+		new BuildingAction("Mine", [[100, "wood"]], 1.15),
+		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
+
+		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
+		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),
+		new UpgradeAction("MineralAxe", [[100, "science"], [500, "minerals"]]),
+		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
 	];
+	actions = actions.filter(a => a.available());
 	actions.sort((a,b) => a.roi - b.roi);
 }
 

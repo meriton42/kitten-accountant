@@ -45,7 +45,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let a of actions" (click)="build(a.name, 1)" (contextmenu)="build(a.name, -1)">
+    <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)">
       <td>{{a.roi | number:'1.0-0'}}</td>
       <td>
         <table class="tooltip">
@@ -64,8 +64,18 @@
         {{a.name}}
       </td>
       <td>
-        {{level[a.name]}}
+        {{a.stateInfo()}}        
       </td>
     </tr>
   </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="3" style="text-align: center; border-top: 0.5em solid transparent">
+        <label>
+          <input type="checkbox" [(ngModel)]="showResearchedUpgrades">
+          show researched
+        </label>
+      </td>
+    </tr>
+  </tfoot>
 </table>
