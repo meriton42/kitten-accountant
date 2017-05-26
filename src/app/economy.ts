@@ -54,7 +54,7 @@ function production(state: GameState) : {[R in Res]: number} {
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
-		science: workers.scholar * 0.18 * happiness * (1 + 0.1 * level.Library),
+		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
 	};
 }
@@ -164,6 +164,7 @@ function updateActions() {
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new BuildingAction("Hut", [[5, "wood"]], 2.5),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
+		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
