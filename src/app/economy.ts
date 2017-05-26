@@ -1,6 +1,6 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade } from "app/game-state";
+import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, BasicRes } from "app/game-state";
 
-let currentProduction: {[R in Res]: number};
+let currentProduction: {[R in BasicRes]: number};
 let price: {[R in Res]: number};
 let actions: Action[];
 
@@ -10,6 +10,7 @@ function updateEconomy() {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
+		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
 	};
@@ -20,7 +21,7 @@ function workerProduction(job: Job, res: Res) {
 	return productionDelta((s) => s.workers[job]++)[res];
 }
 
-function productionDelta(change: (state: GameState) => void): {[R in Res]: number} {
+function productionDelta(change: (state: GameState) => void): {[R in BasicRes]: number} {
 	const clonedState = clone(state);
 	change(clonedState);
 	const modified = production(clonedState);
@@ -32,7 +33,7 @@ function productionDelta(change: (state: GameState) => void): {[R in Res]: numbe
 	return delta;
 }
 
-function production(state: GameState) : {[R in Res]: number} {
+function production(state: GameState) : {[R in BasicRes]: number} {
 	let {level, upgrades, workers} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
@@ -57,6 +58,7 @@ function production(state: GameState) : {[R in Res]: number} {
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
+		catpower: workers.hunter * 0.3 * (1 + (upgrades.CompositeBow && 0.5)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
 	};
@@ -180,6 +182,7 @@ function updateActions() {
 		new UpgradeAction("MineralAxe", [[100, "science"], [500, "minerals"]]),
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
+		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
 	];
 	actions = actions.filter(a => a.available());
 	actions.sort((a,b) => a.roi - b.roi);

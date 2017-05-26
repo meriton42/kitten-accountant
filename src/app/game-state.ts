@@ -63,12 +63,14 @@ const resources = {
 	wood: x,
 	minerals: x,
 	iron: x,
+	catpower: x,
 	science: x
 };
 const job = {
 	farmer: x,
 	woodcutter: x,
 	miner: x,
+	hunter: x,
 	scholar: x
 }
 const building = {
@@ -90,6 +92,7 @@ const upgrade = {
 	MineralAxe: x,
 	IronAxe: x,
 	ReinforcedSaw: x,
+	CompositeBow: x,
 }
 
 export type Res = keyof typeof resources;
