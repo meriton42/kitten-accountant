@@ -35,7 +35,7 @@ function productionDelta(change: (state: GameState) => void): {[R in Res]: numbe
 function production(state: GameState) : {[R in Res]: number} {
 	let {level, upgrades, workers} = state;
 
-	const kittens = level.Hut * 2;
+	const kittens = level.Hut * 2 + level.LogHouse * 1;
 	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0);
 
 	let idle = kittens;
@@ -165,6 +165,7 @@ function updateActions() {
 		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new BuildingAction("Hut", [[5, "wood"]], 2.5),
+		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),

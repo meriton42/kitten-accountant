@@ -75,6 +75,7 @@ const building = {
 	CatnipField: x,
 	Pasture: x,
 	Hut: x,
+	LogHouse: x,
 	Library: x,
 	Academy: x,
 	Mine: x,
