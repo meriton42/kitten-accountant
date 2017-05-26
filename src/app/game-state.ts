@@ -46,7 +46,7 @@ export const resourceNames : Res[] = [
 export type Job = "farmer" | "woodcutter" | "miner" | "scholar";
 export const jobNames : Job[] = ["farmer", "woodcutter", "miner", "scholar"];
 
-export type Building = "CatnipField" | "Pasture" | "Hut" | "Library";
-export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library"];
+export type Building = "CatnipField" | "Pasture" | "Hut" | "Library" | "Mine";
+export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library", "Mine"];
 
 export const state = readGameState();

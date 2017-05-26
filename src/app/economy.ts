@@ -51,7 +51,7 @@ function production(state: GameState) : {[R in Res]: number} {
 					+ workers.farmer * 5 * happiness
 					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness and diminishing returns
 		wood: workers.woodcutter * 0.05 * happiness,
-		minerals: workers.miner * 0.1 * happiness,
+		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine),
 		science: workers.scholar * 0.18 * happiness * (1 + 0.1 * level.Library),
 		iron: 0
 	};
@@ -110,6 +110,7 @@ function updateActions() {
 		new Action("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new Action("Hut", [[5, "wood"]], 2.5),
 		new Action("Library", [[25, "wood"]], 1.15),
+		new Action("Mine", [[100, "wood"]], 1.15),
 	];
 	actions.sort((a,b) => a.roi - b.roi);
 }
@@ -119,5 +120,5 @@ export function economyReport() {
 	updateEconomy();
 	updateActions();
 
-	return {price, actions};
+	return {production: currentProduction, price, actions};
 }
