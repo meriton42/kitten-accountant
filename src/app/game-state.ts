@@ -74,6 +74,7 @@ const job = {
 const building = {
 	CatnipField: x,
 	Pasture: x,
+	Aqueduct: x,
 	Hut: x,
 	LogHouse: x,
 	Library: x,

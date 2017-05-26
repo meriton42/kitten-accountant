@@ -47,8 +47,9 @@ function production(state: GameState) : {[R in Res]: number} {
 	}
 
 	return {
-		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
-				  + workers.farmer * 5 * happiness * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
+		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
+				    + workers.farmer * happiness * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
+					) * (1 + level.Aqueduct * 0.03)
 				  - kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness > 100 and diminishing Pasture returns
 		wood: workers.woodcutter * 0.09 * happiness 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)) 
@@ -164,6 +165,7 @@ function updateActions() {
 	actions = [
 		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
+		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.15),
 		new BuildingAction("Hut", [[5, "wood"]], 2.5),
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
