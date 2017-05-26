@@ -3,6 +3,7 @@ export interface GameState {
 	workers : {[J in Job] : number};
 	upgrades : {[U in Upgrade] : boolean};
 
+	ironMarkup: number;
 	showResearchedUpgrades: boolean;
 }
 
@@ -20,6 +21,7 @@ function readGameState() : GameState {
 	for (const u of upgradeNames) {
 		state.upgrades[u] = state.upgrades[u] || false;
 	}
+	state.ironMarkup = state.ironMarkup || 0;
 	if (state.showResearchedUpgrades === undefined) {
 		state.showResearchedUpgrades = true;
 	}
@@ -56,8 +58,8 @@ export const resourceNames : Res[] = [
 export type Job = "farmer" | "woodcutter" | "miner" | "scholar";
 export const jobNames : Job[] = ["farmer", "woodcutter", "miner", "scholar"];
 
-export type Building = "CatnipField" | "Pasture" | "Hut" | "Library" | "Mine" | "Workshop";
-export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library", "Mine", "Workshop"];
+export type Building = "CatnipField" | "Pasture" | "Hut" | "Library" | "Mine" | "Workshop" | "Smelter";
+export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library", "Mine", "Workshop", "Smelter"];
 
 export type Upgrade = "MineralHoes" | "IronHoes" | "MineralAxe" | "IronAxe";
 export const upgradeNames : Upgrade[] = ["MineralHoes", "IronHoes", "MineralAxe", "IronAxe"];

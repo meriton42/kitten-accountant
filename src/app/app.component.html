@@ -23,7 +23,7 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let r of resourceNames">
+    <tr *ngFor="let r of resourceNames" (click)="modifyMarkupIfIron(r, 1)" (contextmenu)="modifyMarkupIfIron(r, -1)">
       <td>{{production[r] | number:'1.2-2'}}</td>
       <td style="text-align:left">{{r}}</td>
       <td>@</td>
@@ -31,7 +31,6 @@
     </tr>
   </tbody>
 </table>
-
 
 <table class="panel table">
   <thead>

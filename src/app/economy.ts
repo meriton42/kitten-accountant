@@ -13,7 +13,7 @@ function updateEconomy() {
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
 	};
-	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1;
+	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1 * Math.pow(1.1, state.ironMarkup);
 }
 
 function workerProduction(job: Job, res: Res) {
@@ -48,12 +48,14 @@ function production(state: GameState) : {[R in Res]: number} {
 
 	return {
 		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
-					+ workers.farmer * 5 * happiness * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
-					- kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness > 100 and diminishing Pasture returns
-		wood: workers.woodcutter * 0.09 * happiness * (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)),
-		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine),
+				  + workers.farmer * 5 * happiness * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
+				  - kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness > 100 and diminishing Pasture returns
+		wood: workers.woodcutter * 0.09 * happiness * (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5))
+		      - level.Smelter * 0.25,
+		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
+					- level.Smelter * 0.5,
 		science: workers.scholar * 0.18 * happiness * (1 + 0.1 * level.Library),
-		iron: 0
+		iron: level.Smelter * 0.1,
 	};
 }
 
@@ -164,6 +166,7 @@ function updateActions() {
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
+		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),

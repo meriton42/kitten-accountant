@@ -63,4 +63,12 @@ export class AppComponent implements OnInit {
   get showResearchedUpgrades() {
     return state.showResearchedUpgrades;
   }
+
+  modifyMarkupIfIron(res: Res, count: number) {
+    if (res == "iron") {
+      state.ironMarkup = Math.max(0, state.ironMarkup + count);
+      this.update();
+      return false;
+    }
+  }
 }
