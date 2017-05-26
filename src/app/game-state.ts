@@ -58,10 +58,10 @@ export const resourceNames : Res[] = [
 export type Job = "farmer" | "woodcutter" | "miner" | "scholar";
 export const jobNames : Job[] = ["farmer", "woodcutter", "miner", "scholar"];
 
-export type Building = "CatnipField" | "Pasture" | "Hut" | "Library" | "Academy" | "Mine" | "Workshop" | "Smelter";
-export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library", "Academy", "Mine", "Workshop", "Smelter"];
+export type Building = "CatnipField" | "Pasture" | "Hut" | "Library" | "Academy" | "Mine" | "LumberMill" | "Workshop" | "Smelter";
+export const buildingNames : Building[] = ["CatnipField", "Pasture", "Hut", "Library", "Academy", "Mine", "LumberMill", "Workshop", "Smelter"];
 
-export type Upgrade = "MineralHoes" | "IronHoes" | "MineralAxe" | "IronAxe";
-export const upgradeNames : Upgrade[] = ["MineralHoes", "IronHoes", "MineralAxe", "IronAxe"];
+export type Upgrade = "MineralHoes" | "IronHoes" | "MineralAxe" | "IronAxe" | "ReinforcedSaw";
+export const upgradeNames : Upgrade[] = ["MineralHoes", "IronHoes", "MineralAxe", "IronAxe", "ReinforcedSaw"];
 
 export const state = readGameState();

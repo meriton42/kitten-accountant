@@ -50,7 +50,9 @@ function production(state: GameState) : {[R in Res]: number} {
 		catnip: 0.63 * level.CatnipField * (1.5 + 1 + 1 + 0.25) / 4
 				  + workers.farmer * 5 * happiness * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
 				  - kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness > 100 and diminishing Pasture returns
-		wood: workers.woodcutter * 0.09 * happiness * (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5))
+		wood: workers.woodcutter * 0.09 * happiness 
+					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)) 
+					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
@@ -166,13 +168,15 @@ function updateActions() {
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
-		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
+		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
+		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),
 		new UpgradeAction("MineralAxe", [[100, "science"], [500, "minerals"]]),
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
+		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
 	];
 	actions = actions.filter(a => a.available());
 	actions.sort((a,b) => a.roi - b.roi);
