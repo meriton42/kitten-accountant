@@ -6,7 +6,7 @@
 
 <table class="panel">
   <thead>
-    <tr><th style="text-align: left" colspan="2">Jobs</th></tr>
+    <tr><th style="text-align: center" colspan="2">Jobs</th></tr>
   </thead>
   <tbody>
     <tr *ngFor="let j of jobNames" (click)="addWorker(j, 1)" (contextmenu)="addWorker(j, -1)">
@@ -16,16 +16,17 @@
   </tbody>
 </table>
 
-<table class="panel table">
+<table class="panel">
   <thead>
     <tr>
-      <th>Resource</th>
-      <th>Price</th>
+      <th colspan="4" style="text-align: center">Production</th>
     </tr>
   </thead>
   <tbody>
     <tr *ngFor="let r of resourceNames">
-      <td>{{r}}</td>
+      <td>{{production[r] | number:'1.2-2'}}</td>
+      <td style="text-align:left">{{r}}</td>
+      <td>@</td>
       <td>{{price[r] | number:'1.2-2'}}</td>
     </tr>
   </tbody>

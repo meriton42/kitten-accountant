@@ -16,6 +16,7 @@ export class AppComponent implements OnInit {
   workers = state.workers;
 
   price: {[R in Res]: number};
+  production: {[R in Res]: number};
   actions: Action[];
 
   ngOnInit() {
@@ -26,6 +27,7 @@ export class AppComponent implements OnInit {
     saveGameState();
     const eco = economyReport();
     this.price = eco.price;
+    this.production = eco.production;
     this.actions = eco.actions;
   }
 
