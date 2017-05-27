@@ -1,6 +1,11 @@
 export interface GameState {
-	level : {[B in Building] : number};
 	workers : {[J in Job] : number};
+	conversionProportion: {[CR in ConvertedRes]: number};
+	luxury: {
+		fur: boolean;
+	}
+
+	level : {[B in Building] : number};
 	upgrades : {[U in Upgrade] : boolean};
 
 	ironMarkup: number;
@@ -9,13 +14,19 @@ export interface GameState {
 
 function readGameState() : GameState {
 	const state : GameState = localStorage.kittensGameState ? JSON.parse(localStorage.kittensGameState) : {};
-	state.level = state.level || <any>{};
-	for (const b of buildingNames) {
-		state.level[b] = state.level[b] || 0;
-	}
 	state.workers = state.workers || <any>{};
 	for (const j of jobNames) {
 		state.workers[j] = state.workers[j] || 0;
+	}
+	state.conversionProportion = state.conversionProportion || <any>{};
+	for (const cr of convertedResourceNames) {
+		state.conversionProportion[cr] = 0;
+	}
+	state.luxury = state.luxury || <any>{};
+	state.luxury.fur = state.luxury.fur || false;
+	state.level = state.level || <any>{};
+	for (const b of buildingNames) {
+		state.level[b] = state.level[b] || 0;
 	}
 	state.upgrades = state.upgrades || <any>{};
 	for (const u of upgradeNames) {
@@ -58,7 +69,8 @@ function keyNames<T>(o: T): Array<keyof T> {
 }
 
 const x = null;
-const resources = {
+// created on an ongoing basis
+const basicResources = {
 	catnip: x,
 	wood: x,
 	minerals: x,
@@ -66,6 +78,11 @@ const resources = {
 	catpower: x,
 	science: x
 };
+// created on command by conversion, unlimited storage
+const convertedResources = {
+	fur: x,
+}
+
 const job = {
 	farmer: x,
 	woodcutter: x,
@@ -93,10 +110,18 @@ const upgrade = {
 	IronAxe: x,
 	ReinforcedSaw: x,
 	CompositeBow: x,
+	Bolas: x,
+	HuntingArmor: x,
 }
 
-export type Res = keyof typeof resources;
-export const resourceNames = keyNames(resources);
+export type BasicRes = keyof typeof basicResources;
+export const basicResourceNames = keyNames(basicResources);
+
+export type ConvertedRes = keyof typeof convertedResources;
+export const convertedResourceNames = keyNames(convertedResources);
+
+export type Res = BasicRes | ConvertedRes;
+export const resourceNames = (<Res[]>basicResourceNames).concat(convertedResourceNames);
 
 export type Job = keyof typeof job;
 export const jobNames = keyNames(job);

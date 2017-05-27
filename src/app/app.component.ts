@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job } from "app/game-state";
-import { economyReport, Action } from "app/economy";
+import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames } from "app/game-state";
+import { economyReport, Action, Investment } from "app/economy";
 
 @Component({
   selector: 'app-root',
@@ -13,13 +13,15 @@ export class AppComponent implements OnInit {
   resourceNames = resourceNames;
   jobNames = jobNames;
 
+  workers = state.workers;
+  luxury = state.luxury;
   level = state.level;
   upgrades = state.upgrades;
-  workers = state.workers;
 
   price: {[R in Res]: number};
   production: {[R in Res]: number};
   actions: Action[];
+  furReport: Investment;
 
   ngOnInit() {
     this.update();
@@ -31,6 +33,7 @@ export class AppComponent implements OnInit {
     this.price = eco.price;
     this.production = eco.production;
     this.actions = eco.actions;
+    this.furReport = eco.furReport;
   }
 
   forget() {
@@ -64,11 +67,24 @@ export class AppComponent implements OnInit {
     return state.showResearchedUpgrades;
   }
 
-  modifyMarkupIfIron(res: Res, count: number) {
+  increaseResource(res: Res, count: number) {
     if (res == "iron") {
       state.ironMarkup = Math.max(0, state.ironMarkup + count);
       this.update();
       return false;
     }
+
+    if (convertedResourceNames.includes(<any>res)) {
+      state.conversionProportion[res] = Math.max(0, state.conversionProportion[res] + 0.1 * count);
+      this.update();
+      return false;
+    }
+  }
+
+  toggleLuxury(res: "fur", event) {
+    state.luxury[res] = !state.luxury[res];
+    this.update();
+    event.stopPropagation();
+    return false;
   }
 }

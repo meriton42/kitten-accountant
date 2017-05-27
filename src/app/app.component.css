@@ -6,7 +6,9 @@
 .tooltip {
 	display:none;
 	position: absolute;
-	left: 550px;
+	top: 0;
+	left: 2em;
+	z-index: 1;
 
 	background: #e0e0e0;
 	padding: 2px;

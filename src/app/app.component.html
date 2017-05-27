@@ -23,11 +23,22 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let r of resourceNames" (click)="modifyMarkupIfIron(r, 1)" (contextmenu)="modifyMarkupIfIron(r, -1)">
+    <tr *ngFor="let r of resourceNames" (click)="increaseResource(r, 1)" (contextmenu)="increaseResource(r, -1)">
       <td>{{production[r] | number:'1.2-2'}}</td>
       <td style="text-align:left">{{r}}</td>
       <td>@</td>
       <td>{{price[r] | number:'1.2-2'}}</td>
+      <td *ngIf="r == 'fur'" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
+        <table *ngIf="r == 'fur'" class="tooltip">
+          <tbody>
+            <tr *ngFor="let e of furReport.expeditures">
+              <td>{{e.amount | number:'1.2-2'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.2-2'}}</td>
+            </tr>
+            <tr><th></th><th></th><th></th><th>{{furReport.cost | number:'1.2-2'}}</th></tr>
+          </tbody>
+        </table>
+        {{luxury[r] ? 'C' : ''}}
+      </td>
     </tr>
   </tbody>
 </table>
@@ -47,6 +58,10 @@
     <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)">
       <td>{{a.roi | number:'1.0-0'}}</td>
       <td>
+        {{a.name}}
+      </td>
+      <td style="position: relative">
+        {{a.stateInfo()}}        
         <table class="tooltip">
           <tbody>
             <tr *ngFor="let e of a.investment.expeditures">
@@ -60,10 +75,6 @@
             <tr><th></th><th></th><th></th><th>{{a.return.cost | number:'1.2-2'}}</th></tr>
           </tbody>
         </table>
-        {{a.name}}
-      </td>
-      <td>
-        {{a.stateInfo()}}        
       </td>
     </tr>
   </tbody>

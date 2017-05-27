@@ -1,12 +1,13 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, BasicRes } from "app/game-state";
+import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes } from "app/game-state";
 
-let currentProduction: {[R in BasicRes]: number};
+let currentProduction: {[R in Res]: number};
 let price: {[R in Res]: number};
+let conversions: Conversion[];
 let actions: Action[];
 
 function updateEconomy() {
   const wage = 1;
-	price = {
+	const basicPrice : {[R in BasicRes]: number} = {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
@@ -14,30 +15,38 @@ function updateEconomy() {
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
 	};
+	price = <any>basicPrice;
 	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1 * Math.pow(1.1, state.ironMarkup);
+
+	const huntingBonus = 0;
+	conversions = [
+		// the constructor sets the price of the product
+		new Hunt()
+	];
 }
 
 function workerProduction(job: Job, res: Res) {
-	return productionDelta((s) => s.workers[job]++)[res];
+	return delta(basicProduction, (s) => s.workers[job]++)[res];
 }
 
-function productionDelta(change: (state: GameState) => void): {[R in BasicRes]: number} {
+function delta<T extends string>(metric: (state: GameState) => {[R in T]: number}, change: (state: GameState) => void): {[R in T]: number} {
+	const original = metric(state);
 	const clonedState = clone(state);
 	change(clonedState);
-	const modified = production(clonedState);
+	const modified = metric(clonedState);
 
-	const delta : {[R in Res]: number} = <any>{};
-	for (let r in currentProduction) {
-		delta[r] = modified[r] - currentProduction[r];
+	const delta: {[R in T]: number} = <any>{};
+	for (let r in original) {
+		delta[r] = modified[r] - original[r];
 	}
 	return delta;
 }
 
-function production(state: GameState) : {[R in BasicRes]: number} {
-	let {level, upgrades, workers} = state;
+function basicProduction(state: GameState): {[R in BasicRes | "fur" ]: number} {
+	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
-	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0);
+	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0) + (luxury.fur && 0.1);
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -58,10 +67,25 @@ function production(state: GameState) : {[R in BasicRes]: number} {
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
-		catpower: workers.hunter * 0.3 * (1 + (upgrades.CompositeBow && 0.5)),
+		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
-	};
+		fur: 0 - (luxury.fur && kittens * 0.05),
+	}
+}
+
+function production(state: GameState) : {[R in Res]: number} {
+	const production: {[R in Res]: number} = <any>basicProduction(state);
+	for (const conversion of conversions) {
+		const frequency = production[conversion.investment.expeditures[0].res] * state.conversionProportion[conversion.product]
+										/ conversion.investment.expeditures[0].amount;
+		for (const xp of conversion.investment.expeditures) {
+			production[xp.res] -= xp.amount * frequency;
+		}
+		production[conversion.product] = (production[conversion.product] || 0) + conversion.amount(state) * frequency;
+	}
+
+	return production;
 }
 
 class Expediture {
@@ -74,7 +98,7 @@ class Expediture {
 	}
 }
 
-class Investment {
+export class Investment {
     cost = 0;
 		expeditures: Expediture[] = [];
 
@@ -82,6 +106,31 @@ class Investment {
 			this.expeditures.push(xp);
 			this.cost += xp.cost;
 		}
+}
+
+abstract class Conversion {
+	investment = new Investment();
+
+	/** also sets the price of the product! */
+	constructor(public product: ConvertedRes, resourceInvestment: [number, Res][]) {
+		for (const [number, res] of resourceInvestment) {
+			this.investment.add(new Expediture(number, res));
+		}
+		price[this.product] = this.investment.cost / this.amount(state);
+	}
+
+	abstract amount(state: GameState): number;
+}
+
+class Hunt extends Conversion {
+	constructor() {
+		super("fur", [[100, "catpower"]]);
+	}
+
+	amount(state: GameState): number {
+		const huntingBonus = 0 + (state.upgrades.Bolas && 1) + (state.upgrades.HuntingArmor && 2);
+		return 40 + huntingBonus * 32;
+	}
 }
 
 export abstract class Action {
@@ -94,10 +143,10 @@ export abstract class Action {
 			this.investment.add(new Expediture(number * resourceMultiplier, res));
 		}
 
-		const delta = productionDelta(state => this.applyTo(state))
+		const deltaProduction = delta(production, state => this.applyTo(state));
 		for (const r of resourceNames) {
-			if (delta[r]) {
-				this.return.add(new Expediture(delta[r], r));
+			if (deltaProduction[r]) {
+				this.return.add(new Expediture(deltaProduction[r], r));
 			}
 		}
 
@@ -183,15 +232,28 @@ function updateActions() {
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
+		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
+		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
 	];
 	actions = actions.filter(a => a.available());
 	actions.sort((a,b) => a.roi - b.roi);
 }
 
+function furConsumptionReport() {
+	const productionDelta = delta(production, (state: GameState) => state.luxury.fur = !state.luxury.fur);
+	const benefit = new Investment();
+	for (const r of resourceNames) {
+		if (productionDelta[r]) {
+			benefit.add(new Expediture(productionDelta[r] * (state.luxury.fur ? -1 : 1), r));
+		}
+	}
+	return benefit;
+}
+
 export function economyReport() {
-  currentProduction = production(state);
 	updateEconomy();
+	currentProduction = production(state);
 	updateActions();
 
-	return {production: currentProduction, price, actions};
+	return {production: currentProduction, price, actions, furReport: furConsumptionReport()};
 }
