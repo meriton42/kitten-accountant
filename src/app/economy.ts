@@ -76,8 +76,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
-		fur: 0 - (luxury.fur && kittens * 0.05),
-		ivory: 0 - (luxury.ivory && kittens * 0.035),
+		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
+		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 	}
 }
 
@@ -253,6 +253,7 @@ function updateActions() {
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
+		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"]], 1.15), // TODO: include Gold
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),

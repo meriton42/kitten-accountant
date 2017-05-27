@@ -107,6 +107,7 @@ const building = {
 	Smelter: x,
 	Amphitheatre: x,
 	Workshop: x,
+	TradePost: x,
 }
 const upgrade = {
 	MineralHoes: x,
