@@ -4,6 +4,7 @@ export interface GameState {
 	luxury: {
 		fur: boolean;
 		ivory: boolean;
+		unicorn: boolean;
 	}
 
 	level : {[B in Building] : number};
@@ -26,6 +27,7 @@ function readGameState() : GameState {
 	state.luxury = state.luxury || <any>{};
 	state.luxury.fur = state.luxury.fur || false;
 	state.luxury.ivory = state.luxury.ivory || false;
+	state.luxury.unicorn = state.luxury.unicorn || false;
 	state.level = state.level || <any>{};
 	for (const b of buildingNames) {
 		state.level[b] = state.level[b] || 0;
@@ -78,7 +80,8 @@ const basicResources = {
 	minerals: x,
 	iron: x,
 	catpower: x,
-	science: x
+	science: x,
+	unicorn: x,
 };
 // created on command by conversion, unlimited storage
 const convertedResources = {
@@ -108,6 +111,7 @@ const building = {
 	Amphitheatre: x,
 	Workshop: x,
 	TradePost: x,
+	UnicornPasture: x,
 }
 const upgrade = {
 	MineralHoes: x,

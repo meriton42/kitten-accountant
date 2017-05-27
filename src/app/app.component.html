@@ -29,7 +29,7 @@
       <td style="text-align:left">{{r}}</td>
       <td>@</td>
       <td>{{price[r] | number:'1.2-2'}}</td>
-      <td *ngIf="r == 'fur' || r == 'ivory'" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
+      <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
         <table *ngIf="r == 'fur'" class="tooltip">
           <tbody>
             <tr *ngFor="let e of furReport.expeditures">
@@ -38,7 +38,7 @@
             <tr><th></th><th></th><th></th><th>{{furReport.cost | number:'1.2-2'}}</th></tr>
           </tbody>
         </table>
-        {{luxury[r] ? 'C' : ''}}
+        {{luxury[r] ? 'A' : ''}}
       </td>
     </tr>
   </tbody>

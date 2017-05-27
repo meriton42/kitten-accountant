@@ -14,6 +14,7 @@ function updateEconomy() {
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
+		unicorn: 1,
 	};
 	price = <any>basicPrice;
 	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1 * Math.pow(1.1, state.ironMarkup);
@@ -52,7 +53,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048);
-	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) - unhappiness;
+	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) - unhappiness;
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -66,7 +67,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * happiness * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
 					) * (1 + level.Aqueduct * 0.03)
-				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005),
+				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * happiness 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)) 
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2)))
@@ -78,6 +79,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 		iron: level.Smelter * 0.1,
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
+		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6) // add some unicorns so the building shows up
 	}
 }
 
@@ -254,6 +256,7 @@ function updateActions() {
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"]], 1.15), // TODO: include Gold
+		new BuildingAction("UnicornPasture", [[2, "unicorn"]], 1.75),
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),
