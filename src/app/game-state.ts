@@ -3,6 +3,7 @@ export interface GameState {
 	conversionProportion: {[CR in ConvertedRes]: number};
 	luxury: {
 		fur: boolean;
+		ivory: boolean;
 	}
 
 	level : {[B in Building] : number};
@@ -20,10 +21,11 @@ function readGameState() : GameState {
 	}
 	state.conversionProportion = state.conversionProportion || <any>{};
 	for (const cr of convertedResourceNames) {
-		state.conversionProportion[cr] = 0;
+		state.conversionProportion[cr] = state.conversionProportion[cr] ||  0;
 	}
 	state.luxury = state.luxury || <any>{};
 	state.luxury.fur = state.luxury.fur || false;
+	state.luxury.ivory = state.luxury.ivory || false;
 	state.level = state.level || <any>{};
 	for (const b of buildingNames) {
 		state.level[b] = state.level[b] || 0;
@@ -81,6 +83,7 @@ const basicResources = {
 // created on command by conversion, unlimited storage
 const convertedResources = {
 	fur: x,
+	ivory: x,
 }
 
 const job = {

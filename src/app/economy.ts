@@ -42,11 +42,11 @@ function delta<T extends string>(metric: (state: GameState) => {[R in T]: number
 	return delta;
 }
 
-function basicProduction(state: GameState): {[R in BasicRes | "fur" ]: number} {
+function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
-	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0) + (luxury.fur && 0.1);
+	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0) + (luxury.fur && 0.1) + (luxury.ivory && 0.1);
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -71,6 +71,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" ]: number} {
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
 		fur: 0 - (luxury.fur && kittens * 0.05),
+		ivory: 0 - (luxury.ivory && kittens * 0.035),
 	}
 }
 
@@ -82,9 +83,11 @@ function production(state: GameState) : {[R in Res]: number} {
 		for (const xp of conversion.investment.expeditures) {
 			production[xp.res] -= xp.amount * frequency;
 		}
-		production[conversion.product] = (production[conversion.product] || 0) + conversion.amount(state) * frequency;
+		const produced = conversion.produced(state);
+		for (const product in produced) {
+			production[product] = (production[product] || 0) + produced[product] * frequency;
+		}
 	}
-
 	return production;
 }
 
@@ -103,8 +106,10 @@ export class Investment {
 		expeditures: Expediture[] = [];
 
 		add(xp : Expediture) {
-			this.expeditures.push(xp);
-			this.cost += xp.cost;
+			if (Math.abs(xp.cost) > 1e-6) {
+				this.expeditures.push(xp);
+				this.cost += xp.cost;
+			}
 		}
 }
 
@@ -116,20 +121,24 @@ abstract class Conversion {
 		for (const [number, res] of resourceInvestment) {
 			this.investment.add(new Expediture(number, res));
 		}
-		price[this.product] = this.investment.cost / this.amount(state);
+		price[this.product] = this.investment.cost / this.produced(state)[this.product];
 	}
 
-	abstract amount(state: GameState): number;
+	abstract produced(state: GameState): {[R in Res]?: number};
 }
 
 class Hunt extends Conversion {
 	constructor() {
 		super("fur", [[100, "catpower"]]);
+		price.ivory = 0;
 	}
 
-	amount(state: GameState): number {
+	produced(state: GameState){
 		const huntingBonus = 0 + (state.upgrades.Bolas && 1) + (state.upgrades.HuntingArmor && 2);
-		return 40 + huntingBonus * 32;
+		return {
+			fur: 40 + huntingBonus * 32,
+			ivory: (0.44 + huntingBonus * 0.02) * (25 + huntingBonus * 20),
+		}
 	}
 }
 
