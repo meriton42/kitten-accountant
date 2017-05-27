@@ -21,7 +21,8 @@ function updateEconomy() {
 	const huntingBonus = 0;
 	conversions = [
 		// the constructor sets the price of the product
-		new Hunt()
+		new Hunt(),
+		new CraftingConversion("parchment", [[175, "fur"]]),
 	];
 }
 
@@ -42,11 +43,16 @@ function delta<T extends string>(metric: (state: GameState) => {[R in T]: number
 	return delta;
 }
 
+function hyperbolicDecrease(x: number) {
+	return x < 0.75 ? (1 - x) : 0.25 / ((x - 0.5) / 0.25);
+}
+
 function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
-	const happiness = 1 - 0.02 * Math.max(kittens - 5, 0) + (luxury.fur && 0.1) + (luxury.ivory && 0.1);
+	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048);
+	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) - unhappiness;
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -60,7 +66,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * happiness * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
 					) * (1 + level.Aqueduct * 0.03)
-				  - kittens * 4.25 * (1 - 0.005 * level.Pasture),  // TODO account for happiness > 100 and diminishing Pasture returns
+				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005),
 		wood: workers.woodcutter * 0.09 * happiness 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)) 
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2)))
@@ -139,6 +145,18 @@ class Hunt extends Conversion {
 			fur: 40 + huntingBonus * 32,
 			ivory: (0.44 + huntingBonus * 0.02) * (25 + huntingBonus * 20),
 		}
+	}
+}
+
+class CraftingConversion extends Conversion {
+	constructor(product: ConvertedRes, resourceInvestment: [number, Res][]) {
+		super(product, resourceInvestment);
+	}
+
+	produced(state: GameState) {
+		const produced: {[R in Res]?: number} = {};
+		produced[this.product] = 1 + state.level.Workshop * 0.06;
+		return produced;
 	}
 }
 
@@ -234,6 +252,7 @@ function updateActions() {
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
+		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),

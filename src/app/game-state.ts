@@ -84,6 +84,7 @@ const basicResources = {
 const convertedResources = {
 	fur: x,
 	ivory: x,
+	parchment: x,
 }
 
 const job = {
@@ -103,8 +104,9 @@ const building = {
 	Academy: x,
 	Mine: x,
 	LumberMill: x,
-	Workshop: x,
 	Smelter: x,
+	Amphitheatre: x,
+	Workshop: x,
 }
 const upgrade = {
 	MineralHoes: x,
