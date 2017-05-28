@@ -87,7 +87,11 @@ const basicResources = {
 const convertedResources = {
 	fur: x,
 	ivory: x,
+	beam: x,
+	slab: x,
+	plate: x,
 	parchment: x,
+	manuscript: x,
 }
 
 const job = {
@@ -109,6 +113,7 @@ const building = {
 	LumberMill: x,
 	Smelter: x,
 	Amphitheatre: x,
+	Temple: x,
 	Workshop: x,
 	TradePost: x,
 	UnicornPasture: x,

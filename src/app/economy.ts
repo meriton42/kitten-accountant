@@ -1,4 +1,4 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes } from "app/game-state";
+import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames } from "app/game-state";
 
 let currentProduction: {[R in Res]: number};
 let price: {[R in Res]: number};
@@ -24,6 +24,10 @@ function updateEconomy() {
 		// the constructor sets the price of the product
 		new Hunt(),
 		new CraftingConversion("parchment", [[175, "fur"]]),
+		new CraftingConversion("beam", [[175, "wood"]]),
+		new CraftingConversion("slab", [[250, "minerals"]]),
+		new CraftingConversion("plate", [[125, "iron"]]),
+		new CraftingConversion("manuscript", [[25, "parchment"]]), // TODO add 400 culture
 	];
 }
 
@@ -187,7 +191,7 @@ export abstract class Action {
 
 	available() {
 		for (const xp of this.investment.expeditures) {
-			if (!currentProduction[xp.res]) {
+			if (basicResourceNames.includes(<any>xp.res) && !currentProduction[xp.res]) {
 				return false;
 			}
 		}
@@ -253,8 +257,9 @@ function updateActions() {
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
-		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
+		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"]], 1.15), // and 50 gold
+		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"]], 1.15), // TODO: include Gold
 		new BuildingAction("UnicornPasture", [[2, "unicorn"]], 1.75),
 
