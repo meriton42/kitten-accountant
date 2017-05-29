@@ -68,6 +68,9 @@
             <tr *ngFor="let e of a.investment.expeditures">
               <td>{{e.amount | number:'1.0-0'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
             </tr>
+            <tr *ngFor="let e of a.investment.expenses">
+              <td colspan="2">{{e.name}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
+            </tr>
             <tr><th></th><th></th><th></th><th>{{a.investment.cost | number:'1.0-0'}}</th></tr>
             <tr style="height: 0.5em"></tr>
             <tr *ngFor="let e of a.return.expeditures">
@@ -90,6 +93,35 @@
     </tr>
   </tfoot>
 </table>
+
+<table class="panel table">
+  <thead>
+    <tr>
+      <th colspan="2" style="text-align: center">
+        Storage
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let a of storageActions" (click)="apply(a)" (contextmenu)="undo(a)">
+      <td>{{a.name}}</td>
+      <td style="position: relative">
+        {{a.stateInfo()}}
+        <table class="tooltip">
+          <tbody>
+            <tr *ngFor="let e of a.investment.expeditures">
+              <td>{{e.amount | number:'1.0-0'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
+            </tr>
+            <tr *ngFor="let e of a.investment.expenses">
+              <td colspan="2">{{e.name}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
+            </tr>
+            <tr><th></th><th></th><th></th><th>{{a.investment.cost | number:'1.0-0'}}</th></tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>  
+</table>
+
 <div style="clear: both; height: 1.5em"></div>
 </div>
 

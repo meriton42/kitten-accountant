@@ -103,6 +103,23 @@ function production(state: GameState) : {[R in Res]: number} {
 	return production;
 }
 
+type Storage = {[R in BasicRes]: number};
+function storage(state: GameState): Storage {
+	let {level, upgrades} = state;
+
+	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.8) + (upgrades.ReinforcedBarns && 0.75);
+
+	return {
+		catnip: 5000 + level.Barn * 5000,
+		wood: 200 + (level.Barn * 200 + level.Warehouse * 150) * barnRatio,
+		minerals: 250 + (level.Barn * 250 + level.Warehouse * 200) * barnRatio,
+		iron: (level.Barn * 50 + level.Warehouse * 25) * barnRatio,
+		catpower: 1e9, // I never hit the limit, so this should be ok
+		science: 1e9, // TODO rework if technologies are tracked too
+		unicorn: 1e9, // there is no limit
+	}
+}
+
 class Expediture {
 	price: number;
 	cost: number;
@@ -116,12 +133,18 @@ class Expediture {
 export class Investment {
     cost = 0;
 		expeditures: Expediture[] = [];
+		expenses: {name: string, cost: number}[] = [];
 
-		add(xp : Expediture) {
+		add(xp: Expediture) {
 			if (Math.abs(xp.cost) > 1e-6) {
 				this.expeditures.push(xp);
 				this.cost += xp.cost;
 			}
+		}
+
+		addExpense(expense: {name: string, cost: number}) {
+			this.expenses.push(expense);
+			this.cost += expense.cost;
 		}
 }
 
@@ -171,10 +194,12 @@ export abstract class Action {
 	return = new Investment();
 	roi: number;
 
-	constructor(public name: string, resourceInvestment: [number, Res][], resourceMultiplier = 1) {
+	constructor(s: GameState, public name: string, resourceInvestment: [number, Res][], resourceMultiplier = 1) {
 		for (const [number, res] of resourceInvestment) {
 			this.investment.add(new Expediture(number * resourceMultiplier, res));
 		}
+
+		this.procureStorage(this.investment.expeditures, s);
 
 		const deltaProduction = delta(production, state => this.applyTo(state));
 		for (const r of resourceNames) {
@@ -189,7 +214,61 @@ export abstract class Action {
 		}
 	}
 
-	available() {
+	private static procuringStorage = false;
+
+	procureStorage(xps: Expediture[], state: GameState) {
+		let currentState = clone(state);
+		let currentStorage = storage(currentState);
+		for (const xp of this.investment.expeditures) {
+			while (xp.amount > currentStorage[xp.res]) {
+				if (Action.procuringStorage) {
+					// don't recurse (for performance, and to avoid endless recursion if a building needs storage, and considers building itself to fix that :-)
+					this.investment.cost = Infinity;
+					return;
+				}
+				Action.procuringStorage = true;
+				try {
+					// what's the best way to expand our storage?
+					let bestRoI = 0;
+					let bestAction: Action = null;
+					let bestStorage: Storage;
+					for (const sa of storageActions(currentState)) {
+						sa.applyTo(currentState);
+						let newStorage = storage(currentState);
+						sa.undo(currentState);
+
+						const gain = newStorage[xp.res] - currentStorage[xp.res];
+						const cost = sa.investment.cost;
+						const roi = gain / cost;
+						if (roi > bestRoI) {
+							bestRoI = roi;
+							bestAction = sa;
+							bestStorage = newStorage;
+						}
+					}
+
+					if (bestAction) {
+						this.investment.addExpense({
+							name: bestAction.name,
+							cost: bestAction.investment.cost
+						});
+						bestAction.applyTo(currentState)
+						currentStorage = bestStorage;
+					} else {
+						this.investment.addExpense({
+							name: "<more storage needed>",
+							cost: Infinity,
+						});
+						return;
+					}
+				} finally {
+					Action.procuringStorage = false;
+				}
+			}
+		}
+	}
+
+	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
 			if (basicResourceNames.includes(<any>xp.res) && !currentProduction[xp.res]) {
 				return false;
@@ -200,14 +279,14 @@ export abstract class Action {
 
 	abstract applyTo(state: GameState): void;
 	
-	abstract undo();
+	abstract undo(state: GameState): void;
 
 	abstract stateInfo() : string;
 }
 
 class BuildingAction extends Action {
-	constructor(name: Building, private initialConstructionResources: [number, Res][], priceRatio: number) {
-		super(name, initialConstructionResources, Math.pow(priceRatio, state.level[name]));
+	constructor(name: Building, private initialConstructionResources: [number, Res][], priceRatio: number, s = state) {
+		super(s, name, initialConstructionResources, Math.pow(priceRatio, s.level[name]));
 	}
 
 	stateInfo() {
@@ -218,29 +297,29 @@ class BuildingAction extends Action {
 		state.level[this.name]++;
 	}
 
-	undo() {
+	undo(state: GameState) {
 		state.level[this.name]--;
 	}
 }
 
 class UpgradeAction extends Action {
-	constructor(name: Upgrade, resourceCost: [number, Res][]) {
-		super(name, resourceCost);
+	constructor(name: Upgrade, resourceCost: [number, Res][], s = state) {
+		super(s, name, resourceCost);
 	}
 
 	stateInfo() {
 		return state.upgrades[this.name] ? "R" : " ";
 	}
 
-  available() {
-		return super.available() && state.level.Workshop && (state.showResearchedUpgrades || !state.upgrades[this.name]);
+  available(state: GameState) {
+		return super.available(state) && state.level.Workshop && (state.showResearchedUpgrades || !state.upgrades[this.name]);
 	}
 
 	applyTo(state: GameState) {
 		state.upgrades[this.name] = true;
 	}
 
-	undo() {
+	undo(state: GameState) {
 		state.upgrades[this.name] = false;
 	}
 }
@@ -272,8 +351,18 @@ function updateActions() {
 		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
 		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
 	];
-	actions = actions.filter(a => a.available());
+	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);
+}
+
+function storageActions(state: GameState) {
+	return [
+		new BuildingAction("Barn", [[50, "wood"]], 1.75, state),
+		new BuildingAction("Warehouse", [[1.5, "beam"], [2, "slab"]], 1.15, state),
+
+		new UpgradeAction("ExpandedBarns", [[500, "science"], [1000, "wood"], [750, "minerals"], [50, "iron"]], state),
+		new UpgradeAction("ReinforcedBarns", [[800, "science"], [25, "beam"], [10, "slab"], [100, "iron"]], state),
+	].filter(a => a.available(state));
 }
 
 function furConsumptionReport() {
@@ -292,5 +381,11 @@ export function economyReport() {
 	currentProduction = production(state);
 	updateActions();
 
-	return {production: currentProduction, price, actions, furReport: furConsumptionReport()};
+	return {
+		production: currentProduction, 
+		price, 
+		actions, 
+		storageActions: storageActions(state), 
+		furReport: furConsumptionReport()
+	};
 }

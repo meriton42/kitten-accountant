@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
   price: {[R in Res]: number};
   production: {[R in Res]: number};
   actions: Action[];
+  storageActions: Action[];
   furReport: Investment;
 
   ngOnInit() {
@@ -33,6 +34,7 @@ export class AppComponent implements OnInit {
     this.price = eco.price;
     this.production = eco.production;
     this.actions = eco.actions;
+    this.storageActions = eco.storageActions;
     this.furReport = eco.furReport;
   }
 
@@ -53,7 +55,7 @@ export class AppComponent implements OnInit {
   }
 
   undo(action: Action) {
-    action.undo();
+    action.undo(state);
     this.update();
     return false; // suppress context menu
   } 
