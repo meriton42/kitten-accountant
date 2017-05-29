@@ -79,6 +79,7 @@ const basicResources = {
 	wood: x,
 	minerals: x,
 	iron: x,
+	coal: x,
 	catpower: x,
 	science: x,
 	unicorn: x,
@@ -90,6 +91,8 @@ const convertedResources = {
 	beam: x,
 	slab: x,
 	plate: x,
+	steel: x,
+	scaffold: x,
 	parchment: x,
 	manuscript: x,
 }
@@ -125,12 +128,17 @@ const upgrade = {
 	IronHoes: x,
 	MineralAxe: x,
 	IronAxe: x,
+	SteelAxe: x,
 	ReinforcedSaw: x,
 	ExpandedBarns: x,
 	ReinforcedBarns: x,
+	ReinforcedWarehouses: x,
 	CompositeBow: x,
 	Bolas: x,
 	HuntingArmor: x,
+	SteelArmor: x,
+	CoalFurnace: x,
+	DeepMining: x,
 }
 
 export type BasicRes = keyof typeof basicResources;

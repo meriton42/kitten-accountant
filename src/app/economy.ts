@@ -14,6 +14,7 @@ function updateEconomy() {
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
+		coal: 0,
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
@@ -23,10 +24,12 @@ function updateEconomy() {
 	conversions = [
 		// the constructor sets the price of the product
 		new Hunt(),
-		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
+		new CraftingConversion("steel", [[100, "iron"], [100, "coal"]]),
 		new CraftingConversion("plate", [[125, "iron"]]),
+		new CraftingConversion("scaffold", [[50, "beam"]]),
+		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("manuscript", [[25, "parchment"]]), // TODO add 400 culture
 	];
 }
@@ -73,7 +76,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 					) * (1 + level.Aqueduct * 0.03)
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * happiness 
-					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5)) 
+					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
@@ -81,6 +84,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
+		coal: 0 + (upgrades.DeepMining && level.Mine * 0.0375)
+						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6) // add some unicorns so the building shows up
@@ -107,13 +112,15 @@ type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
 	let {level, upgrades} = state;
 
-	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.8) + (upgrades.ReinforcedBarns && 0.75);
+	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80);
+	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25);
 
 	return {
-		catnip: 5000 + level.Barn * 5000,
-		wood: 200 + (level.Barn * 200 + level.Warehouse * 150) * barnRatio,
-		minerals: 250 + (level.Barn * 250 + level.Warehouse * 200) * barnRatio,
-		iron: (level.Barn * 50 + level.Warehouse * 25) * barnRatio,
+		catnip: 5000 + level.Barn * 5000 * warehouseRatio,
+		wood: 200 + (level.Barn * 200 + level.Warehouse * 150) * barnRatio * warehouseRatio,
+		minerals: 250 + (level.Barn * 250 + level.Warehouse * 200) * barnRatio * warehouseRatio,
+		iron: (level.Barn * 50 + level.Warehouse * 25) * barnRatio * warehouseRatio,
+		coal: 0,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		unicorn: 1e9, // there is no limit
@@ -169,7 +176,8 @@ class Hunt extends Conversion {
 	}
 
 	produced(state: GameState){
-		const huntingBonus = 0 + (state.upgrades.Bolas && 1) + (state.upgrades.HuntingArmor && 2);
+		const {upgrades} = state;
+		const huntingBonus = 0 + (upgrades.Bolas && 1) + (upgrades.HuntingArmor && 2) + (upgrades.SteelArmor && 0.5);
 		return {
 			fur: 40 + huntingBonus * 32,
 			ivory: (0.44 + huntingBonus * 0.02) * (25 + huntingBonus * 20),
@@ -346,10 +354,14 @@ function updateActions() {
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),
 		new UpgradeAction("MineralAxe", [[100, "science"], [500, "minerals"]]),
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
+		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
 		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
 		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
+		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
+		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
+		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 	];
 	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);
@@ -362,6 +374,7 @@ function storageActions(state: GameState) {
 
 		new UpgradeAction("ExpandedBarns", [[500, "science"], [1000, "wood"], [750, "minerals"], [50, "iron"]], state),
 		new UpgradeAction("ReinforcedBarns", [[800, "science"], [25, "beam"], [10, "slab"], [100, "iron"]], state),
+		new UpgradeAction("ReinforcedWarehouses", [[15000, "science"], [50, "plate"], [50, "steel"], [25, "scaffold"]], state),
 	].filter(a => a.available(state));
 }
 
