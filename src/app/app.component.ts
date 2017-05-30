@@ -75,6 +75,11 @@ export class AppComponent implements OnInit {
       this.update();
       return false;
     }
+    if (res == "coal") {
+      state.coalPrice = state.coalPrice * Math.pow(1.15, count);
+      this.update();
+      return false;
+    }
 
     if (convertedResourceNames.includes(<any>res)) {
       state.conversionProportion[res] = Math.max(0, state.conversionProportion[res] + 0.1 * count);

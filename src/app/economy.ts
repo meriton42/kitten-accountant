@@ -14,7 +14,7 @@ function updateEconomy() {
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
-		coal: 1, // TODO figure out a way to price this
+		coal: state.coalPrice,
 		unicorn: 1,
 	};
 	price = <any>basicPrice;

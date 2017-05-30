@@ -11,6 +11,7 @@ export interface GameState {
 	upgrades : {[U in Upgrade] : boolean};
 
 	ironMarkup: number;
+	coalPrice: number;
 	showResearchedUpgrades: boolean;
 }
 
@@ -37,6 +38,7 @@ function readGameState() : GameState {
 		state.upgrades[u] = state.upgrades[u] || false;
 	}
 	state.ironMarkup = state.ironMarkup || 0;
+	state.coalPrice = state.coalPrice || 1;
 	if (state.showResearchedUpgrades === undefined) {
 		state.showResearchedUpgrades = true;
 	}
