@@ -14,7 +14,7 @@ function updateEconomy() {
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
-		coal: 0,
+		coal: 1, // TODO figure out a way to price this
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
@@ -85,7 +85,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
-		coal: 0 + (upgrades.DeepMining && level.Mine * 0.0375) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
+		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
@@ -119,8 +119,8 @@ function storage(state: GameState): Storage {
 
 	return {
 		catnip: 5000 + level.Barn * 5000 * warehouseRatio,
-		wood: 200 + (level.Barn * 200 + level.Warehouse * 150) * barnRatio * warehouseRatio,
-		minerals: 250 + (level.Barn * 250 + level.Warehouse * 200) * barnRatio * warehouseRatio,
+		wood: (200 + level.Barn * 200 + level.Warehouse * 150) * barnRatio * warehouseRatio,
+		minerals: (250 + level.Barn * 250 + level.Warehouse * 200) * barnRatio * warehouseRatio,
 		iron: (level.Barn * 50 + level.Warehouse * 25) * barnRatio * warehouseRatio,
 		coal: 0,
 		catpower: 1e9, // I never hit the limit, so this should be ok
