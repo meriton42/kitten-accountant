@@ -92,6 +92,7 @@ const convertedResources = {
 	slab: x,
 	plate: x,
 	steel: x,
+	gear: x,
 	scaffold: x,
 	parchment: x,
 	manuscript: x,
@@ -116,6 +117,7 @@ const building = {
 	Warehouse: x,
 	Mine: x,
 	LumberMill: x,
+	Steamworks: x,
 	Smelter: x,
 	Amphitheatre: x,
 	Temple: x,
@@ -134,11 +136,13 @@ const upgrade = {
 	ReinforcedBarns: x,
 	ReinforcedWarehouses: x,
 	CompositeBow: x,
+	Crossbow: x,
 	Bolas: x,
 	HuntingArmor: x,
 	SteelArmor: x,
 	CoalFurnace: x,
 	DeepMining: x,
+	PrintingPress: x,
 }
 
 export type BasicRes = keyof typeof basicResources;

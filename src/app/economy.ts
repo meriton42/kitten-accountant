@@ -27,6 +27,7 @@ function updateEconomy() {
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
 		new CraftingConversion("steel", [[100, "iron"], [100, "coal"]]),
+		new CraftingConversion("gear", [[15, "steel"]]),
 		new CraftingConversion("plate", [[125, "iron"]]),
 		new CraftingConversion("scaffold", [[50, "beam"]]),
 		new CraftingConversion("parchment", [[175, "fur"]]),
@@ -55,7 +56,7 @@ function hyperbolicDecrease(x: number) {
 	return x < 0.75 ? (1 - x) : 0.25 / ((x - 0.5) / 0.25);
 }
 
-function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: number} {
+function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
@@ -81,14 +82,15 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory"]: 
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
-		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5)),
+		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
-		coal: 0 + (upgrades.DeepMining && level.Mine * 0.0375)
+		coal: 0 + (upgrades.DeepMining && level.Mine * 0.0375) * (1 - (level.Steamworks && 0.8))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
-		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6) // add some unicorns so the building shows up
+		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
+		manuscript: 0 + (upgrades.PrintingPress && level.Steamworks * 0.0025),
 	}
 }
 
@@ -343,6 +345,7 @@ function updateActions() {
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
+		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"]], 1.25), // and 1 blueprint
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"]], 1.15), // and 50 gold
@@ -357,11 +360,13 @@ function updateActions() {
 		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
+		new UpgradeAction("Crossbow", [[12000, "science"], [1500, "iron"]]),
 		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
 		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
 		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
+		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 	];
 	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);
