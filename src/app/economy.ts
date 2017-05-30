@@ -85,7 +85,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)),
 		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
-		coal: 0 + (upgrades.DeepMining && level.Mine * 0.0375) * (1 - (level.Steamworks && 0.8))
+		coal: 0 + (upgrades.DeepMining && level.Mine * 0.0375) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
@@ -367,6 +367,7 @@ function updateActions() {
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
+		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"]]), // and 5 blueprints
 	];
 	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);

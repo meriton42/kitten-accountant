@@ -143,6 +143,7 @@ const upgrade = {
 	CoalFurnace: x,
 	DeepMining: x,
 	PrintingPress: x,
+	HighPressureEngine: x,
 }
 
 export type BasicRes = keyof typeof basicResources;
