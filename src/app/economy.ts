@@ -11,10 +11,12 @@ function updateEconomy() {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
-		catpower: wage / workerProduction("hunter", "catpower"),
-		science: wage / workerProduction("scholar", "science"),
 		iron: null, // assigned below
 		coal: state.coalPrice,
+		catpower: wage / workerProduction("hunter", "catpower"),
+		science: wage / workerProduction("scholar", "science"),
+		culture: 1, // find a way to price this
+		faith: wage / workerProduction("priest", "faith"),
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
@@ -31,7 +33,7 @@ function updateEconomy() {
 		new CraftingConversion("plate", [[125, "iron"]]),
 		new CraftingConversion("scaffold", [[50, "beam"]]),
 		new CraftingConversion("parchment", [[175, "fur"]]),
-		new CraftingConversion("manuscript", [[25, "parchment"]]), // TODO add 400 culture
+		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
 	];
 }
 
@@ -83,10 +85,12 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)),
-		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
 		iron: level.Smelter * 0.1,
 		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
+		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
+		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5,
+		faith: level.Temple * 0.0075 + workers.priest * 0.0075,
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
@@ -125,6 +129,8 @@ function storage(state: GameState): Storage {
 		coal: 0,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
+		culture: 1e9, // I never hit the limit, so this should be ok
+		faith: 1e9, // I never hit the limit, so this should be ok
 		unicorn: 1e9, // there is no limit
 	}
 }
@@ -338,7 +344,7 @@ function updateActions() {
 	actions = [
 		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
-		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.15),
+		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.12),
 		new BuildingAction("Hut", [[5, "wood"]], 2.5),
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),

@@ -84,6 +84,8 @@ const basicResources = {
 	coal: x,
 	catpower: x,
 	science: x,
+	culture: x,
+	faith: x,
 	unicorn: x,
 };
 // created on command by conversion, unlimited storage
@@ -105,7 +107,8 @@ const job = {
 	woodcutter: x,
 	miner: x,
 	hunter: x,
-	scholar: x
+	scholar: x,
+	priest: x,
 }
 const building = {
 	CatnipField: x,
