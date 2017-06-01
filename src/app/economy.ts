@@ -341,11 +341,12 @@ class UpgradeAction extends Action {
 }
 
 function updateActions() {
+	const {upgrades} = state;
 	actions = [
 		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.12),
-		new BuildingAction("Hut", [[5, "wood"]], 2.5),
+		new BuildingAction("Hut", [[5, "wood"]], 2.5 - (upgrades.IronWoodHuts && 0.5)),
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
@@ -365,6 +366,7 @@ function updateActions() {
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
 		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
+		new UpgradeAction("IronWoodHuts", [[30000, "science"], [15000, "wood"], [3000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
 		new UpgradeAction("Crossbow", [[12000, "science"], [1500, "iron"]]),
 		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
