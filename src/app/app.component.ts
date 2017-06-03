@@ -69,6 +69,15 @@ export class AppComponent implements OnInit {
     return state.showResearchedUpgrades;
   }
 
+  set karma(newValue: number) {
+    state.karma = newValue;
+    this.update();
+  }
+
+  get karma() {
+    return state.karma;
+  }
+
   increaseResource(res: Res, count: number) {
     if (res == "iron") {
       state.ironMarkup = Math.max(0, state.ironMarkup + count);

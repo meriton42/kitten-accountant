@@ -13,6 +13,7 @@ export interface GameState {
 	ironMarkup: number;
 	coalPrice: number;
 	showResearchedUpgrades: boolean;
+	karma: number;
 }
 
 function readGameState() : GameState {
@@ -42,6 +43,7 @@ function readGameState() : GameState {
 	if (state.showResearchedUpgrades === undefined) {
 		state.showResearchedUpgrades = true;
 	}
+	state.karma = state.karma || 0;
 	return state;
 }
 

@@ -65,7 +65,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048);
-	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
+	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
+									+ (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -292,7 +293,7 @@ export abstract class Action {
 
 	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
-			if (basicResourceNames.includes(<any>xp.res) && !currentProduction[xp.res]) {
+			if (xp.res != "catnip" && xp.res != "wood" && basicResourceNames.includes(<any>xp.res) && !currentProduction[xp.res]) {
 				return false;
 			}
 		}
