@@ -73,6 +73,9 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
 
+	const scienceBonus = level.Library * 10 + level.Academy * 20 + level.Observatory * 25;
+	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
+
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * happiness * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
@@ -88,7 +91,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		iron: level.Smelter * 0.1,
 		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
-		science: workers.scholar * 0.18 * happiness * (1 + level.Library * 0.1 + level.Academy * 0.2),
+		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus * 0.01) + astroChance * (25 + 1 + scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5,
 		faith: level.Temple * 0.0075 + workers.priest * 0.0075,
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
@@ -350,6 +353,7 @@ function updateActions() {
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
+		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
 		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"]], 1.25), // and 1 blueprint

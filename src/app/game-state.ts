@@ -118,6 +118,7 @@ const building = {
 	LogHouse: x,
 	Library: x,
 	Academy: x,
+	Observatory: x,
 	Barn: x,
 	Warehouse: x,
 	Mine: x,
