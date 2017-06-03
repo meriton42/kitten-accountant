@@ -35,6 +35,8 @@ function updateEconomy() {
 		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
 	];
+
+	price.starchart = 1000; // find a way to price this
 }
 
 function workerProduction(job: Job, res: Res) {
@@ -58,7 +60,7 @@ function hyperbolicDecrease(x: number) {
 	return x < 0.75 ? (1 - x) : 0.25 / ((x - 0.5) / 0.25);
 }
 
-function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript"]: number} {
+function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
@@ -98,6 +100,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: 0 + (upgrades.PrintingPress && level.Steamworks * 0.0025),
+		starchart: astroChance * 1,
 	}
 }
 
@@ -363,6 +366,7 @@ function updateActions() {
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"]], 1.15), // TODO: include Gold
 		new BuildingAction("UnicornPasture", [[2, "unicorn"]], 1.75),
+		new BuildingAction("TradeShip", [[100, "scaffold"], [150, "plate"], [25, "starchart"]], 1),
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),

@@ -90,6 +90,7 @@ const basicResources = {
 };
 // created on command by conversion, unlimited storage
 const convertedResources = {
+	starchart: x,
 	fur: x,
 	ivory: x,
 	beam: x,
@@ -131,6 +132,8 @@ const building = {
 	Workshop: x,
 	TradePost: x,
 	UnicornPasture: x,
+
+	TradeShip: x,
 }
 const upgrade = {
 	MineralHoes: x,
