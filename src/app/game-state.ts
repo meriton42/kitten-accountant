@@ -121,6 +121,7 @@ const building = {
 	Observatory: x,
 	Barn: x,
 	Warehouse: x,
+	Harbor: x,
 	Mine: x,
 	LumberMill: x,
 	Steamworks: x,

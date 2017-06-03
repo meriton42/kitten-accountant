@@ -125,10 +125,10 @@ function storage(state: GameState): Storage {
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25);
 
 	return {
-		catnip: 5000 + level.Barn * 5000 * warehouseRatio,
-		wood: (200 + level.Barn * 200 + level.Warehouse * 150) * barnRatio * warehouseRatio,
-		minerals: (250 + level.Barn * 250 + level.Warehouse * 200) * barnRatio * warehouseRatio,
-		iron: (level.Barn * 50 + level.Warehouse * 25) * barnRatio * warehouseRatio,
+		catnip: 5000 + level.Barn * 5000 + level.Harbor * 2500,
+		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * 700) * barnRatio * warehouseRatio,
+		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * 950) * barnRatio * warehouseRatio,
+		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * 150) * barnRatio * warehouseRatio,
 		coal: 0,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
@@ -390,6 +390,7 @@ function storageActions(state: GameState) {
 	return [
 		new BuildingAction("Barn", [[50, "wood"]], 1.75, state),
 		new BuildingAction("Warehouse", [[1.5, "beam"], [2, "slab"]], 1.15, state),
+		new BuildingAction("Harbor", [[5, "scaffold"], [50, "slab"], [75, "plate"]], 1.15, state),
 
 		new UpgradeAction("ExpandedBarns", [[500, "science"], [1000, "wood"], [750, "minerals"], [50, "iron"]], state),
 		new UpgradeAction("ReinforcedBarns", [[800, "science"], [25, "beam"], [10, "slab"], [100, "iron"]], state),
