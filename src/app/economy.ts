@@ -73,7 +73,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
 
-	const scienceBonus = level.Library * 10 + level.Academy * 20 + level.Observatory * 25;
+	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 
 	return {
@@ -91,7 +91,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		iron: level.Smelter * 0.1,
 		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
-		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus * 0.01) + astroChance * (25 + 1 + scienceBonus),
+		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5,
 		faith: level.Temple * 0.0075 + workers.priest * 0.0075,
 		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
