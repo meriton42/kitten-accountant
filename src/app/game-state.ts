@@ -179,3 +179,4 @@ export type Upgrade = keyof typeof upgrade;
 export const upgradeNames = keyNames(upgrade);
 
 export const state = readGameState();
+window["state"] = state; // helpful for debugging
