@@ -63,7 +63,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048);
-	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) - unhappiness;
+	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -380,6 +380,7 @@ function updateActions() {
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"]]), // and 5 blueprints
+		new UpgradeAction("SunAltar", [[500, "faith"]]), // and 250 gold
 	];
 	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);

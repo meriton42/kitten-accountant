@@ -151,6 +151,7 @@ const upgrade = {
 	DeepMining: x,
 	PrintingPress: x,
 	HighPressureEngine: x,
+	SunAltar: x,
 }
 
 export type BasicRes = keyof typeof basicResources;
