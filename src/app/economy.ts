@@ -28,7 +28,7 @@ function updateEconomy() {
 		new Hunt(),
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
-		new CraftingConversion("steel", [[100, "iron"], [100, "coal"]]),
+		new CraftingConversion("steel", [[100, "coal"], [100, "iron"]]),
 		new CraftingConversion("gear", [[15, "steel"]]),
 		new CraftingConversion("plate", [[125, "iron"]]),
 		new CraftingConversion("scaffold", [[50, "beam"]]),
