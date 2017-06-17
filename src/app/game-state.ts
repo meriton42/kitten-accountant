@@ -145,6 +145,7 @@ const upgrade = {
 	IronAxe: x,
 	SteelAxe: x,
 	ReinforcedSaw: x,
+	TitaniumAxe: x,
 	ExpandedBarns: x,
 	ReinforcedBarns: x,
 	ReinforcedWarehouses: x,

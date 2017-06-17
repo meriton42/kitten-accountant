@@ -86,7 +86,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					) * (1 + level.Aqueduct * 0.03)
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * happiness 
-					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5))
+					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
@@ -412,6 +412,7 @@ function updateActions() {
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
 		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
+		new UpgradeAction("TitaniumAxe", [[38000, "science"], [10, "titanium"]]),
 		new UpgradeAction("IronWoodHuts", [[30000, "science"], [15000, "wood"], [3000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
 		new UpgradeAction("Crossbow", [[12000, "science"], [1500, "iron"]]),
