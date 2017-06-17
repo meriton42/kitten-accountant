@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames } from "app/game-state";
-import { economyReport, Action, Investment } from "app/economy";
+import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes } from "app/game-state";
+import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion } from "app/economy";
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css']
 })
 export class AppComponent implements OnInit {
   title = 'app works!';
@@ -22,7 +21,8 @@ export class AppComponent implements OnInit {
   production: {[R in Res]: number};
   actions: Action[];
   storageActions: Action[];
-  furReport: Investment;
+  furReport: CostBenefitAnalysis;
+  conversions: {[R in ConvertedRes]?: Conversion};
 
   ngOnInit() {
     this.update();
@@ -36,6 +36,10 @@ export class AppComponent implements OnInit {
     this.actions = eco.actions;
     this.storageActions = eco.storageActions;
     this.furReport = eco.furReport;
+    this.conversions = {};
+    for (const conv of eco.conversions) {
+      this.conversions[conv.product] = conv;
+    }
   }
 
   forget() {

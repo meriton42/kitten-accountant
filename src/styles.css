@@ -1,3 +1,37 @@
 body {
 	font-family: sans-serif;
 }
+
+.panel {
+	float: left;
+	margin-right: 3em;
+}
+
+.tooltip {
+	display:none;
+	position: absolute;
+	top: 0;
+	left: 2em;
+	z-index: 1;
+
+	background: #e0e0e0;
+	padding: 2px;
+}
+
+:hover > * > .tooltip {
+	display:block;
+}
+
+th, td {
+	text-align: right;
+}
+
+tr:hover {
+	background: #e0e0e0;
+}
+
+table.table > tbody > tr > th,
+table.table > tbody > tr > td {
+	padding-left: .3em;
+	padding-right: .3em;
+}

@@ -93,6 +93,7 @@ const basicResources = {
 // created on command by conversion, unlimited storage
 const convertedResources = {
 	starchart: x,
+	titanium: x,
 	fur: x,
 	ivory: x,
 	beam: x,

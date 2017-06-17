@@ -1,0 +1,16 @@
+<table>
+  <tbody>
+    <tr *ngFor="let e of cba.investment.expeditures">
+      <td>{{e.amount | number:'1.0-0'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
+    </tr>
+    <tr *ngFor="let e of cba.investment.expenses">
+      <td colspan="2">{{e.name}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
+    </tr>
+    <tr *ngIf="cba.investment.cost"><th></th><th></th><th></th><th>{{cba.investment.cost | number:'1.0-0'}}</th></tr>
+    <tr style="height: 0.5em" *ngIf="cba.investment.cost && cba.return.cost"></tr>
+    <tr *ngFor="let e of cba.return.expeditures">
+      <td>{{e.amount | number:cba.instanteneous?'1.0-0':'1.2-2'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:cba.instanteneous?'1.0-0':'1.2-2'}}</td>
+    </tr>
+    <tr *ngIf="cba.return.cost"><th></th><th></th><th></th><th>{{cba.return.cost | number:cba.instanteneous?'1.0-0':'1.2-2'}}</th></tr>
+  </tbody>
+</table>

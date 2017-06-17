@@ -28,17 +28,15 @@
       <td>{{production[r] | number:'1.2-2'}}</td>
       <td style="text-align:left">{{r}}</td>
       <td>@</td>
-      <td>{{price[r] | number:'1.2-2'}}</td>
-      <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
-        <table *ngIf="r == 'fur'" class="tooltip">
-          <tbody>
-            <tr *ngFor="let e of furReport.expeditures">
-              <td>{{e.amount | number:'1.2-2'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.2-2'}}</td>
-            </tr>
-            <tr><th></th><th></th><th></th><th>{{furReport.cost | number:'1.2-2'}}</th></tr>
-          </tbody>
-        </table>
-        {{luxury[r] ? 'A' : ''}}
+      <td>
+        {{price[r] | number:'1.2-2'}}
+      </td>
+      <td style="width: 1em; text-align: center; position: relative">
+        <cost-benefit-analysis *ngIf="conversions[r]" [cba]="conversions[r]" class="tooltip"></cost-benefit-analysis>
+        <div *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)">
+          <cost-benefit-analysis *ngIf="r == 'fur'" [cba]="furReport" class="tooltip"></cost-benefit-analysis>
+          {{luxury[r] ? 'A' : ''}}
+        </div>
       </td>
     </tr>
   </tbody>
@@ -67,23 +65,8 @@
         {{a.name}}
       </td>
       <td style="position: relative">
-        {{a.stateInfo()}}        
-        <table class="tooltip">
-          <tbody>
-            <tr *ngFor="let e of a.investment.expeditures">
-              <td>{{e.amount | number:'1.0-0'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
-            </tr>
-            <tr *ngFor="let e of a.investment.expenses">
-              <td colspan="2">{{e.name}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
-            </tr>
-            <tr><th></th><th></th><th></th><th>{{a.investment.cost | number:'1.0-0'}}</th></tr>
-            <tr style="height: 0.5em"></tr>
-            <tr *ngFor="let e of a.return.expeditures">
-              <td>{{e.amount | number:'1.2-2'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.2-2'}}</td>
-            </tr>
-            <tr><th></th><th></th><th></th><th>{{a.return.cost | number:'1.2-2'}}</th></tr>
-          </tbody>
-        </table>
+        {{a.stateInfo()}}
+        <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
       </td>
     </tr>
   </tbody>
@@ -112,17 +95,7 @@
       <td>{{a.name}}</td>
       <td style="position: relative">
         {{a.stateInfo()}}
-        <table class="tooltip">
-          <tbody>
-            <tr *ngFor="let e of a.investment.expeditures">
-              <td>{{e.amount | number:'1.0-0'}}</td><td>{{e.res}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
-            </tr>
-            <tr *ngFor="let e of a.investment.expenses">
-              <td colspan="2">{{e.name}}</td><td>=</td><td>{{e.cost | number:'1.0-0'}}</td>
-            </tr>
-            <tr><th></th><th></th><th></th><th>{{a.investment.cost | number:'1.0-0'}}</th></tr>
-          </tbody>
-        </table>
+        <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
       </td>
     </tr>  
 </table>

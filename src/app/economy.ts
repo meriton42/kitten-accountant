@@ -34,6 +34,7 @@ function updateEconomy() {
 		new CraftingConversion("scaffold", [[50, "beam"]]),
 		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
+		new ZebraTrade(),
 	];
 
 	price.starchart = 1000; // find a way to price this
@@ -170,15 +171,30 @@ export class Investment {
 		}
 }
 
-abstract class Conversion {
+export class CostBenefitAnalysis {
 	investment = new Investment();
+	return = new Investment();
+	instanteneous = false;
+}
 
+export abstract class Conversion extends CostBenefitAnalysis {
 	/** also sets the price of the product! */
 	constructor(public product: ConvertedRes, resourceInvestment: [number, Res][]) {
+		super();
 		for (const [number, res] of resourceInvestment) {
 			this.investment.add(new Expediture(number, res));
 		}
-		price[this.product] = this.investment.cost / this.produced(state)[this.product];
+
+		const currentlyProduced = this.produced(state);		
+		for (const res in currentlyProduced) {
+			if (res != this.product) {
+				this.return.add(new Expediture(currentlyProduced[res], <Res>res));
+			}
+		}
+		price[this.product] = Math.max(0, (this.investment.cost - this.return.cost) / currentlyProduced[this.product]);
+		this.return.add(new Expediture(currentlyProduced[this.product], this.product));
+
+		this.instanteneous = true;
 	}
 
 	abstract produced(state: GameState): {[R in Res]?: number};
@@ -200,6 +216,28 @@ class Hunt extends Conversion {
 	}
 }
 
+class ZebraTrade extends Conversion {
+	constructor() {
+		super("titanium", [[50, "catpower"], [50, "slab"]]); // TODO and 15 gold
+	}
+
+	produced(state: GameState) {
+		const {level} = state;
+		const hostileChance = 0.30 - level.TradePost * 0.0035;
+		const efficiency = (1 - hostileChance) * (1 + level.TradePost * 0.015);
+
+		const titaniumChance = Math.min(1, 0.15 + level.TradeShip * 0.0035);
+		const titaniumAmount = 1.5 + level.TradeShip * 0.03;
+		const plateChance = 0.65;
+
+		return {
+			titanium: efficiency * titaniumChance * titaniumAmount,
+			plate: efficiency * 0.65 * 2 * 1.25,
+			iron: efficiency * 1 * 300 * 0.8,
+		}
+	}
+}
+
 class CraftingConversion extends Conversion {
 	constructor(product: ConvertedRes, resourceInvestment: [number, Res][]) {
 		super(product, resourceInvestment);
@@ -212,12 +250,11 @@ class CraftingConversion extends Conversion {
 	}
 }
 
-export abstract class Action {
-	investment = new Investment();
-	return = new Investment();
+export abstract class Action extends CostBenefitAnalysis {
 	roi: number;
 
 	constructor(s: GameState, public name: string, resourceInvestment: [number, Res][], resourceMultiplier = 1) {
+		super();
 		for (const [number, res] of resourceInvestment) {
 			this.investment.add(new Expediture(number * resourceMultiplier, res));
 		}
@@ -403,15 +440,16 @@ function storageActions(state: GameState) {
 	].filter(a => a.available(state));
 }
 
-function furConsumptionReport() {
-	const productionDelta = delta(production, (state: GameState) => state.luxury.fur = !state.luxury.fur);
-	const benefit = new Investment();
-	for (const r of resourceNames) {
-		if (productionDelta[r]) {
-			benefit.add(new Expediture(productionDelta[r] * (state.luxury.fur ? -1 : 1), r));
+class FurConsumptionReport extends CostBenefitAnalysis {
+	constructor(state: GameState) {
+		super();
+		const productionDelta = delta(production, (state: GameState) => state.luxury.fur = !state.luxury.fur);
+		for (const r of resourceNames) {
+			if (productionDelta[r]) {
+				this.return.add(new Expediture(productionDelta[r] * (state.luxury.fur ? -1 : 1), r));
+			}
 		}
 	}
-	return benefit;
 }
 
 export function economyReport() {
@@ -422,8 +460,9 @@ export function economyReport() {
 	return {
 		production: currentProduction, 
 		price, 
+		conversions,
 		actions, 
 		storageActions: storageActions(state), 
-		furReport: furConsumptionReport()
+		furReport: new FurConsumptionReport(state),
 	};
 }
