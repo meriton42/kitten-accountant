@@ -149,6 +149,7 @@ const upgrade = {
 	ExpandedBarns: x,
 	ReinforcedBarns: x,
 	ReinforcedWarehouses: x,
+	TitaniumBarns: x,
 	IronWoodHuts: x,
 	CompositeBow: x,
 	Crossbow: x,

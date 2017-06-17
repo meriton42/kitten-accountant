@@ -126,7 +126,7 @@ type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
 	let {level, upgrades} = state;
 
-	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80);
+	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25);
 
 	return {
@@ -438,6 +438,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ExpandedBarns", [[500, "science"], [1000, "wood"], [750, "minerals"], [50, "iron"]], state),
 		new UpgradeAction("ReinforcedBarns", [[800, "science"], [25, "beam"], [10, "slab"], [100, "iron"]], state),
 		new UpgradeAction("ReinforcedWarehouses", [[15000, "science"], [50, "plate"], [50, "steel"], [25, "scaffold"]], state),
+		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
 	].filter(a => a.available(state));
 }
 
