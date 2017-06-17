@@ -13,6 +13,7 @@ function updateEconomy() {
 		minerals: wage / workerProduction("miner", "minerals"),
 		iron: null, // assigned below
 		coal: state.coalPrice,
+		gold: 1, // find a way to price this
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		culture: 1, // find a way to price this
@@ -64,7 +65,7 @@ function hyperbolicDecrease(x: number) {
 function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
-	const kittens = level.Hut * 2 + level.LogHouse * 1;
+	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
@@ -76,9 +77,9 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	if (idle > 0) {
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
-
 	const scienceBonus = level.Library * (0.1 + (upgrades.TitaniumReflectors && level.Observatory * 0.02)) + level.Academy * 0.2 + level.Observatory * 0.25;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
+	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -91,15 +92,17 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
-		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)),
+		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
+					- level.Mint * 3.75,
 		iron: level.Smelter * 0.1,
 		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
+		gold: level.Smelter * 0.005 - level.Mint * 0.025,
 		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5,
 		faith: level.Temple * 0.0075 + workers.priest * 0.0075,
-		fur: 0 - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
-		ivory: 0 - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
+		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
+		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: 0 + (upgrades.PrintingPress && level.Steamworks * 0.0025),
 		starchart: astroChance * 1,
@@ -135,6 +138,7 @@ function storage(state: GameState): Storage {
 		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * 950) * barnRatio * warehouseRatio,
 		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * 150) * barnRatio * warehouseRatio,
 		coal: 0,
+		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * 25) * warehouseRatio,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok
@@ -218,7 +222,7 @@ class Hunt extends Conversion {
 
 class ZebraTrade extends Conversion {
 	constructor() {
-		super("titanium", [[50, "catpower"], [50, "slab"]]); // TODO and 15 gold
+		super("titanium", [[50, "catpower"], [15, "gold"], [50, "slab"]]); // TODO and 15 gold
 	}
 
 	produced(state: GameState) {
@@ -392,6 +396,7 @@ function updateActions() {
 		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.12),
 		new BuildingAction("Hut", [[5, "wood"]], 2.5 - (upgrades.IronWoodHuts && 0.5)),
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
+		new BuildingAction("Mansion", [[185, "slab"], [75, "steel"], [25, "titanium"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
@@ -400,9 +405,10 @@ function updateActions() {
 		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"]], 1.25), // and 1 blueprint
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
-		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"]], 1.15), // and 50 gold
+		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"], [50, "gold"]], 1.15), 
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
-		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"]], 1.15), // TODO: include Gold
+		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"], [10, "gold"]], 1.15),
+		new BuildingAction("Mint", [[5000, "minerals"], [200, "plate"], [500, "gold"]], 1.15),
 		new BuildingAction("UnicornPasture", [[2, "unicorn"]], 1.75),
 		new BuildingAction("TradeShip", [[100, "scaffold"], [150, "plate"], [25, "starchart"]], 1),
 
