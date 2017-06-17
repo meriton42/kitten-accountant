@@ -77,7 +77,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
 
-	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25;
+	const scienceBonus = level.Library * (0.1 + (upgrades.TitaniumReflectors && level.Observatory * 0.02)) + level.Academy * 0.2 + level.Observatory * 0.25;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 
 	return {
@@ -231,9 +231,9 @@ class ZebraTrade extends Conversion {
 		const plateChance = 0.65;
 
 		return {
-			titanium: efficiency * titaniumChance * titaniumAmount,
-			plate: efficiency * 0.65 * 2 * 1.25,
-			iron: efficiency * 1 * 300 * 0.8,
+			titanium: titaniumChance * titaniumAmount,
+			plate: efficiency * 0.65 * 2 * 1.05,
+			iron: efficiency * 1 * 300 * 1.00,
 		}
 	}
 }
@@ -424,6 +424,7 @@ function updateActions() {
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"]]), // and 5 blueprints
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
+		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
 		new UpgradeAction("SunAltar", [[500, "faith"]]), // and 250 gold
 	];
 	actions = actions.filter(a => a.available(state));

@@ -161,6 +161,7 @@ const upgrade = {
 	PrintingPress: x,
 	HighPressureEngine: x,
 	Astrolabe: x,
+	TitaniumReflectors: x,
 	SunAltar: x,
 }
 
