@@ -423,6 +423,7 @@ function updateActions() {
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"]]), // and 5 blueprints
+		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("SunAltar", [[500, "faith"]]), // and 250 gold
 	];
 	actions = actions.filter(a => a.available(state));

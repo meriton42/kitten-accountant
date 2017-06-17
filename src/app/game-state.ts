@@ -160,6 +160,7 @@ const upgrade = {
 	DeepMining: x,
 	PrintingPress: x,
 	HighPressureEngine: x,
+	Astrolabe: x,
 	SunAltar: x,
 }
 
