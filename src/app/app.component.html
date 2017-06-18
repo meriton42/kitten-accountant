@@ -24,11 +24,13 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let r of resourceNames" (click)="increaseResource(r, 1)" (contextmenu)="increaseResource(r, -1)">
-      <td>{{production[r] | number:'1.2-2'}}</td>
+    <tr *ngFor="let r of resourceNames">
+      <td (click)="increaseProduction(r, 1)" (contextmenu)="increaseProduction(r, -1)">
+        {{production[r] | number:'1.2-2'}}
+      </td>
       <td style="text-align:left">{{r}}</td>
       <td>@</td>
-      <td>
+      <td (click)="increasePrice(r,1)" (contextmenu)="increasePrice(r, -1)">
         {{price[r] | number:'1.2-2'}}
       </td>
       <td style="width: 1em; text-align: center; position: relative">

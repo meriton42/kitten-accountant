@@ -6,22 +6,23 @@ let conversions: Conversion[];
 let actions: Action[];
 
 function updateEconomy() {
+	const {priceMarkup} = state;
   const wage = 1;
 	const basicPrice : {[R in BasicRes]: number} = {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
-		iron: null, // assigned below
-		coal: state.coalPrice,
-		gold: 1, // find a way to price this
+		iron: 0, // assigned below
+		coal: 3 * priceMarkup.coal,
+		gold: 10 * priceMarkup.gold,
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
-		culture: 1, // find a way to price this
+		culture: priceMarkup.culture, 
 		faith: wage / workerProduction("priest", "faith"),
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
-	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1 * Math.pow(1.1, state.ironMarkup);
+	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1 * priceMarkup.iron;
 
 	const huntingBonus = 0;
 	conversions = [
@@ -39,7 +40,7 @@ function updateEconomy() {
 		new ZebraTrade(),
 	];
 
-	price.starchart = 1000; // find a way to price this
+	price.starchart = 1000 * priceMarkup.starchart;
 }
 
 function workerProduction(job: Job, res: Res) {
@@ -223,7 +224,7 @@ class Hunt extends Conversion {
 
 class ZebraTrade extends Conversion {
 	constructor() {
-		super("titanium", [[50, "catpower"], [15, "gold"], [50, "slab"]]); // TODO and 15 gold
+		super("titanium", [[15, "gold"], [50, "catpower"], [50, "slab"]]);
 	}
 
 	produced(state: GameState) {

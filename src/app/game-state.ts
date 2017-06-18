@@ -10,8 +10,8 @@ export interface GameState {
 	level : {[B in Building] : number};
 	upgrades : {[U in Upgrade] : boolean};
 
-	ironMarkup: number;
-	coalPrice: number;
+	priceMarkup: {[R in UserPricedRes]: number};
+
 	showResearchedUpgrades: boolean;
 	karma: number;
 }
@@ -38,8 +38,10 @@ function readGameState() : GameState {
 	for (const u of upgradeNames) {
 		state.upgrades[u] = state.upgrades[u] || false;
 	}
-	state.ironMarkup = state.ironMarkup || 0;
-	state.coalPrice = state.coalPrice || 1;
+	state.priceMarkup = state.priceMarkup || <any>{};
+	for (const r of userPricedResourceNames) {
+		state.priceMarkup[r] = state.priceMarkup[r] || 1;
+	}
 	if (state.showResearchedUpgrades === undefined) {
 		state.showResearchedUpgrades = true;
 	}
@@ -106,6 +108,14 @@ const convertedResources = {
 	parchment: x,
 	manuscript: x,
 	compendium: x,
+}
+
+const userPricedResources = {
+	iron: x,
+	coal: x,
+	gold: x,
+	culture: x,
+	starchart: x,
 }
 
 const job = {
@@ -176,6 +186,9 @@ export const basicResourceNames = keyNames(basicResources);
 
 export type ConvertedRes = keyof typeof convertedResources;
 export const convertedResourceNames = keyNames(convertedResources);
+
+export type UserPricedRes = keyof typeof userPricedResources;
+export const userPricedResourceNames = keyNames(userPricedResources);
 
 export type Res = BasicRes | ConvertedRes;
 export const resourceNames = (<Res[]>basicResourceNames).concat(convertedResourceNames);

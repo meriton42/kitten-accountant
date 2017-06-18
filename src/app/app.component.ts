@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes } from "app/game-state";
+import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "app/game-state";
 import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion } from "app/economy";
 
 @Component({
@@ -82,18 +82,18 @@ export class AppComponent implements OnInit {
     return state.karma;
   }
 
-  increaseResource(res: Res, count: number) {
-    if (res == "iron") {
-      state.ironMarkup = Math.max(0, state.ironMarkup + count);
+  increasePrice(res: Res, count: number) {
+    if (userPricedResourceNames.includes(<any>res)) {
+      state.priceMarkup[res] *= Math.pow(1.15, count);
+      if (state.priceMarkup.iron < 1) {
+        state.priceMarkup.iron = 1;
+      }
       this.update();
       return false;
     }
-    if (res == "coal") {
-      state.coalPrice = state.coalPrice * Math.pow(1.15, count);
-      this.update();
-      return false;
-    }
+  }
 
+  increaseProduction(res: Res, count: number) {
     if (convertedResourceNames.includes(<any>res)) {
       state.conversionProportion[res] = Math.max(0, state.conversionProportion[res] + 0.1 * count);
       this.update();
