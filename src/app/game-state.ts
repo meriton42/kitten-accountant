@@ -160,6 +160,7 @@ const upgrade = {
 	SteelAxe: x,
 	ReinforcedSaw: x,
 	SteelSaw: x,
+	TitaniumSaw: x,
 	TitaniumAxe: x,
 	ExpandedBarns: x,
 	ReinforcedBarns: x,
