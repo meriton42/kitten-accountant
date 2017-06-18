@@ -35,6 +35,7 @@ function updateEconomy() {
 		new CraftingConversion("scaffold", [[50, "beam"]]),
 		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
+		new CraftingConversion("compendium", [[50, "manuscript"], [10000, "science"]]),
 		new ZebraTrade(),
 	];
 
@@ -88,14 +89,14 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * happiness 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5))
-					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2)))
+					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5,
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
 		iron: level.Smelter * 0.1,
-		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2))
+		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) * (1 + (upgrades.Pyrolysis && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		gold: level.Smelter * 0.005 - level.Mint * 0.025,
 		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
@@ -418,6 +419,7 @@ function updateActions() {
 		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
 		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
+		new UpgradeAction("SteelSaw", [[52000, "science"], [750, "steel"]]),
 		new UpgradeAction("TitaniumAxe", [[38000, "science"], [10, "titanium"]]),
 		new UpgradeAction("IronWoodHuts", [[30000, "science"], [15000, "wood"], [3000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
@@ -427,6 +429,7 @@ function updateActions() {
 		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
+		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"]]), // and 5 blueprints
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),

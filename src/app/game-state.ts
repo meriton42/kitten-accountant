@@ -105,6 +105,7 @@ const convertedResources = {
 	scaffold: x,
 	parchment: x,
 	manuscript: x,
+	compendium: x,
 }
 
 const job = {
@@ -148,6 +149,7 @@ const upgrade = {
 	IronAxe: x,
 	SteelAxe: x,
 	ReinforcedSaw: x,
+	SteelSaw: x,
 	TitaniumAxe: x,
 	ExpandedBarns: x,
 	ReinforcedBarns: x,
@@ -161,6 +163,7 @@ const upgrade = {
 	SteelArmor: x,
 	CoalFurnace: x,
 	DeepMining: x,
+	Pyrolysis: x,
 	PrintingPress: x,
 	HighPressureEngine: x,
 	Astrolabe: x,
