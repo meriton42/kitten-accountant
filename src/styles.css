@@ -35,3 +35,11 @@ table.table > tbody > tr > td {
 	padding-left: .3em;
 	padding-right: .3em;
 }
+
+input[type="number"].nospinner::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+input[type="number"].nospinner {
+    -moz-appearance: textfield;
+}

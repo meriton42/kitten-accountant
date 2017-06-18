@@ -84,14 +84,13 @@ export class AppComponent implements OnInit {
     return state.karma;
   }
 
-  set ships(newValue: string) {
-    this.shipsAsString = newValue;
-    state.ships = parseFloat(this.shipsAsString) || 0;
+  set ships(newValue: number) {
+    state.ships = newValue;
     this.update();
   }
 
   get ships() {
-    return state.ships == (parseFloat(this.shipsAsString) || 0) ? this.shipsAsString : state.ships.toFixed(2);
+    return state.ships;
   }
 
   increasePrice(res: Res, count: number) {

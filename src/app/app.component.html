@@ -44,9 +44,9 @@
   </tbody>
   <tfoot>
     <tr>
-      <td><input [(ngModel)]="ships" style="width: 3em; text-align: right"></td><td style="text-align: left">ships</td>
+      <td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="ships" style="width: 3em; text-align: right"></td><td style="text-align: left">ships</td>
     <tr>
-      <td><input [(ngModel)]="karma" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
+      <td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="karma" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
     </tr>
   </tfoot>
 </table>
