@@ -13,6 +13,7 @@ export interface GameState {
 	priceMarkup: {[R in UserPricedRes]: number};
 
 	showResearchedUpgrades: boolean;
+	ships: number;
 	karma: number;
 }
 
@@ -45,6 +46,7 @@ function readGameState() : GameState {
 	if (state.showResearchedUpgrades === undefined) {
 		state.showResearchedUpgrades = true;
 	}
+	state.ships = state.ships || 0;
 	state.karma = state.karma || 0;
 	return state;
 }
@@ -151,8 +153,6 @@ const building = {
 	TradePost: x,
 	Mint: x,
 	UnicornPasture: x,
-
-	TradeShip: x,
 }
 const upgrade = {
 	MineralHoes: x,

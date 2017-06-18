@@ -130,11 +130,11 @@ function production(state: GameState) : {[R in Res]: number} {
 
 type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
-	let {level, upgrades} = state;
+	let {level, upgrades, ships} = state;
 
 	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25);
-	const harborRatio = 1 + (upgrades.ExpandedCargo && level.TradeShip * 0.01);
+	const harborRatio = 1 + (upgrades.ExpandedCargo && ships * 0.01);
 
 	return {
 		catnip: 5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500,
@@ -230,13 +230,13 @@ class ZebraTrade extends Conversion {
 	}
 
 	produced(state: GameState) {
-		const {level} = state;
+		const {level, ships} = state;
 		const hostileChance = Math.max(0, 0.30 - level.TradePost * 0.0035);
 		const expectedSuccess = 1 - hostileChance;
 		const tradeRatio = 1 + level.TradePost * 0.015;
 
-		const titaniumChance = Math.min(1, 0.15 + level.TradeShip * 0.0035);
-		const titaniumAmount = 1.5 + level.TradeShip * 0.03;
+		const titaniumChance = Math.min(1, 0.15 + ships * 0.0035);
+		const titaniumAmount = 1.5 + ships * 0.03;
 
 		return {
 			titanium: expectedSuccess * titaniumChance * titaniumAmount,
@@ -392,6 +392,22 @@ class UpgradeAction extends Action {
 	}
 }
 
+class TradeshipAction extends Action {
+	constructor(s = state) {
+		super(s, "TradeShip", [[100, "scaffold"], [150, "plate"], [25, "starchart"]]);
+	}
+
+	applyTo(state: GameState) {
+		state.ships += 1 + state.level.Workshop * 0.06;
+	}
+	undo(state: GameState) {
+		state.ships -= 1 + state.level.Workshop * 0.06;
+	}
+	stateInfo() {
+		return "";
+	}
+}
+
 function updateActions() {
 	const {upgrades} = state;
 	actions = [
@@ -414,7 +430,6 @@ function updateActions() {
 		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"], [10, "gold"]], 1.15),
 		new BuildingAction("Mint", [[5000, "minerals"], [200, "plate"], [500, "gold"]], 1.15),
 		new BuildingAction("UnicornPasture", [[2, "unicorn"]], 1.75),
-		new BuildingAction("TradeShip", [[100, "scaffold"], [150, "plate"], [25, "starchart"]], 1),
 
 		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
 		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),
@@ -439,6 +454,8 @@ function updateActions() {
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
 		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
+
+		new TradeshipAction(),
 	];
 	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);

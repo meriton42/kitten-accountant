@@ -24,6 +24,8 @@ export class AppComponent implements OnInit {
   furReport: CostBenefitAnalysis;
   conversions: {[R in ConvertedRes]?: Conversion};
 
+  shipsAsString: string;
+
   ngOnInit() {
     this.update();
   }
@@ -80,6 +82,16 @@ export class AppComponent implements OnInit {
 
   get karma() {
     return state.karma;
+  }
+
+  set ships(newValue: string) {
+    this.shipsAsString = newValue;
+    state.ships = parseFloat(this.shipsAsString) || 0;
+    this.update();
+  }
+
+  get ships() {
+    return state.ships == (parseFloat(this.shipsAsString) || 0) ? this.shipsAsString : state.ships.toFixed(2);
   }
 
   increasePrice(res: Res, count: number) {
