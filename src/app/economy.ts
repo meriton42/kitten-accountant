@@ -37,6 +37,7 @@ function updateEconomy() {
 		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
 		new CraftingConversion("compendium", [[50, "manuscript"], [10000, "science"]]),
+		new CraftingConversion("blueprint", [[25, "compendium"], [25000, "science"]]),
 		new ZebraTrade(),
 	];
 
@@ -133,12 +134,13 @@ function storage(state: GameState): Storage {
 
 	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25);
+	const harborRatio = 1 + (upgrades.ExpandedCargo && level.TradeShip * 0.01);
 
 	return {
-		catnip: 5000 + level.Barn * 5000 + level.Harbor * 2500,
-		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * 700) * barnRatio * warehouseRatio,
-		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * 950) * barnRatio * warehouseRatio,
-		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * 150) * barnRatio * warehouseRatio,
+		catnip: 5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500,
+		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * barnRatio * warehouseRatio,
+		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * barnRatio * warehouseRatio,
+		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * barnRatio * warehouseRatio,
 		coal: 0,
 		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * 25) * warehouseRatio,
 		catpower: 1e9, // I never hit the limit, so this should be ok
@@ -184,6 +186,8 @@ export class CostBenefitAnalysis {
 }
 
 export abstract class Conversion extends CostBenefitAnalysis {
+	instanteneous = true;
+
 	/** also sets the price of the product! */
 	constructor(public product: ConvertedRes, resourceInvestment: [number, Res][]) {
 		super();
@@ -197,10 +201,8 @@ export abstract class Conversion extends CostBenefitAnalysis {
 				this.return.add(new Expediture(currentlyProduced[res], <Res>res));
 			}
 		}
-		price[this.product] = Math.max(0, (this.investment.cost - this.return.cost) / currentlyProduced[this.product]);
+		price[this.product] = Math.max(0, (this.investment.cost - this.return.cost) / currentlyProduced[this.product]) * (state.priceMarkup[this.product] || 1);
 		this.return.add(new Expediture(currentlyProduced[this.product], this.product));
-
-		this.instanteneous = true;
 	}
 
 	abstract produced(state: GameState): {[R in Res]?: number};
@@ -404,7 +406,7 @@ function updateActions() {
 		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
-		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"]], 1.25), // and 1 blueprint
+		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"], [1, "blueprint"]], 1.25),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"], [50, "gold"]], 1.15), 
@@ -433,10 +435,10 @@ function updateActions() {
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
-		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"]]), // and 5 blueprints
+		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
-		new UpgradeAction("SunAltar", [[500, "faith"]]), // and 250 gold
+		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
 	];
 	actions = actions.filter(a => a.available(state));
 	actions.sort((a,b) => a.roi - b.roi);
@@ -451,6 +453,8 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ExpandedBarns", [[500, "science"], [1000, "wood"], [750, "minerals"], [50, "iron"]], state),
 		new UpgradeAction("ReinforcedBarns", [[800, "science"], [25, "beam"], [10, "slab"], [100, "iron"]], state),
 		new UpgradeAction("ReinforcedWarehouses", [[15000, "science"], [50, "plate"], [50, "steel"], [25, "scaffold"]], state),
+		new UpgradeAction("Silos", [[50000, "science"], [125, "steel"], [5, "blueprint"]], state),
+		new UpgradeAction("ExpandedCargo", [[55000, "science"], [15, "blueprint"]], state),
 		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
 	].filter(a => a.available(state));
 }

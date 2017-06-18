@@ -108,6 +108,7 @@ const convertedResources = {
 	parchment: x,
 	manuscript: x,
 	compendium: x,
+	blueprint: x,
 }
 
 const userPricedResources = {
@@ -116,6 +117,7 @@ const userPricedResources = {
 	gold: x,
 	culture: x,
 	starchart: x,
+	blueprint: x,
 }
 
 const job = {
@@ -166,7 +168,9 @@ const upgrade = {
 	ReinforcedBarns: x,
 	ReinforcedWarehouses: x,
 	TitaniumBarns: x,
+	ExpandedCargo: x,
 	IronWoodHuts: x,
+	Silos: x,
 	CompositeBow: x,
 	Crossbow: x,
 	Bolas: x,

@@ -88,6 +88,9 @@ export class AppComponent implements OnInit {
       if (state.priceMarkup.iron < 1) {
         state.priceMarkup.iron = 1;
       }
+      if (state.priceMarkup.blueprint > 1) {
+        state.priceMarkup.blueprint = 1;
+      }
       this.update();
       return false;
     }
