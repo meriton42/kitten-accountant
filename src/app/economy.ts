@@ -133,7 +133,7 @@ function storage(state: GameState): Storage {
 	let {level, upgrades, ships} = state;
 
 	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00);
-	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25);
+	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && ships * 0.01);
 
 	return {
@@ -473,6 +473,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("Silos", [[50000, "science"], [125, "steel"], [5, "blueprint"]], state),
 		new UpgradeAction("ExpandedCargo", [[55000, "science"], [15, "blueprint"]], state),
 		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
+		new UpgradeAction("TitaniumWarehouses", [[70000, "science"], [50, "titanium"], [500, "steel"], [500, "scaffold"]], state),
 	].filter(a => a.available(state));
 }
 
