@@ -228,17 +228,17 @@ class ZebraTrade extends Conversion {
 
 	produced(state: GameState) {
 		const {level} = state;
-		const hostileChance = 0.30 - level.TradePost * 0.0035;
-		const efficiency = (1 - hostileChance) * (1 + level.TradePost * 0.015);
+		const hostileChance = Math.max(0, 0.30 - level.TradePost * 0.0035);
+		const expectedSuccess = 1 - hostileChance;
+		const tradeRatio = 1 + level.TradePost * 0.015;
 
 		const titaniumChance = Math.min(1, 0.15 + level.TradeShip * 0.0035);
 		const titaniumAmount = 1.5 + level.TradeShip * 0.03;
-		const plateChance = 0.65;
 
 		return {
-			titanium: titaniumChance * titaniumAmount,
-			plate: efficiency * 0.65 * 2 * 1.05,
-			iron: efficiency * 1 * 300 * 1.00,
+			titanium: expectedSuccess * titaniumChance * titaniumAmount,
+			plate: expectedSuccess * 0.65 * 2 * 1.05 * tradeRatio,
+			iron: expectedSuccess * 1 * 300 * 1.00 * tradeRatio,
 		}
 	}
 }
