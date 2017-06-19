@@ -138,15 +138,15 @@ type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
 	let {level, upgrades, ships} = state;
 
-	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00);
+	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && ships * 0.01);
 
 	return {
-		catnip: 5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500,
-		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * barnRatio * warehouseRatio,
-		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * barnRatio * warehouseRatio,
-		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * barnRatio * warehouseRatio,
+		catnip: (5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)),
+		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio,
+		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio,
+		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio,
 		coal: 0,
 		oil: level.OilWell * 1500,
 		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * 25) * warehouseRatio,
