@@ -15,6 +15,7 @@ function updateEconomy() {
 		iron: 0, // assigned below
 		coal: 3 * priceMarkup.coal,
 		gold: 10 * priceMarkup.gold,
+		oil: 3 * priceMarkup.oil,
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		culture: priceMarkup.culture, 
@@ -65,7 +66,7 @@ function hyperbolicDecrease(x: number) {
 	return x < 0.75 ? (1 - x) : 0.25 / ((x - 0.5) / 0.25);
 }
 
-function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart"]: number} {
+function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart" | "titanium"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1;
@@ -84,6 +85,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
+	const energyConsumption = level.Calciner * 1;
+
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * happiness * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
@@ -94,13 +97,15 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
-					- level.Smelter * 0.5,
+					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
-		iron: level.Smelter * 0.1,
+		iron: level.Smelter * 0.1 + level.Calciner * 0.75,
 		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) * (1 + (upgrades.Pyrolysis && 0.2))
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		gold: level.Smelter * 0.005 - level.Mint * 0.025,
+		oil: level.OilWell * 0.1 - level.Calciner * 0.12,
+		titanium: level.Calciner * 0.0025,
 		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5,
 		faith: level.Temple * 0.0075 + workers.priest * 0.0075,
@@ -142,6 +147,7 @@ function storage(state: GameState): Storage {
 		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * barnRatio * warehouseRatio,
 		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * barnRatio * warehouseRatio,
 		coal: 0,
+		oil: level.OilWell * 1500,
 		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * 25) * warehouseRatio,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
@@ -422,8 +428,10 @@ function updateActions() {
 		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
+		new BuildingAction("OilWell", [[50, "steel"], [25, "gear"], [25, "scaffold"]], 1.15),
 		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"], [1, "blueprint"]], 1.25),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
+		new BuildingAction("Calciner", [[100, "steel"], [15, "titanium"], [5, "blueprint"], [500, "oil"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"], [50, "gold"]], 1.15), 
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),

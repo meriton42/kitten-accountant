@@ -89,6 +89,7 @@ const basicResources = {
 	coal: x,
 	iron: x,
 	gold: x,
+	oil: x,
 	catpower: x,
 	science: x,
 	culture: x,
@@ -113,10 +114,11 @@ const convertedResources = {
 	blueprint: x,
 }
 
-const userPricedResources = {
+const userPricedResources: {[R in Res]?} = {
 	iron: x,
 	coal: x,
 	gold: x,
+	oil: x,
 	culture: x,
 	starchart: x,
 	blueprint: x,
@@ -145,8 +147,10 @@ const building = {
 	Harbor: x,
 	Mine: x,
 	LumberMill: x,
+	OilWell: x,
 	Steamworks: x,
 	Smelter: x,
+	Calciner: x,
 	Amphitheatre: x,
 	Temple: x,
 	Workshop: x,
