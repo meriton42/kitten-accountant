@@ -15,11 +15,15 @@ body {
 	z-index: 1;
 
 	background: #e0e0e0;
-	padding: 2px;
+	padding: .3em;
 }
 
 :hover > * > .tooltip {
 	display:block;
+}
+
+table {
+	border-spacing: 0;
 }
 
 th, td {
@@ -32,8 +36,8 @@ tr:hover {
 
 table.table > tbody > tr > th,
 table.table > tbody > tr > td {
-	padding-left: .3em;
-	padding-right: .3em;
+	padding-left: .2em;
+	padding-right: .2em;
 }
 
 input[type="number"].nospinner::-webkit-inner-spin-button {
