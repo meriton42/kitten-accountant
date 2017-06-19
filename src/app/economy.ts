@@ -82,7 +82,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	if (idle > 0) {
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
-	const scienceBonus = level.Library * (0.1 + (upgrades.TitaniumReflectors && level.Observatory * 0.02)) + level.Academy * 0.2 + level.Observatory * 0.25;
+	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
