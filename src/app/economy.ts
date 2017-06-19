@@ -15,7 +15,7 @@ function updateEconomy() {
 		iron: 0, // assigned below
 		coal: 3 * priceMarkup.coal,
 		gold: 10 * priceMarkup.gold,
-		oil: 3 * priceMarkup.oil,
+		oil: 5 * priceMarkup.oil,
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		culture: priceMarkup.culture, 
@@ -31,15 +31,16 @@ function updateEconomy() {
 		new Hunt(),
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
+		new ZebraTrade(),
 		new CraftingConversion("steel", [[100, "coal"], [100, "iron"]]),
 		new CraftingConversion("gear", [[15, "steel"]]),
 		new CraftingConversion("plate", [[125, "iron"]]),
+		new CraftingConversion("alloy", [[75, "steel"], [10, "titanium"]]),
 		new CraftingConversion("scaffold", [[50, "beam"]]),
 		new CraftingConversion("parchment", [[175, "fur"]]),
 		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
 		new CraftingConversion("compendium", [[50, "manuscript"], [10000, "science"]]),
 		new CraftingConversion("blueprint", [[25, "compendium"], [25000, "science"]]),
-		new ZebraTrade(),
 	];
 
 	price.starchart = 1000 * priceMarkup.starchart;
@@ -93,7 +94,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					) * (1 + level.Aqueduct * 0.03)
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * happiness 
-					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5))
+					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
@@ -137,8 +138,8 @@ type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
 	let {level, upgrades, ships} = state;
 
-	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00);
-	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50);
+	const barnRatio = 1 + (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00);
+	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && ships * 0.01);
 
 	return {
@@ -222,7 +223,7 @@ class Hunt extends Conversion {
 
 	produced(state: GameState){
 		const {upgrades} = state;
-		const huntingBonus = 0 + (upgrades.Bolas && 1) + (upgrades.HuntingArmor && 2) + (upgrades.SteelArmor && 0.5);
+		const huntingBonus = 0 + (upgrades.Bolas && 1) + (upgrades.HuntingArmor && 2) + (upgrades.SteelArmor && 0.5) + (upgrades.AlloyArmor && 0.5);
 		return {
 			fur: 40 + huntingBonus * 32,
 			ivory: (0.44 + huntingBonus * 0.02) * (25 + huntingBonus * 20),
@@ -448,12 +449,14 @@ function updateActions() {
 		new UpgradeAction("SteelSaw", [[52000, "science"], [750, "steel"]]),
 		new UpgradeAction("TitaniumSaw", [[75000, "science"], [500, "titanium"]]),
 		new UpgradeAction("TitaniumAxe", [[38000, "science"], [10, "titanium"]]),
+		new UpgradeAction("AlloyAxe", [[70000, "science"], [25, "alloy"]]),
 		new UpgradeAction("IronWoodHuts", [[30000, "science"], [15000, "wood"], [3000, "iron"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
 		new UpgradeAction("Crossbow", [[12000, "science"], [1500, "iron"]]),
 		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
 		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
 		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
+		new UpgradeAction("AlloyArmor", [[50000, "science"], [25, "alloy"]]),
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
@@ -481,7 +484,9 @@ function storageActions(state: GameState) {
 		new UpgradeAction("Silos", [[50000, "science"], [125, "steel"], [5, "blueprint"]], state),
 		new UpgradeAction("ExpandedCargo", [[55000, "science"], [15, "blueprint"]], state),
 		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
+		new UpgradeAction("AlloyBarns", [[75000, "science"], [20, "alloy"], [750, "plate"]], state),
 		new UpgradeAction("TitaniumWarehouses", [[70000, "science"], [50, "titanium"], [500, "steel"], [500, "scaffold"]], state),
+		new UpgradeAction("AlloyWarehouses", [[90000, "science"], [750, "titanium"], [50, "alloy"]]),
 	].filter(a => a.available(state));
 }
 
