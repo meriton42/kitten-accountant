@@ -108,8 +108,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		oil: level.OilWell * 0.1 - level.Calciner * 0.12,
 		titanium: level.Calciner * 0.0025,
 		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
-		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5,
-		faith: level.Temple * 0.0075 + workers.priest * 0.0075,
+		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
+		faith: level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * 0.0075,
 		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
@@ -434,6 +434,7 @@ function updateActions() {
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Calciner", [[100, "steel"], [15, "titanium"], [5, "blueprint"], [500, "oil"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
+		new BuildingAction("Chapel", [[2000, "minerals"], [250, "culture"], [250, "parchment"]], 1.15),
 		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"], [50, "gold"]], 1.15), 
 		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
 		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"], [10, "gold"]], 1.15),

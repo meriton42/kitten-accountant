@@ -153,6 +153,7 @@ const building = {
 	Smelter: x,
 	Calciner: x,
 	Amphitheatre: x,
+	Chapel: x,
 	Temple: x,
 	Workshop: x,
 	TradePost: x,
