@@ -149,7 +149,7 @@ function storage(state: GameState): Storage {
 		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio,
 		coal: 0,
 		oil: level.OilWell * 1500,
-		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * 25) * warehouseRatio,
+		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok
