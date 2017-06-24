@@ -153,6 +153,7 @@ const building = {
 	LumberMill: x,
 	OilWell: x,
 	Steamworks: x,
+	Magneto: x,
 	Smelter: x,
 	Calciner: x,
 	Amphitheatre: x,

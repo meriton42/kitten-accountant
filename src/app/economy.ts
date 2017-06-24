@@ -94,7 +94,10 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
+	const energyProduction = level.Steamworks * 1 + level.Magneto * 5;
 	const energyConsumption = level.Calciner * 1;
+
+	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -104,25 +107,29 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		wood: workers.woodcutter * 0.09 * happiness 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
+					* magnetoBonus
 		      - level.Smelter * 0.25,
-		minerals: workers.miner * 0.25 * happiness * (1 + level.Mine * 0.2 + level.Quarry * 0.35)
+		minerals: workers.miner * 0.25 * happiness * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * magnetoBonus
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
-		iron: level.Smelter * 0.1 + level.Calciner * 0.75,
-		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) * (1 + (upgrades.Pyrolysis && 0.2))
-						+ (upgrades.CoalFurnace && level.Smelter * 0.025)
-						+ workers.geologist * happiness * 0.075 * (1 + (upgrades.Geodesy && 0.5)),
-		gold: level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * happiness * 0.005) - level.Mint * 0.025,
-		oil: level.OilWell * 0.1 - level.Calciner * 0.12,
-		titanium: level.Calciner * 0.0025,
+		iron: (level.Smelter * 0.1 + level.Calciner * 0.75) * magnetoBonus,
+		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * happiness * 0.075 * (1 + (upgrades.Geodesy && 0.5))) 
+						* (1 + (upgrades.Pyrolysis && 0.2))
+						* (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) 
+						* magnetoBonus
+						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
+		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * happiness * 0.005)) * magnetoBonus
+					- level.Mint * 0.025,
+		oil: level.OilWell * 0.1 - level.Calciner * 0.12 - level.Magneto * 0.25,
+		titanium: level.Calciner * 0.0025 * magnetoBonus,
 		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
 		faith: level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * 0.0075,
 		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
-		manuscript: 0 + (upgrades.PrintingPress && level.Steamworks * 0.0025),
+		manuscript: 0 + (upgrades.PrintingPress && level.Steamworks * 0.0025) * magnetoBonus,
 		starchart: astroChance * 1,
 	}
 }
@@ -441,6 +448,7 @@ function updateActions() {
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
 		new BuildingAction("OilWell", [[50, "steel"], [25, "gear"], [25, "scaffold"]], 1.15),
 		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"], [1, "blueprint"]], 1.25),
+		new BuildingAction("Magneto", [[10, "alloy"], [5, "gear"], [1, "blueprint"]], 1.25),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Calciner", [[100, "steel"], [15, "titanium"], [5, "blueprint"], [500, "oil"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
