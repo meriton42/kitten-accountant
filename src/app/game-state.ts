@@ -169,6 +169,7 @@ const upgrade = {
 	ReinforcedSaw: x,
 	SteelSaw: x,
 	TitaniumSaw: x,
+	AlloySaw: x,
 	TitaniumAxe: x,
 	AlloyAxe: x,
 	ExpandedBarns: x,

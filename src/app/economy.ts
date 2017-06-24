@@ -95,7 +95,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * happiness 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
-					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15)))
+					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
@@ -448,6 +448,7 @@ function updateActions() {
 		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
 		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
 		new UpgradeAction("SteelSaw", [[52000, "science"], [750, "steel"]]),
+		new UpgradeAction("AlloySaw", [[85000, "science"], [75, "alloy"]]),
 		new UpgradeAction("TitaniumSaw", [[75000, "science"], [500, "titanium"]]),
 		new UpgradeAction("TitaniumAxe", [[38000, "science"], [10, "titanium"]]),
 		new UpgradeAction("AlloyAxe", [[70000, "science"], [25, "alloy"]]),
