@@ -67,6 +67,14 @@ function hyperbolicDecrease(x: number) {
 	return x < 0.75 ? (1 - x) : 0.25 / ((x - 0.5) / 0.25);
 }
 
+function hyperbolicLimit(x: number, limit: number) {
+	let a = x / limit;
+	if (a > 0.75) {
+		a = 1 - 0.25 / ((a - 0.5) / 0.25);
+	}
+	return a * limit;
+}
+
 function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart" | "titanium"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
@@ -141,7 +149,7 @@ function storage(state: GameState): Storage {
 
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45);
-	const harborRatio = 1 + (upgrades.ExpandedCargo && ships * 0.01);
+	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25));
 
 	return {
 		catnip: (5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)),
