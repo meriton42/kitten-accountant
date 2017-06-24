@@ -13,13 +13,13 @@ function updateEconomy() {
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
 		iron: 0, // assigned below
-		coal: 3 * priceMarkup.coal,
+		coal: wage / workerProduction("geologist", "coal") * priceMarkup.coal,
 		gold: 10 * priceMarkup.gold,
 		oil: 5 * priceMarkup.oil,
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
 		culture: priceMarkup.culture, 
-		faith: wage / workerProduction("priest", "faith"),
+		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
@@ -97,14 +97,15 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
 		      - level.Smelter * 0.25,
-		minerals: workers.miner * 0.25 * happiness * (1 + 0.2 * level.Mine)
+		minerals: workers.miner * 0.25 * happiness * (1 + level.Mine * 0.2 + level.Quarry * 0.35)
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
 		iron: level.Smelter * 0.1 + level.Calciner * 0.75,
-		coal: 0 + (upgrades.DeepMining && level.Mine * 0.015) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) * (1 + (upgrades.Pyrolysis && 0.2))
-						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
-		gold: level.Smelter * 0.005 - level.Mint * 0.025,
+		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075) * (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) * (1 + (upgrades.Pyrolysis && 0.2))
+						+ (upgrades.CoalFurnace && level.Smelter * 0.025)
+						+ workers.geologist * happiness * 0.075 * (1 + (upgrades.Geodesy && 0.5)),
+		gold: level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * happiness * 0.005) - level.Mint * 0.025,
 		oil: level.OilWell * 0.1 - level.Calciner * 0.12,
 		titanium: level.Calciner * 0.0025,
 		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
@@ -428,6 +429,7 @@ function updateActions() {
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
+		new BuildingAction("Quarry", [[50, "scaffold"], [125, "steel"], [1000, "slab"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
 		new BuildingAction("OilWell", [[50, "steel"], [25, "gear"], [25, "scaffold"]], 1.15),
 		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"], [1, "blueprint"]], 1.25),
@@ -459,6 +461,7 @@ function updateActions() {
 		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
 		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
 		new UpgradeAction("AlloyArmor", [[50000, "science"], [25, "alloy"]]),
+		new UpgradeAction("Geodesy", [[250, "titanium"], [500, "starchart"], [90000, "science"]]),
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),

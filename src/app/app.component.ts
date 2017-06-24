@@ -102,6 +102,12 @@ export class AppComponent implements OnInit {
       if (state.priceMarkup.blueprint > 1) {
         state.priceMarkup.blueprint = 1;
       }
+      if (state.priceMarkup.faith > 1) {
+        state.priceMarkup.faith = 1;
+      }
+      if (state.priceMarkup.coal > 1) {
+        state.priceMarkup.coal = 1;
+      }
       this.update();
       return false;
     }

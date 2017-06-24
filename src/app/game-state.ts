@@ -121,6 +121,7 @@ const userPricedResources: {[R in Res]?} = {
 	gold: x,
 	oil: x,
 	culture: x,
+	faith: x,
 	starchart: x,
 	blueprint: x,
 }
@@ -132,6 +133,7 @@ const job = {
 	hunter: x,
 	scholar: x,
 	priest: x,
+	geologist: x,
 }
 const building = {
 	CatnipField: x,
@@ -147,6 +149,7 @@ const building = {
 	Warehouse: x,
 	Harbor: x,
 	Mine: x,
+	Quarry: x,
 	LumberMill: x,
 	OilWell: x,
 	Steamworks: x,
@@ -188,6 +191,7 @@ const upgrade = {
 	HuntingArmor: x,
 	SteelArmor: x,
 	AlloyArmor: x,
+	Geodesy: x,
 	CoalFurnace: x,
 	DeepMining: x,
 	Pyrolysis: x,
