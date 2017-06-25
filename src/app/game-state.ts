@@ -145,6 +145,7 @@ const building = {
 	Library: x,
 	Academy: x,
 	Observatory: x,
+	BioLab: x,
 	Barn: x,
 	Warehouse: x,
 	Harbor: x,

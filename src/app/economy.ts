@@ -90,12 +90,12 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	if (idle > 0) {
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
-	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25;
+	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25 * level.BioLab * 0.70;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5;
-	const energyConsumption = level.Calciner * 1;
+	const energyConsumption = level.Calciner * 1 + level.BioLab * 1;
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 
@@ -443,6 +443,7 @@ function updateActions() {
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
 		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
 		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
+		new BuildingAction("BioLab", [[100, "slab"], [25, "alloy"], [1500, "science"]], 1.10),
 		new BuildingAction("Mine", [[100, "wood"]], 1.15),
 		new BuildingAction("Quarry", [[50, "scaffold"], [125, "steel"], [1000, "slab"]], 1.15),
 		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
