@@ -82,6 +82,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
+	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15));  // the more kittens, the older the average kitten (assuming no deaths)
+	const workerEfficiency = happiness * workerProficiency;
 
 	let idle = kittens;
 	for (let j in workers) {
@@ -101,31 +103,31 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
-				    + workers.farmer * happiness * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
+				    + workers.farmer * workerEfficiency * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
 					) * (1 + level.Aqueduct * 0.03)
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
-		wood: workers.woodcutter * 0.09 * happiness 
+		wood: workers.woodcutter * 0.09 * workerEfficiency 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
 					* magnetoBonus
 		      - level.Smelter * 0.25,
-		minerals: workers.miner * 0.25 * happiness * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * magnetoBonus
+		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * magnetoBonus
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
-		catpower: workers.hunter * 0.3 * happiness * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
+		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
 		iron: (level.Smelter * 0.1 + level.Calciner * 0.75) * magnetoBonus,
-		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * happiness * 0.075 * (1 + (upgrades.Geodesy && 0.5))) 
+		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * 0.075 * (1 + (upgrades.Geodesy && 0.5))) 
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) 
 						* magnetoBonus
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
-		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * happiness * 0.005)) * magnetoBonus
+		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * 0.005)) * magnetoBonus
 					- level.Mint * 0.025,
 		oil: level.OilWell * 0.1 - level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: level.Calciner * 0.0025 * magnetoBonus,
-		science: workers.scholar * 0.18 * happiness * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
+		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
-		faith: level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * 0.0075,
+		faith: level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075,
 		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
@@ -486,6 +488,8 @@ function updateActions() {
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
+		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
+
 		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
 
 		new TradeshipAction(),

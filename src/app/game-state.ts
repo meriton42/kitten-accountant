@@ -201,6 +201,8 @@ const upgrade = {
 	HighPressureEngine: x,
 	Astrolabe: x,
 	TitaniumReflectors: x,
+	Logistics: x,
+
 	SunAltar: x,
 }
 
