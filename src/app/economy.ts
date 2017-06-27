@@ -31,6 +31,7 @@ function updateEconomy() {
 		new Hunt(),
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
+		new CraftingConversion("concrete", [[2500, "slab"], [25, "steel"]]),
 		new ZebraTrade(),
 		new CraftingConversion("steel", [[100, "coal"], [100, "iron"]]),
 		new CraftingConversion("gear", [[15, "steel"]]),
@@ -97,7 +98,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5;
-	const energyConsumption = level.Calciner * 1 + level.BioLab * 1;
+	const energyConsumption = level.Calciner * 1 + level.BioLab * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1);
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 
@@ -123,7 +124,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * 0.005)) * magnetoBonus
 					- level.Mint * 0.025,
-		oil: level.OilWell * 0.1 - level.Calciner * 0.12 - level.Magneto * 0.25,
+		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45)) - level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: level.Calciner * 0.0025 * magnetoBonus,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
@@ -156,8 +157,8 @@ type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
 	let {level, upgrades, ships} = state;
 
-	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00);
-	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45);
+	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcretePillars && 0.05);
+	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25));
 
 	return {
@@ -278,7 +279,7 @@ class CraftingConversion extends Conversion {
 
 	produced(state: GameState) {
 		const produced: {[R in Res]?: number} = {};
-		produced[this.product] = 1 + state.level.Workshop * 0.06;
+		produced[this.product] = 1 + state.level.Workshop * 0.06 + state.level.Factory * 0.05;
 		return produced;
 	}
 }
@@ -454,6 +455,7 @@ function updateActions() {
 		new BuildingAction("Magneto", [[10, "alloy"], [5, "gear"], [1, "blueprint"]], 1.25),
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Calciner", [[100, "steel"], [15, "titanium"], [5, "blueprint"], [500, "oil"]], 1.15),
+		new BuildingAction("Factory", [[2000, "titanium"], [2500, "plate"], [15, "concrete"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 		new BuildingAction("Chapel", [[2000, "minerals"], [250, "culture"], [250, "parchment"]], 1.15),
 		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"], [50, "gold"]], 1.15), 
@@ -488,6 +490,7 @@ function updateActions() {
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
+		new UpgradeAction("Pumpjack", [[250, "titanium"], [125, "gear"], [100000, "science"]]),
 		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
 
 		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
@@ -512,7 +515,8 @@ function storageActions(state: GameState) {
 		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
 		new UpgradeAction("AlloyBarns", [[75000, "science"], [20, "alloy"], [750, "plate"]], state),
 		new UpgradeAction("TitaniumWarehouses", [[70000, "science"], [50, "titanium"], [500, "steel"], [500, "scaffold"]], state),
-		new UpgradeAction("AlloyWarehouses", [[90000, "science"], [750, "titanium"], [50, "alloy"]]),
+		new UpgradeAction("AlloyWarehouses", [[90000, "science"], [750, "titanium"], [50, "alloy"]], state),
+		new UpgradeAction("ConcretePillars", [[100000, "science"], [50, "concrete"]], state),
 	].filter(a => a.available(state));
 }
 
