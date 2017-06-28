@@ -119,12 +119,12 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		iron: (level.Smelter * 0.1 + level.Calciner * 0.75) * magnetoBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * 0.075 * (1 + (upgrades.Geodesy && 0.5))) 
 						* (1 + (upgrades.Pyrolysis && 0.2))
-						* (1 - (level.Steamworks && 0.8) + (upgrades.HighPressureEngine && 0.2)) 
+						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
 						* magnetoBonus
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
 		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * 0.005)) * magnetoBonus
 					- level.Mint * 0.025,
-		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45)) - level.Calciner * 0.12 - level.Magneto * 0.25,
+		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) - level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: level.Calciner * 0.0025 * magnetoBonus,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
@@ -132,7 +132,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
-		manuscript: 0 + (upgrades.PrintingPress && level.Steamworks * 0.0025) * magnetoBonus,
+		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075)) * magnetoBonus,
 		starchart: astroChance * 1,
 	}
 }
@@ -487,11 +487,14 @@ function updateActions() {
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
+		new UpgradeAction("OffsetPress", [[250, "gear"], [15000, "oil"], [100000, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
+		new UpgradeAction("FuelInjectors", [[250, "gear"], [20000, "oil"], [100000, "science"]]),
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
 		new UpgradeAction("Pumpjack", [[250, "titanium"], [125, "gear"], [100000, "science"]]),
 		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
+		new UpgradeAction("OilRefinery", [[1250, "titanium"], [500, "gear"], [125000, "science"]]),
 
 		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
 

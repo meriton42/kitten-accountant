@@ -201,11 +201,14 @@ const upgrade = {
 	DeepMining: x,
 	Pyrolysis: x,
 	PrintingPress: x,
+	OffsetPress: x,
 	HighPressureEngine: x,
+	FuelInjectors: x,
 	Astrolabe: x,
 	TitaniumReflectors: x,
 	Pumpjack: x,
 	Logistics: x,
+	OilRefinery: x,
 
 	SunAltar: x,
 }
