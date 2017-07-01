@@ -23,19 +23,19 @@ function updateEconomy() {
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
-	price.iron = (0.25 * price.wood + 0.5 * price.minerals) / 0.1 * priceMarkup.iron;
 
 	const huntingBonus = 0;
 	conversions = [
 		// the constructor sets the price of the product
+		new Smelting(),
 		new Hunt(),
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
-		new CraftingConversion("concrete", [[2500, "slab"], [25, "steel"]]),
+		new CraftingConversion("plate", [[125, "iron"]]),
 		new ZebraTrade(),
 		new CraftingConversion("steel", [[100, "coal"], [100, "iron"]]),
 		new CraftingConversion("gear", [[15, "steel"]]),
-		new CraftingConversion("plate", [[125, "iron"]]),
+		new CraftingConversion("concrete", [[2500, "slab"], [25, "steel"]]),
 		new CraftingConversion("alloy", [[75, "steel"], [10, "titanium"]]),
 		new CraftingConversion("scaffold", [[50, "beam"]]),
 		new CraftingConversion("parchment", [[175, "fur"]]),
@@ -116,12 +116,12 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 + level.Calciner * 0.75) * magnetoBonus,
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 1)) + level.Calciner * 0.75) * magnetoBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * 0.075 * (1 + (upgrades.Geodesy && 0.5))) 
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
 						* magnetoBonus
-						+ (upgrades.CoalFurnace && level.Smelter * 0.025),
+						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 1))),
 		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * 0.005)) * magnetoBonus
 					- level.Mint * 0.025,
 		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) - level.Calciner * 0.12 - level.Magneto * 0.25,
@@ -140,6 +140,10 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 function production(state: GameState) : {[R in Res]: number} {
 	const production: {[R in Res]: number} = <any>basicProduction(state);
 	for (const conversion of conversions) {
+		if (!conversion.instanteneous) {
+			continue; // the conversion is ongoing and included in basicProduction (like smelting iron)
+		}
+
 		const frequency = production[conversion.investment.expeditures[0].res] * state.conversionProportion[conversion.product]
 										/ conversion.investment.expeditures[0].amount;
 		for (const xp of conversion.investment.expeditures) {
@@ -193,7 +197,7 @@ export class Investment {
 		expenses: {name: string, cost: number}[] = [];
 
 		add(xp: Expediture) {
-			if (Math.abs(xp.cost) > 1e-6) {
+			if (Math.abs(xp.cost) > 1e-6 || Math.abs(xp.amount) > 1e-6) {
 				this.expeditures.push(xp);
 				this.cost += xp.cost;
 			}
@@ -215,29 +219,51 @@ export abstract class Conversion extends CostBenefitAnalysis {
 	instanteneous = true;
 
 	/** also sets the price of the product! */
-	constructor(public product: ConvertedRes, resourceInvestment: [number, Res][]) {
+	constructor(public product: ConvertedRes | "iron", resourceInvestment: [number, Res][]) {
 		super();
+		let cost = 0;
+		let benefit = 0;
 		for (const [number, res] of resourceInvestment) {
 			this.investment.add(new Expediture(number, res));
+			cost += number * price[res];
 		}
 
 		const currentlyProduced = this.produced(state);		
 		for (const res in currentlyProduced) {
 			if (res != this.product) {
-				this.return.add(new Expediture(currentlyProduced[res], <Res>res));
+				const p = currentlyProduced[res];
+				if (p) {
+					this.return.add(new Expediture(p, <Res>res));
+					if (p < 0) {
+						cost -= p * price[res];
+					} else {
+						benefit += p * price[res];
+					}
+				}
 			}
 		}
-		price[this.product] = Math.max(0, (this.investment.cost - this.return.cost) / currentlyProduced[this.product]) * (state.priceMarkup[this.product] || 1);
+		price[this.product] = Math.max(0, (cost * (state.priceMarkup[product] || 1) - benefit) / currentlyProduced[this.product]);
 		this.return.add(new Expediture(currentlyProduced[this.product], this.product));
 	}
 
 	abstract produced(state: GameState): {[R in Res]?: number};
 }
 
+class Smelting extends Conversion {
+	constructor() {
+		super("iron", []);
+		this.instanteneous = false;
+	}
+
+	produced(state: GameState) {
+		return delta(basicProduction, s => s.level.Smelter++);
+	}
+}
+
 class Hunt extends Conversion {
 	constructor() {
-		super("fur", [[100, "catpower"]]);
 		price.ivory = 0;
+		super("fur", [[100, "catpower"]]);
 	}
 
 	produced(state: GameState){
@@ -486,6 +512,7 @@ function updateActions() {
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
+		new UpgradeAction("ElectrolyticSmelting", [[2000, "titanium"], [100000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("OffsetPress", [[250, "gear"], [15000, "oil"], [100000, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),

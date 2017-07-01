@@ -200,6 +200,7 @@ const upgrade = {
 	CoalFurnace: x,
 	DeepMining: x,
 	Pyrolysis: x,
+	ElectrolyticSmelting: x,
 	PrintingPress: x,
 	OffsetPress: x,
 	HighPressureEngine: x,
