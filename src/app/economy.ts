@@ -116,16 +116,16 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 1)) + level.Calciner * 0.75) * magnetoBonus,
-		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * 0.075 * (1 + (upgrades.Geodesy && 0.5))) 
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 1)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1))) * magnetoBonus,
+		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
 						* magnetoBonus
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 1))),
-		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * 0.005)) * magnetoBonus
+		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025)))) * magnetoBonus
 					- level.Mint * 0.025,
 		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) - level.Calciner * 0.12 - level.Magneto * 0.25,
-		titanium: level.Calciner * 0.0025 * magnetoBonus,
+		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3)) * magnetoBonus,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
 		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
 		faith: level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075,
@@ -509,10 +509,12 @@ function updateActions() {
 		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
 		new UpgradeAction("AlloyArmor", [[50000, "science"], [25, "alloy"]]),
 		new UpgradeAction("Geodesy", [[250, "titanium"], [500, "starchart"], [90000, "science"]]),
+		new UpgradeAction("MiningDrill", [[1750, "titanium"], [750, "steel"], [100000, "science"]]),
 		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
 		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
 		new UpgradeAction("ElectrolyticSmelting", [[2000, "titanium"], [100000, "science"]]),
+		new UpgradeAction("Oxidation", [[5000, "steel"], [100000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("OffsetPress", [[250, "gear"], [15000, "oil"], [100000, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
