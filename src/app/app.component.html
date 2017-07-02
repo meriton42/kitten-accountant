@@ -33,13 +33,15 @@
       <td (click)="increasePrice(r,1)" (contextmenu)="increasePrice(r, -1)">
         {{price[r] | number:'1.2-2'}}
       </td>
-      <td style="width: 1em; text-align: center; position: relative">
-        <cost-benefit-analysis *ngIf="conversions[r]" [cba]="conversions[r]" class="tooltip"></cost-benefit-analysis>
-        <div *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)">
+      <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
           <cost-benefit-analysis *ngIf="r == 'fur'" [cba]="furReport" class="tooltip"></cost-benefit-analysis>
           {{luxury[r] ? 'A' : ''}}
-        </div>
       </td>
+      <ng-template #conversionBlock>
+        <td style="width: 1em; position: relative">
+          <cost-benefit-analysis *ngIf="conversions[r]" [cba]="conversions[r]" class="tooltip"></cost-benefit-analysis>
+        </td>
+      </ng-template>
     </tr>
   </tbody>
   <tbody>
