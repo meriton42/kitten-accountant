@@ -15,6 +15,7 @@ export interface GameState {
 	showResearchedUpgrades: boolean;
 	ships: number;
 	karma: number;
+	paragon: number;
 }
 
 function readGameState() : GameState {
@@ -48,6 +49,7 @@ function readGameState() : GameState {
 	}
 	state.ships = state.ships || 0;
 	state.karma = state.karma || 0;
+	state.paragon = state.paragon || 0;
 	return state;
 }
 

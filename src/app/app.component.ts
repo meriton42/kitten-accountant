@@ -93,6 +93,15 @@ export class AppComponent implements OnInit {
     return state.ships;
   }
 
+  set paragon(newValue: number) {
+    state.paragon = newValue;
+    this.update();
+  }
+
+  get paragon() {
+    return state.paragon;
+  }
+
   increasePrice(res: Res, count: number) {
     if (userPricedResourceNames.includes(<any>res)) {
       state.priceMarkup[res] *= Math.pow(1.15, count);

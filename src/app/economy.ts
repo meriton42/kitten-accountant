@@ -93,6 +93,10 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	if (idle > 0) {
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
+
+	const paragonBonus = 1 + 0.01 * hyperbolicLimit(state.paragon, 200);
+	const autoParagonBonus = 1 + 0.0005 * hyperbolicLimit(state.paragon, 200);
+
 	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25 * level.BioLab * 0.70;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, level.Observatory * 0.01);
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
@@ -105,34 +109,34 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * workerEfficiency * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
-					) * (1 + level.Aqueduct * 0.03)
+					) * (1 + level.Aqueduct * 0.03) * paragonBonus
 				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
 		wood: workers.woodcutter * 0.09 * workerEfficiency 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
-					* magnetoBonus
+					* paragonBonus * magnetoBonus
 		      - level.Smelter * 0.25,
-		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * magnetoBonus
+		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * paragonBonus * magnetoBonus
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
-		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25))
+		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)) * paragonBonus
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1))) * magnetoBonus,
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1))) * autoParagonBonus * magnetoBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
-						* magnetoBonus
-						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))),
-		gold: (level.Smelter * 0.005 + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025)))) * magnetoBonus
+						* paragonBonus * magnetoBonus
+						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))) * autoParagonBonus,
+		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus
 					- level.Mint * 0.025,
-		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) - level.Calciner * 0.12 - level.Magneto * 0.25,
-		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3)) * magnetoBonus,
-		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) + astroChance * (30 * scienceBonus),
-		culture: level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25,
-		faith: level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075,
+		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) * paragonBonus - level.Calciner * 0.12 - level.Magneto * 0.25,
+		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3)) * autoParagonBonus * magnetoBonus,
+		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
+		culture: (level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25) * paragonBonus,
+		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * paragonBonus,
 		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
-		unicorn: level.UnicornPasture * 0.005 + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
-		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075)) * magnetoBonus,
+		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
+		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075)),
 		starchart: astroChance * 1,
 	}
 }
@@ -164,15 +168,15 @@ function storage(state: GameState): Storage {
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25));
-
+	const paragonBonus = 1 + state.paragon * 0.001;
 	return {
-		catnip: (5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)),
-		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio,
-		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio,
-		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio,
+		catnip: (5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)) * paragonBonus,
+		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio * paragonBonus,
+		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio * paragonBonus,
+		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio * paragonBonus,
 		coal: 0,
-		oil: level.OilWell * 1500,
-		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio,
+		oil: level.OilWell * 1500 * paragonBonus,
+		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok
