@@ -312,10 +312,15 @@ class CraftingConversion extends Conversion {
 	produced(state: GameState) {
 		const {level, upgrades} = state;
 		const produced: {[R in Res]?: number} = {};
-		produced[this.product] = 1 + level.Workshop * 0.06 + level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01))
+		produced[this.product] = craftRatio(state)
 													 + (this.product == "blueprint" && upgrades.CADsystem && 0.01 * (level.Library + level.Academy + level.Observatory + level.BioLab));
 		return produced;
 	}
+}
+
+function craftRatio(state: GameState) {
+	const {level, upgrades} = state;
+	return 1 + level.Workshop * 0.06 + level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01))
 }
 
 export abstract class Action extends CostBenefitAnalysis {
@@ -479,10 +484,10 @@ class TradeshipAction extends Action {
 	}
 
 	applyTo(state: GameState) {
-		state.ships += 1 + state.level.Workshop * 0.06;
+		state.ships += craftRatio(state);
 	}
 	undo(state: GameState) {
-		state.ships -= 1 + state.level.Workshop * 0.06;
+		state.ships -= craftRatio(state);
 	}
 	stateInfo() {
 		return "";
