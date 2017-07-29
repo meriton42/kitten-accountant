@@ -101,7 +101,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
-	const energyProduction = level.Steamworks * 1 + level.Magneto * 5;
+	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5;
 	const energyConsumption = level.Calciner * 1 + level.BioLab * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1);
 	const energyBonus = Math.max(0, Math.min(1.75, energyProduction / energyConsumption));
 
@@ -111,7 +111,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * workerEfficiency * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
 					) * (1 + level.Aqueduct * 0.03) * paragonBonus
-				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015),
+				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015) * (1 - (upgrades.RoboticAssistance && 0.25)),
 		wood: workers.woodcutter * 0.09 * workerEfficiency 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
@@ -121,7 +121,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)) * paragonBonus
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1))) * autoParagonBonus * magnetoBonus,
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75))) * autoParagonBonus * magnetoBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
@@ -130,7 +130,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus
 					- level.Mint * 0.025,
 		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) * paragonBonus - level.Calciner * 0.12 - level.Magneto * 0.25,
-		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3)) * autoParagonBonus * magnetoBonus,
+		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) * autoParagonBonus * magnetoBonus,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
 		culture: (level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
 		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * paragonBonus,
@@ -419,9 +419,11 @@ export abstract class Action extends CostBenefitAnalysis {
 
 const obsoletes: {[B in Building]?: Building} = {
 	BroadcastTower: "Amphitheatre",
+	HydroPlant: "Aqueduct",
 }
 const obsoletedBy: {[B in Building]?: Building} = {
 	Amphitheatre: "BroadcastTower",
+	Aqueduct: "HydroPlant",
 }
 
 class BuildingAction extends Action {
@@ -500,6 +502,7 @@ function updateActions() {
 		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.12),
+		new BuildingAction("HydroPlant", [[100, "concrete"], [2500, "titanium"]], 1.15),
 		new BuildingAction("Hut", [[5, "wood"]], 2.5 - (upgrades.IronWoodHuts && 0.5)),
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Mansion", [[185, "slab"], [75, "steel"], [25, "titanium"]], 1.15),
@@ -550,6 +553,7 @@ function updateActions() {
 		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
 		new UpgradeAction("ElectrolyticSmelting", [[2000, "titanium"], [100000, "science"]]),
 		new UpgradeAction("Oxidation", [[5000, "steel"], [100000, "science"]]),
+		new UpgradeAction("RotaryKiln", [[5000, "titanium"], [500, "gear"], [145000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("OffsetPress", [[250, "gear"], [15000, "oil"], [100000, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
@@ -563,6 +567,7 @@ function updateActions() {
 		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
 		new UpgradeAction("OilRefinery", [[1250, "titanium"], [500, "gear"], [125000, "science"]]),
 		// new UpgradeAction("Telecommunication", [[5000, "titanium"], [50, "uranium"], [150000, "science"]]),
+		new UpgradeAction("RoboticAssistance", [[10000, "steel"], [250, "gear"], [100000, "science"]]),
 
 		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
 

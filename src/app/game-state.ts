@@ -142,6 +142,7 @@ const building = {
 	CatnipField: x,
 	Pasture: x,
 	Aqueduct: x,
+	HydroPlant: x,
 	Hut: x,
 	LogHouse: x,
 	Mansion: x,
@@ -207,6 +208,7 @@ const upgrade = {
 	Pyrolysis: x,
 	ElectrolyticSmelting: x,
 	Oxidation: x,
+	RotaryKiln: x,
 	PrintingPress: x,
 	OffsetPress: x,
 	HighPressureEngine: x,
@@ -220,6 +222,7 @@ const upgrade = {
 	Logistics: x,
 	OilRefinery: x,
 	Telecommunication: x,
+	RoboticAssistance: x,
 
 	SunAltar: x,
 }
