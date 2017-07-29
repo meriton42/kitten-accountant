@@ -102,7 +102,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5;
-	const energyConsumption = level.Calciner * 1 + level.BioLab * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1);
+	const energyConsumption = level.Calciner * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1) + (upgrades.BiofuelProcessing && level.BioLab * 1);
 	const energyBonus = Math.max(0, Math.min(1.75, energyProduction / energyConsumption));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
@@ -111,7 +111,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * workerEfficiency * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
 					) * (1 + level.Aqueduct * 0.03) * paragonBonus
-				  - kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015) * (1 - (upgrades.RoboticAssistance && 0.25)),
+					- kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015) * (1 - (upgrades.RoboticAssistance && 0.25))
+					- (upgrades.BiofuelProcessing && level.BioLab * 5),
 		wood: workers.woodcutter * 0.09 * workerEfficiency 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
@@ -129,7 +130,8 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))) * autoParagonBonus,
 		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus
 					- level.Mint * 0.025,
-		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) * paragonBonus - level.Calciner * 0.12 - level.Magneto * 0.25,
+		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus 
+					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) * autoParagonBonus * magnetoBonus,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
 		culture: (level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
@@ -563,6 +565,7 @@ function updateActions() {
 		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
 		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
 		new UpgradeAction("Pumpjack", [[250, "titanium"], [125, "gear"], [100000, "science"]]),
+		new UpgradeAction("BiofuelProcessing", [[1250, "titanium"], [150000, "science"]]),
 		new UpgradeAction("CADsystem", [[750, "titanium"], [125000, "science"]]),
 		new UpgradeAction("SETI", [[250, "titanium"], [125000, "science"]]),
 		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),

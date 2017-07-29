@@ -220,6 +220,7 @@ const upgrade = {
 	Astrolabe: x,
 	TitaniumReflectors: x,
 	Pumpjack: x,
+	BiofuelProcessing: x,
 	CADsystem: x,
 	SETI: x,
 	Logistics: x,
