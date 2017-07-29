@@ -166,8 +166,8 @@ type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
 	let {level, upgrades, ships} = state;
 
-	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcretePillars && 0.05);
-	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcretePillars && 0.05);
+	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
+	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25));
 	const paragonBonus = 1 + state.paragon * 0.001;
 	return {
@@ -503,7 +503,7 @@ function updateActions() {
 		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
 		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.12),
 		new BuildingAction("HydroPlant", [[100, "concrete"], [2500, "titanium"]], 1.15),
-		new BuildingAction("Hut", [[5, "wood"]], 2.5 - (upgrades.IronWoodHuts && 0.5)),
+		new BuildingAction("Hut", [[5, "wood"]], 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3)),
 		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
 		new BuildingAction("Mansion", [[185, "slab"], [75, "steel"], [25, "titanium"]], 1.15),
 		new BuildingAction("Library", [[25, "wood"]], 1.15),
@@ -540,6 +540,7 @@ function updateActions() {
 		new UpgradeAction("TitaniumAxe", [[38000, "science"], [10, "titanium"]]),
 		new UpgradeAction("AlloyAxe", [[70000, "science"], [25, "alloy"]]),
 		new UpgradeAction("IronWoodHuts", [[30000, "science"], [15000, "wood"], [3000, "iron"]]),
+		new UpgradeAction("ConcreteHuts", [[125000, "science"], [45, "concrete"], [3000, "titanium"]]),
 		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
 		new UpgradeAction("Crossbow", [[12000, "science"], [1500, "iron"]]),
 		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
@@ -590,8 +591,10 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ExpandedCargo", [[55000, "science"], [15, "blueprint"]], state),
 		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
 		new UpgradeAction("AlloyBarns", [[75000, "science"], [20, "alloy"], [750, "plate"]], state),
+		new UpgradeAction("ConcreteBarns", [[100000, "science"], [45, "concrete"], [2000, "titanium"]], state),
 		new UpgradeAction("TitaniumWarehouses", [[70000, "science"], [50, "titanium"], [500, "steel"], [500, "scaffold"]], state),
 		new UpgradeAction("AlloyWarehouses", [[90000, "science"], [750, "titanium"], [50, "alloy"]], state),
+		new UpgradeAction("ConcreteWarehouses", [[100000, "science"], [1250, "titanium"], [35, "concrete"]], state),
 		new UpgradeAction("Refrigeration", [[125000, "science"], [2500, "titanium"], [15, "blueprint"]], state),
 		new UpgradeAction("ConcretePillars", [[100000, "science"], [50, "concrete"]], state),
 	].filter(a => a.available(state));
