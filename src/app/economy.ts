@@ -99,7 +99,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 
 	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25 * level.BioLab * 0.70;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
-	const maxCatpower = level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50;
+	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50) * (1 + state.paragon * 0.001);
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5;
 	const energyConsumption = level.Calciner * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1) + (upgrades.BiofuelProcessing && level.BioLab * 1);
