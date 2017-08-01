@@ -1,6 +1,6 @@
 import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames } from "app/game-state";
 
-let currentProduction: {[R in Res]: number};
+let currentBasicProduction: {[R in BasicRes]: number};
 let price: {[R in Res]: number};
 let conversions: Conversion[];
 let actions: Action[];
@@ -405,7 +405,7 @@ export abstract class Action extends CostBenefitAnalysis {
 
 	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
-			if (xp.res != "catnip" && xp.res != "wood" && basicResourceNames.includes(<any>xp.res) && !currentProduction[xp.res]) {
+			if (xp.res != "catnip" && xp.res != "wood" && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
 				return false;
 			}
 		}
@@ -617,11 +617,11 @@ class FurConsumptionReport extends CostBenefitAnalysis {
 
 export function economyReport() {
 	updateEconomy();
-	currentProduction = production(state);
+	currentBasicProduction = basicProduction(state);
 	updateActions();
 
 	return {
-		production: currentProduction, 
+		production: production(state), 
 		price, 
 		conversions,
 		actions, 
