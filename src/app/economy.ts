@@ -103,7 +103,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5;
 	const energyConsumption = level.Calciner * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1) + (upgrades.BiofuelProcessing && level.BioLab * 1);
-	const energyBonus = Math.max(0, Math.min(1.75, energyProduction / energyConsumption));
+	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 
