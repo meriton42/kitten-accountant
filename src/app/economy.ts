@@ -37,6 +37,7 @@ function updateEconomy() {
 		new CraftingConversion("slab", [[250, "minerals"]]),
 		new CraftingConversion("plate", [[125, "iron"]]),
 		new ZebraTrade(),
+		new DragonTrade(),
 		new CraftingConversion("steel", [[100, "coal"], [100, "iron"]]),
 		new CraftingConversion("gear", [[15, "steel"]]),
 		new CraftingConversion("concrete", [[2500, "slab"], [25, "steel"]]),
@@ -76,7 +77,7 @@ function hyperbolicLimit(x: number, limit: number) {
 	return a * limit;
 }
 
-function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart" | "titanium"]: number} {
+function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart" | "titanium" | "uranium"]: number} {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1;
@@ -101,11 +102,12 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50) * (1 + state.paragon * 0.001);
 
-	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5;
+	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * 10;
 	const energyConsumption = level.Calciner * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1) + (upgrades.BiofuelProcessing && level.BioLab * 1);
 	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
+	const reactorBonus = 1 + level.Reactor * 0.05;
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -116,23 +118,25 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		wood: workers.woodcutter * 0.09 * workerEfficiency 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
-					* paragonBonus * magnetoBonus
+					* paragonBonus * magnetoBonus * reactorBonus
 		      - level.Smelter * 0.25,
-		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * paragonBonus * magnetoBonus
+		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * paragonBonus * magnetoBonus * reactorBonus
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)) * paragonBonus
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75))) * autoParagonBonus * magnetoBonus,
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75))) * autoParagonBonus * magnetoBonus * reactorBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
-						* paragonBonus * magnetoBonus
+						* paragonBonus * magnetoBonus * reactorBonus
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))) * autoParagonBonus,
-		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus
+		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus * reactorBonus
 					- level.Mint * 0.025,
-		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus 
+		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
-		titanium: level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) * autoParagonBonus * magnetoBonus,
+		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) 
+					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
+					* autoParagonBonus * magnetoBonus * reactorBonus,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
 		culture: (level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
 		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * paragonBonus,
@@ -141,6 +145,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075)),
 		starchart: astroChance * 1,
+		uranium: level.Reactor * -0.005,
 	}
 }
 
@@ -152,7 +157,7 @@ function production(state: GameState) : {[R in Res]: number} {
 		}
 
 		const frequency = production[conversion.investment.expeditures[0].res] * state.conversionProportion[conversion.product]
-										/ conversion.investment.expeditures[0].amount;
+										/ conversion.investment.expeditures[0].amount;										
 		for (const xp of conversion.investment.expeditures) {
 			production[xp.res] -= xp.amount * frequency;
 		}
@@ -170,7 +175,7 @@ function storage(state: GameState): Storage {
 
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.ConcretePillars && 0.05);
-	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25));
+	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25 + (upgrades.ReactorVessel && level.Reactor * 0.05)));
 	const paragonBonus = 1 + state.paragon * 0.001;
 	return {
 		catnip: (5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) 
@@ -284,25 +289,59 @@ class Hunt extends Conversion {
 	}
 }
 
-class ZebraTrade extends Conversion {
-	constructor() {
-		super("titanium", [[15, "gold"], [50, "catpower"], [50, "slab"]]);
+abstract class Trade extends Conversion {
+	static opportunityCosts: [[number, Res]] = [[15, "gold"], [50, "catpower"]];
+
+	constructor(product: ConvertedRes, input: [[number, Res]], private attitude: "friendly" | "neutral" | "hostile", private standing: number) {
+		super(product, Trade.opportunityCosts.concat(input));
 	}
 
 	produced(state: GameState) {
-		const {level, ships} = state;
-		const hostileChance = Math.max(0, 0.30 - level.TradePost * 0.0035);
-		const expectedSuccess = 1 - hostileChance;
-		const tradeRatio = 1 + level.TradePost * 0.015;
+		const {level} = state;
+
+		let output = this.output(state, 1 + level.TradePost * 0.015);
+
+		const friendlyChance = this.attitude == "friendly" ? Math.max(1, this.standing + level.TradePost * 0.0035 / 2) : 0;
+		const hostileChance = this.attitude == "hostile" ? Math.max(0, this.standing - level.TradePost * 0.0035) : 0;
+		const expectedSuccess = 1 - hostileChance + friendlyChance * 0.25;
+
+		for (const k in output) {
+			output[k] *= expectedSuccess;
+		}
+		output["blueprint"] = expectedSuccess * 0.1 * 1;
+		return output;
+	}
+
+	abstract output(state: GameState, tradeRatio: number): {[R in Res]?: number};
+}
+
+class ZebraTrade extends Trade {
+	constructor() {
+		super("titanium", [[50, "slab"]], "hostile", 0.3);
+	}
+
+	output(state: GameState, tradeRatio: number) {
+		const {ships} = state;
 
 		const titaniumChance = Math.min(1, 0.15 + ships * 0.0035);
 		const titaniumAmount = 1.5 + ships * 0.03;
 
 		return {
-			titanium: expectedSuccess * titaniumChance * titaniumAmount,
-			plate: expectedSuccess * 0.65 * 2 * 1.05 * tradeRatio,
-			iron: expectedSuccess * 1 * 300 * 1.00 * tradeRatio,
-			blueprint: expectedSuccess * 0.1 * 1,
+			titanium: titaniumChance * titaniumAmount,
+			plate: 0.65 * 2 * 1.05 * tradeRatio,
+			iron: 1 * 300 * 1.00 * tradeRatio,
+		}
+	}
+}
+
+class DragonTrade extends Trade {
+	constructor() {
+		super("uranium", [[250, "titanium"]], "neutral", 0.25);
+	}
+
+	output(state: GameState, tradeRatio: number) {
+		return {
+			uranium: 0.95 * 1 * tradeRatio,
 		}
 	}
 }
@@ -522,6 +561,7 @@ function updateActions() {
 		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
 		new BuildingAction("Calciner", [[100, "steel"], [15, "titanium"], [5, "blueprint"], [500, "oil"]], 1.15),
 		new BuildingAction("Factory", [[2000, "titanium"], [2500, "plate"], [15, "concrete"]], 1.15),
+		new BuildingAction("Reactor", [[3500, "titanium"], [5000, "plate"], [50, "concrete"], [25, "blueprint"]], 1.15),
 		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
 		new BuildingAction("BroadcastTower", [[1250, "iron"], [75, "titanium"]], 1.18),
 		new BuildingAction("Chapel", [[2000, "minerals"], [250, "culture"], [250, "parchment"]], 1.15),
@@ -558,6 +598,7 @@ function updateActions() {
 		new UpgradeAction("ElectrolyticSmelting", [[2000, "titanium"], [100000, "science"]]),
 		new UpgradeAction("Oxidation", [[5000, "steel"], [100000, "science"]]),
 		new UpgradeAction("RotaryKiln", [[5000, "titanium"], [500, "gear"], [145000, "science"]]),
+		new UpgradeAction("NuclearSmelters", [[250, "uranium"], [165000, "science"]]),
 		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
 		new UpgradeAction("OffsetPress", [[250, "gear"], [15000, "oil"], [100000, "science"]]),
 		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
@@ -571,7 +612,7 @@ function updateActions() {
 		new UpgradeAction("SETI", [[250, "titanium"], [125000, "science"]]),
 		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
 		new UpgradeAction("OilRefinery", [[1250, "titanium"], [500, "gear"], [125000, "science"]]),
-		// new UpgradeAction("Telecommunication", [[5000, "titanium"], [50, "uranium"], [150000, "science"]]),
+		// new UpgradeAction("Telecommunication", [[5000, "titanium"], [50, "uranium"], [150000, "science"]]), // effect not calculated (increases learn ratio)
 		new UpgradeAction("RoboticAssistance", [[10000, "steel"], [250, "gear"], [100000, "science"]]),
 
 		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
@@ -593,6 +634,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ReinforcedWarehouses", [[15000, "science"], [50, "plate"], [50, "steel"], [25, "scaffold"]], state),
 		new UpgradeAction("Silos", [[50000, "science"], [125, "steel"], [5, "blueprint"]], state),
 		new UpgradeAction("ExpandedCargo", [[55000, "science"], [15, "blueprint"]], state),
+		new UpgradeAction("ReactorVessel", [[135000, "science"], [5000, "titanium"], [125, "uranium"]], state),
 		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
 		new UpgradeAction("AlloyBarns", [[75000, "science"], [20, "alloy"], [750, "plate"]], state),
 		new UpgradeAction("ConcreteBarns", [[100000, "science"], [45, "concrete"], [2000, "titanium"]], state),
