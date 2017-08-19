@@ -229,6 +229,7 @@ const upgrade = {
 	SETI: x,
 	Logistics: x,
 	OilRefinery: x,
+	OilDistillation: x,
 	Telecommunication: x,
 	RoboticAssistance: x,
 

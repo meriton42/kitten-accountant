@@ -132,7 +132,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))) * autoParagonBonus,
 		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus * reactorBonus
 					- level.Mint * 0.025,
-		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
+		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) 
 					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
@@ -612,6 +612,7 @@ function updateActions() {
 		new UpgradeAction("SETI", [[250, "titanium"], [125000, "science"]]),
 		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
 		new UpgradeAction("OilRefinery", [[1250, "titanium"], [500, "gear"], [125000, "science"]]),
+		new UpgradeAction("OilDistillation", [[5000, "titanium"], [175000, "science"]]),
 		// new UpgradeAction("Telecommunication", [[5000, "titanium"], [50, "uranium"], [150000, "science"]]), // effect not calculated (increases learn ratio)
 		new UpgradeAction("RoboticAssistance", [[10000, "steel"], [250, "gear"], [100000, "science"]]),
 
