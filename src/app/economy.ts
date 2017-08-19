@@ -29,6 +29,10 @@ function updateEconomy() {
 		// the constructor sets the price of the product
 		new Smelting(),
 		new Hunt(),
+		new CraftingConversion("parchment", [[175, "fur"]]),
+		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
+		new CraftingConversion("compendium", [[50, "manuscript"], [10000, "science"]]),
+		new CraftingConversion("blueprint", [[25, "compendium"], [25000, "science"]]),
 		new CraftingConversion("beam", [[175, "wood"]]),
 		new CraftingConversion("slab", [[250, "minerals"]]),
 		new CraftingConversion("plate", [[125, "iron"]]),
@@ -38,10 +42,6 @@ function updateEconomy() {
 		new CraftingConversion("concrete", [[2500, "slab"], [25, "steel"]]),
 		new CraftingConversion("alloy", [[75, "steel"], [10, "titanium"]]),
 		new CraftingConversion("scaffold", [[50, "beam"]]),
-		new CraftingConversion("parchment", [[175, "fur"]]),
-		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
-		new CraftingConversion("compendium", [[50, "manuscript"], [10000, "science"]]),
-		new CraftingConversion("blueprint", [[25, "compendium"], [25000, "science"]]),
 	];
 
 	price.starchart = 1000 * priceMarkup.starchart;
@@ -302,6 +302,7 @@ class ZebraTrade extends Conversion {
 			titanium: expectedSuccess * titaniumChance * titaniumAmount,
 			plate: expectedSuccess * 0.65 * 2 * 1.05 * tradeRatio,
 			iron: expectedSuccess * 1 * 300 * 1.00 * tradeRatio,
+			blueprint: expectedSuccess * 0.1 * 1,
 		}
 	}
 }
