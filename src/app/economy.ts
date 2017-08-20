@@ -1,6 +1,6 @@
 import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames } from "app/game-state";
 
-let currentBasicProduction: {[R in BasicRes]: number};
+let currentBasicProduction: Cart;
 let price: {[R in Res]: number};
 let conversions: Conversion[];
 let actions: Action[];
@@ -29,20 +29,20 @@ function updateEconomy() {
 		// the constructor sets the price of the product
 		new Smelting(),
 		new Hunt(),
-		new CraftingConversion("parchment", [[175, "fur"]]),
-		new CraftingConversion("manuscript", [[25, "parchment"], [400, "culture"]]),
-		new CraftingConversion("compendium", [[50, "manuscript"], [10000, "science"]]),
-		new CraftingConversion("blueprint", [[25, "compendium"], [25000, "science"]]),
-		new CraftingConversion("beam", [[175, "wood"]]),
-		new CraftingConversion("slab", [[250, "minerals"]]),
-		new CraftingConversion("plate", [[125, "iron"]]),
+		new CraftingConversion("parchment", {fur: 175}),
+		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
+		new CraftingConversion("compendium", {manuscript: 50, science: 10000}),
+		new CraftingConversion("blueprint", {compendium: 25, science: 25000}),
+		new CraftingConversion("beam", {wood: 175}),
+		new CraftingConversion("slab", {minerals: 250}),
+		new CraftingConversion("plate", {iron: 125}),
 		new ZebraTrade(),
 		new DragonTrade(),
-		new CraftingConversion("steel", [[100, "coal"], [100, "iron"]]),
-		new CraftingConversion("gear", [[15, "steel"]]),
-		new CraftingConversion("concrete", [[2500, "slab"], [25, "steel"]]),
-		new CraftingConversion("alloy", [[75, "steel"], [10, "titanium"]]),
-		new CraftingConversion("scaffold", [[50, "beam"]]),
+		new CraftingConversion("steel", {coal: 100, iron: 100}),
+		new CraftingConversion("gear", {steel: 15}),
+		new CraftingConversion("concrete", {slab: 2500, steel: 25}),
+		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
+		new CraftingConversion("scaffold", {beam: 50}),
 	];
 
 	price.starchart = 1000 * priceMarkup.starchart;
@@ -52,13 +52,15 @@ function workerProduction(job: Job, res: Res) {
 	return delta(basicProduction, (s) => s.workers[job]++)[res];
 }
 
-function delta<T extends string>(metric: (state: GameState) => {[R in T]: number}, change: (state: GameState) => void): {[R in T]: number} {
+type Cart = {[R in Res]?: number};
+
+function delta(metric: (state: GameState) => Cart, change: (state: GameState) => void): Cart {
 	const original = metric(state);
 	const clonedState = clone(state);
 	change(clonedState);
 	const modified = metric(clonedState);
 
-	const delta: {[R in T]: number} = <any>{};
+	const delta = {};
 	for (let r in original) {
 		delta[r] = modified[r] - original[r];
 	}
@@ -77,7 +79,7 @@ function hyperbolicLimit(x: number, limit: number) {
 	return a * limit;
 }
 
-function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | "manuscript" | "starchart" | "titanium" | "uranium"]: number} {
+function basicProduction(state: GameState): Cart {
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1;
@@ -149,7 +151,7 @@ function basicProduction(state: GameState): {[R in BasicRes | "fur" | "ivory" | 
 	}
 }
 
-function production(state: GameState) : {[R in Res]: number} {
+function production(state: GameState): {[R in Res]: number} {
 	const production: {[R in Res]: number} = <any>basicProduction(state);
 	for (const conversion of conversions) {
 		if (!conversion.instanteneous) {
@@ -232,12 +234,13 @@ export abstract class Conversion extends CostBenefitAnalysis {
 	instanteneous = true;
 
 	/** also sets the price of the product! */
-	constructor(public product: ConvertedRes | "iron", resourceInvestment: [number, Res][]) {
+	constructor(public product: ConvertedRes | "iron", resourceInvestment: Cart) {
 		super();
 		let cost = 0;
 		let benefit = 0;
-		for (const [number, res] of resourceInvestment) {
-			this.investment.add(new Expediture(number, res));
+		for (const res in resourceInvestment) {
+			const number = resourceInvestment[res]
+			this.investment.add(new Expediture(number, <Res>res));
 			cost += number * price[res];
 		}
 
@@ -264,7 +267,7 @@ export abstract class Conversion extends CostBenefitAnalysis {
 
 class Smelting extends Conversion {
 	constructor() {
-		super("iron", []);
+		super("iron", {});
 		this.instanteneous = false;
 	}
 
@@ -276,7 +279,7 @@ class Smelting extends Conversion {
 class Hunt extends Conversion {
 	constructor() {
 		price.ivory = 0;
-		super("fur", [[100, "catpower"]]);
+		super("fur", {catpower: 100});
 	}
 
 	produced(state: GameState){
@@ -290,10 +293,11 @@ class Hunt extends Conversion {
 }
 
 abstract class Trade extends Conversion {
-	static opportunityCosts: [[number, Res]] = [[15, "gold"], [50, "catpower"]];
+	static opportunityCosts: Cart = {gold: 15, catpower: 50};
+	
 
-	constructor(product: ConvertedRes, input: [[number, Res]], private attitude: "friendly" | "neutral" | "hostile", private standing: number) {
-		super(product, Trade.opportunityCosts.concat(input));
+	constructor(product: ConvertedRes, input: Cart, private attitude: "friendly" | "neutral" | "hostile", private standing: number) {
+		super(product, Object.assign({}, Trade.opportunityCosts, input));
 	}
 
 	produced(state: GameState) {
@@ -317,7 +321,7 @@ abstract class Trade extends Conversion {
 
 class ZebraTrade extends Trade {
 	constructor() {
-		super("titanium", [[50, "slab"]], "hostile", 0.3);
+		super("titanium", {slab: 50}, "hostile", 0.3);
 	}
 
 	output(state: GameState, tradeRatio: number) {
@@ -336,7 +340,7 @@ class ZebraTrade extends Trade {
 
 class DragonTrade extends Trade {
 	constructor() {
-		super("uranium", [[250, "titanium"]], "neutral", 0.25);
+		super("uranium", {titanium: 250}, "neutral", 0.25);
 	}
 
 	output(state: GameState, tradeRatio: number) {
@@ -347,7 +351,7 @@ class DragonTrade extends Trade {
 }
 
 class CraftingConversion extends Conversion {
-	constructor(product: ConvertedRes, resourceInvestment: [number, Res][]) {
+	constructor(product: ConvertedRes, resourceInvestment: Cart) {
 		super(product, resourceInvestment);
 	}
 
@@ -368,10 +372,11 @@ function craftRatio(state: GameState) {
 export abstract class Action extends CostBenefitAnalysis {
 	roi: number;
 
-	constructor(s: GameState, public name: string, resourceInvestment: [number, Res][], resourceMultiplier = 1) {
+	constructor(s: GameState, public name: string, resourceInvestment: Cart, resourceMultiplier = 1) {
 		super();
-		for (const [number, res] of resourceInvestment) {
-			this.investment.add(new Expediture(number * resourceMultiplier, res));
+		for (const res in resourceInvestment) {
+			const number = resourceInvestment[res];
+			this.investment.add(new Expediture(number * resourceMultiplier, <Res>res));
 		}
 
 		this.procureStorage(this.investment.expeditures, s);
@@ -470,7 +475,7 @@ const obsoletedBy: {[B in Building]?: Building} = {
 
 class BuildingAction extends Action {
 
-	constructor(name: Building, private initialConstructionResources: [number, Res][], priceRatio: number, s = state) {
+	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state) {
 		super(s, name, initialConstructionResources, Math.pow(priceRatio, s.level[name]));
 	}
 
@@ -501,7 +506,7 @@ class BuildingAction extends Action {
 }
 
 class UpgradeAction extends Action {
-	constructor(name: Upgrade, resourceCost: [number, Res][], s = state) {
+	constructor(name: Upgrade, resourceCost: Cart, s = state) {
 		super(s, name, resourceCost);
 	}
 
@@ -524,7 +529,7 @@ class UpgradeAction extends Action {
 
 class TradeshipAction extends Action {
 	constructor(s = state) {
-		super(s, "TradeShip", [[100, "scaffold"], [150, "plate"], [25, "starchart"]]);
+		super(s, "TradeShip", {scaffold: 100, plate: 150, starchart: 25});
 	}
 
 	applyTo(state: GameState) {
@@ -541,82 +546,82 @@ class TradeshipAction extends Action {
 function updateActions() {
 	const {upgrades} = state;
 	actions = [
-		new BuildingAction("CatnipField", [[10, "catnip"]], 1.12),
-		new BuildingAction("Pasture", [[100, "catnip"], [10, "wood"]], 1.15),
-		new BuildingAction("Aqueduct", [[75, "minerals"]], 1.12),
-		new BuildingAction("HydroPlant", [[100, "concrete"], [2500, "titanium"]], 1.15),
-		new BuildingAction("Hut", [[5, "wood"]], 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3)),
-		new BuildingAction("LogHouse", [[200, "wood"], [250, "minerals"]], 1.15),
-		new BuildingAction("Mansion", [[185, "slab"], [75, "steel"], [25, "titanium"]], 1.15),
-		new BuildingAction("Library", [[25, "wood"]], 1.15),
-		new BuildingAction("Academy", [[50, "wood"], [70, "minerals"], [100, "science"]], 1.15),
-		new BuildingAction("Observatory", [[50, "scaffold"], [35, "slab"], [750, "iron"], [1000, "science"]], 1.10),
-		new BuildingAction("BioLab", [[100, "slab"], [25, "alloy"], [1500, "science"]], 1.10),
-		new BuildingAction("Mine", [[100, "wood"]], 1.15),
-		new BuildingAction("Quarry", [[50, "scaffold"], [125, "steel"], [1000, "slab"]], 1.15),
-		new BuildingAction("LumberMill", [[100, "wood"], [50, "iron"], [250, "minerals"]], 1.15),
-		new BuildingAction("OilWell", [[50, "steel"], [25, "gear"], [25, "scaffold"]], 1.15),
-		new BuildingAction("Steamworks", [[65, "steel"], [20, "gear"], [1, "blueprint"]], 1.25),
-		new BuildingAction("Magneto", [[10, "alloy"], [5, "gear"], [1, "blueprint"]], 1.25),
-		new BuildingAction("Smelter", [[200, "minerals"]], 1.15),
-		new BuildingAction("Calciner", [[100, "steel"], [15, "titanium"], [5, "blueprint"], [500, "oil"]], 1.15),
-		new BuildingAction("Factory", [[2000, "titanium"], [2500, "plate"], [15, "concrete"]], 1.15),
-		new BuildingAction("Reactor", [[3500, "titanium"], [5000, "plate"], [50, "concrete"], [25, "blueprint"]], 1.15),
-		new BuildingAction("Amphitheatre", [[200, "wood"], [1200, "minerals"], [3, "parchment"]], 1.15),
-		new BuildingAction("BroadcastTower", [[1250, "iron"], [75, "titanium"]], 1.18),
-		new BuildingAction("Chapel", [[2000, "minerals"], [250, "culture"], [250, "parchment"]], 1.15),
-		new BuildingAction("Temple", [[25, "slab"], [15, "plate"], [10, "manuscript"], [50, "gold"]], 1.15), 
-		new BuildingAction("Workshop", [[100, "wood"], [400, "minerals"]], 1.15),
-		new BuildingAction("TradePost", [[500, "wood"], [200, "minerals"], [10, "gold"]], 1.15),
-		new BuildingAction("Mint", [[5000, "minerals"], [200, "plate"], [500, "gold"]], 1.15),
-		new BuildingAction("UnicornPasture", [[2, "unicorn"]], 1.75),
+		new BuildingAction("CatnipField", {catnip: 10}, 1.12),
+		new BuildingAction("Pasture", {catnip: 100, wood: 10}, 1.15),
+		new BuildingAction("Aqueduct", {minerals: 75}, 1.12),
+		new BuildingAction("HydroPlant", {concrete: 100, titanium: 2500}, 1.15),
+		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3)),
+		new BuildingAction("LogHouse", {wood: 200, minerals: 250}, 1.15),
+		new BuildingAction("Mansion", {slab: 185, steel: 75, titanium: 25}, 1.15),
+		new BuildingAction("Library", {wood: 25}, 1.15),
+		new BuildingAction("Academy", {wood: 50, minerals: 70, science: 100}, 1.15),
+		new BuildingAction("Observatory", {scaffold: 50, slab: 35, iron: 750, science: 1000}, 1.10),
+		new BuildingAction("BioLab", {slab: 100, alloy: 25, science: 1500}, 1.10),
+		new BuildingAction("Mine", {wood: 100}, 1.15),
+		new BuildingAction("Quarry", {scaffold: 50, steel: 125, slab:1000}, 1.15),
+		new BuildingAction("LumberMill", {wood: 100, iron: 50, minerals: 250}, 1.15),
+		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15),
+		new BuildingAction("Steamworks", {steel: 65, gear: 20, blueprint: 1}, 1.25),
+		new BuildingAction("Magneto", {alloy: 10, gear: 5, blueprint: 1}, 1.25),
+		new BuildingAction("Smelter", {minerals: 200}, 1.15),
+		new BuildingAction("Calciner", {steel: 100, titanium: 15, blueprint: 5, oil: 500}, 1.15),
+		new BuildingAction("Factory", {titanium: 2000, plate: 2500, concrete: 15}, 1.15),
+		new BuildingAction("Reactor", {titanium: 3500, plate: 5000, concrete: 50, blueprint: 25}, 1.15),
+		new BuildingAction("Amphitheatre", {wood: 200, minerals: 1200, parchment: 3}, 1.15),
+		new BuildingAction("BroadcastTower", {iron: 1250, titanium: 75}, 1.18),
+		new BuildingAction("Chapel", {minerals: 2000, culture: 250, parchment: 250}, 1.15),
+		new BuildingAction("Temple", {slab: 25, plate: 15, manuscript: 10, gold: 50}, 1.15), 
+		new BuildingAction("Workshop", {wood: 100, minerals: 400}, 1.15),
+		new BuildingAction("TradePost", {wood: 500, minerals: 200, gold: 10}, 1.15),
+		new BuildingAction("Mint", {minerals: 5000, plate: 200, gold: 500}, 1.15),
+		new BuildingAction("UnicornPasture", {unicorn: 2}, 1.75),
 
-		new UpgradeAction("MineralHoes", [[100, "science"], [275, "minerals"]]),
-		new UpgradeAction("IronHoes", [[200, "science"], [25, "iron"]]),
-		new UpgradeAction("MineralAxe", [[100, "science"], [500, "minerals"]]),
-		new UpgradeAction("IronAxe", [[200, "science"], [50, "iron"]]),
-		new UpgradeAction("SteelAxe", [[20000, "science"], [75, "steel"]]),
-		new UpgradeAction("ReinforcedSaw", [[2500, "science"], [1000, "iron"]]),
-		new UpgradeAction("SteelSaw", [[52000, "science"], [750, "steel"]]),
-		new UpgradeAction("AlloySaw", [[85000, "science"], [75, "alloy"]]),
-		new UpgradeAction("TitaniumSaw", [[75000, "science"], [500, "titanium"]]),
-		new UpgradeAction("TitaniumAxe", [[38000, "science"], [10, "titanium"]]),
-		new UpgradeAction("AlloyAxe", [[70000, "science"], [25, "alloy"]]),
-		new UpgradeAction("IronWoodHuts", [[30000, "science"], [15000, "wood"], [3000, "iron"]]),
-		new UpgradeAction("ConcreteHuts", [[125000, "science"], [45, "concrete"], [3000, "titanium"]]),
-		new UpgradeAction("CompositeBow", [[500, "science"], [100, "iron"], [200, "wood"]]),
-		new UpgradeAction("Crossbow", [[12000, "science"], [1500, "iron"]]),
-		new UpgradeAction("Bolas", [[1000, "science"], [250, "minerals"], [50, "wood"]]),
-		new UpgradeAction("HuntingArmor", [[2000, "science"], [750, "iron"]]),
-		new UpgradeAction("SteelArmor", [[10000, "science"], [50, "steel"]]),
-		new UpgradeAction("AlloyArmor", [[50000, "science"], [25, "alloy"]]),
-		new UpgradeAction("Geodesy", [[250, "titanium"], [500, "starchart"], [90000, "science"]]),
-		new UpgradeAction("MiningDrill", [[1750, "titanium"], [750, "steel"], [100000, "science"]]),
-		new UpgradeAction("CoalFurnace", [[5000, "minerals"], [2000, "iron"], [35, "beam"], [5000, "science"]]),
-		new UpgradeAction("DeepMining", [[1200, "iron"], [50, "beam"], [5000, "science"]]),
-		new UpgradeAction("Pyrolysis", [[5, "compendium"], [35000, "science"]]),
-		new UpgradeAction("ElectrolyticSmelting", [[2000, "titanium"], [100000, "science"]]),
-		new UpgradeAction("Oxidation", [[5000, "steel"], [100000, "science"]]),
-		new UpgradeAction("RotaryKiln", [[5000, "titanium"], [500, "gear"], [145000, "science"]]),
-		new UpgradeAction("NuclearSmelters", [[250, "uranium"], [165000, "science"]]),
-		new UpgradeAction("PrintingPress", [[45, "gear"], [7500, "science"]]),
-		new UpgradeAction("OffsetPress", [[250, "gear"], [15000, "oil"], [100000, "science"]]),
-		new UpgradeAction("HighPressureEngine", [[25, "gear"], [20000, "science"], [5, "blueprint"]]),
-		new UpgradeAction("FuelInjectors", [[250, "gear"], [20000, "oil"], [100000, "science"]]),
-		new UpgradeAction("FactoryLogistics", [[250, "gear"], [2000, "titanium"], [100000, "science"]]),
-		new UpgradeAction("Astrolabe", [[5, "titanium"], [75, "starchart"], [25000, "science"]]),
-		new UpgradeAction("TitaniumReflectors", [[15, "titanium"], [20, "starchart"], [20000, "science"]]),
-		new UpgradeAction("Pumpjack", [[250, "titanium"], [125, "gear"], [100000, "science"]]),
-		new UpgradeAction("BiofuelProcessing", [[1250, "titanium"], [150000, "science"]]),
-		new UpgradeAction("CADsystem", [[750, "titanium"], [125000, "science"]]),
-		new UpgradeAction("SETI", [[250, "titanium"], [125000, "science"]]),
-		new UpgradeAction("Logistics", [[100, "gear"], [1000, "scaffold"], [100000, "science"]]),
-		new UpgradeAction("OilRefinery", [[1250, "titanium"], [500, "gear"], [125000, "science"]]),
-		new UpgradeAction("OilDistillation", [[5000, "titanium"], [175000, "science"]]),
-		// new UpgradeAction("Telecommunication", [[5000, "titanium"], [50, "uranium"], [150000, "science"]]), // effect not calculated (increases learn ratio)
-		new UpgradeAction("RoboticAssistance", [[10000, "steel"], [250, "gear"], [100000, "science"]]),
+		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
+		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
+		new UpgradeAction("MineralAxe", {science: 100, minerals: 500}),
+		new UpgradeAction("IronAxe", {science: 200, iron: 50}),
+		new UpgradeAction("SteelAxe", {science: 20000, steel: 75}),
+		new UpgradeAction("ReinforcedSaw", {science: 2500, iron: 1000}),
+		new UpgradeAction("SteelSaw", {science: 52000, steel: 750}),
+		new UpgradeAction("AlloySaw", {science: 85000, alloy: 75}),
+		new UpgradeAction("TitaniumSaw", {science: 75000, titanium: 500}),
+		new UpgradeAction("TitaniumAxe", {science: 38000, titanium: 10}),
+		new UpgradeAction("AlloyAxe", {science: 70000, alloy: 25}),
+		new UpgradeAction("IronWoodHuts", {science: 30000, wood: 15000, iron: 3000}),
+		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),
+		new UpgradeAction("CompositeBow", {science: 500, iron: 100, wood: 200}),
+		new UpgradeAction("Crossbow", {science: 12000, iron: 1500}),
+		new UpgradeAction("Bolas", {science: 1000, minerals: 250, wood: 50}),
+		new UpgradeAction("HuntingArmor", {science: 2000, iron: 750}),
+		new UpgradeAction("SteelArmor", {science: 10000, steel: 50}),
+		new UpgradeAction("AlloyArmor", {science: 50000, alloy: 25}),
+		new UpgradeAction("Geodesy", {titanium: 250, starchart: 500, science: 90000}),
+		new UpgradeAction("MiningDrill", {titanium: 1750, steel: 750, science: 100000}),
+		new UpgradeAction("CoalFurnace", {minerals: 5000, iron: 2000, beam: 35, science: 5000}),
+		new UpgradeAction("DeepMining", {iron: 1200, beam: 50, science: 5000}),
+		new UpgradeAction("Pyrolysis", {compendium: 5, science: 35000}),
+		new UpgradeAction("ElectrolyticSmelting", {titanium: 2000, science: 100000}),
+		new UpgradeAction("Oxidation", {steel: 5000, science: 100000}),
+		new UpgradeAction("RotaryKiln", {titanium: 5000, gear: 500, science: 145000}),
+		new UpgradeAction("NuclearSmelters", {uranium: 250, science: 165000}),
+		new UpgradeAction("PrintingPress", {gear: 45, science: 7500}),
+		new UpgradeAction("OffsetPress", {gear: 250, oil: 15000, science: 100000}),
+		new UpgradeAction("HighPressureEngine", {gear: 25, science: 20000, blueprint: 5}),
+		new UpgradeAction("FuelInjectors", {gear: 250, oil: 20000, science: 100000}),
+		new UpgradeAction("FactoryLogistics", {gear: 250, titanium: 2000, science: 100000}),
+		new UpgradeAction("Astrolabe", {titanium: 5, starchart: 75, science: 25000}),
+		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}),
+		new UpgradeAction("Pumpjack", {titanium: 250, gear: 125, science: 100000}),
+		new UpgradeAction("BiofuelProcessing", {titanium: 1250, science: 150000}),
+		new UpgradeAction("CADsystem", {titanium: 750, science: 125000}),
+		new UpgradeAction("SETI", {titanium: 250, science: 125000}),
+		new UpgradeAction("Logistics", {gear: 100, scaffold: 1000, science: 100000}),
+		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
+		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
+		// new UpgradeAction("Telecommunication", {titanium: 5000, uranium: 50, science: 150000}), // effect not calculated (increases learn ratio)
+		new UpgradeAction("RoboticAssistance", {steel: 10000, gear: 250, science: 100000}),
 
-		new UpgradeAction("SunAltar", [[500, "faith"], [250, "gold"]]),
+		new UpgradeAction("SunAltar", {faith: 500, gold: 250}),
 
 		new TradeshipAction(),
 	];
@@ -626,24 +631,24 @@ function updateActions() {
 
 function storageActions(state: GameState) {
 	return [
-		new BuildingAction("Barn", [[50, "wood"]], 1.75, state),
-		new BuildingAction("Warehouse", [[1.5, "beam"], [2, "slab"]], 1.15, state),
-		new BuildingAction("Harbor", [[5, "scaffold"], [50, "slab"], [75, "plate"]], 1.15, state),
+		new BuildingAction("Barn", {wood: 50}, 1.75, state),
+		new BuildingAction("Warehouse", {beam: 1.5, slab: 2}, 1.15, state),
+		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
 
-		new UpgradeAction("ExpandedBarns", [[500, "science"], [1000, "wood"], [750, "minerals"], [50, "iron"]], state),
-		new UpgradeAction("ReinforcedBarns", [[800, "science"], [25, "beam"], [10, "slab"], [100, "iron"]], state),
-		new UpgradeAction("ReinforcedWarehouses", [[15000, "science"], [50, "plate"], [50, "steel"], [25, "scaffold"]], state),
-		new UpgradeAction("Silos", [[50000, "science"], [125, "steel"], [5, "blueprint"]], state),
-		new UpgradeAction("ExpandedCargo", [[55000, "science"], [15, "blueprint"]], state),
-		new UpgradeAction("ReactorVessel", [[135000, "science"], [5000, "titanium"], [125, "uranium"]], state),
-		new UpgradeAction("TitaniumBarns", [[60000, "science"], [25, "titanium"], [200, "steel"], [250, "scaffold"]], state),
-		new UpgradeAction("AlloyBarns", [[75000, "science"], [20, "alloy"], [750, "plate"]], state),
-		new UpgradeAction("ConcreteBarns", [[100000, "science"], [45, "concrete"], [2000, "titanium"]], state),
-		new UpgradeAction("TitaniumWarehouses", [[70000, "science"], [50, "titanium"], [500, "steel"], [500, "scaffold"]], state),
-		new UpgradeAction("AlloyWarehouses", [[90000, "science"], [750, "titanium"], [50, "alloy"]], state),
-		new UpgradeAction("ConcreteWarehouses", [[100000, "science"], [1250, "titanium"], [35, "concrete"]], state),
-		new UpgradeAction("Refrigeration", [[125000, "science"], [2500, "titanium"], [15, "blueprint"]], state),
-		new UpgradeAction("ConcretePillars", [[100000, "science"], [50, "concrete"]], state),
+		new UpgradeAction("ExpandedBarns", {science: 500, wood: 1000, minerals: 750, iron: 50}, state),
+		new UpgradeAction("ReinforcedBarns", {science: 800, beam: 25, slab: 10, iron: 100}, state),
+		new UpgradeAction("ReinforcedWarehouses", {science: 15000, plate: 50, steel: 50, scaffold: 25}, state),
+		new UpgradeAction("Silos", {science: 50000, steel: 125, blueprint: 5}, state),
+		new UpgradeAction("ExpandedCargo", {science: 55000, blueprint: 15}, state),
+		new UpgradeAction("ReactorVessel", {science: 135000, titanium: 5000, uranium: 125}, state),
+		new UpgradeAction("TitaniumBarns", {science: 60000, titanium: 25, steel: 200, scaffold: 250}, state),
+		new UpgradeAction("AlloyBarns", {science: 75000, alloy: 20, plate: 750}, state),
+		new UpgradeAction("ConcreteBarns", {science: 100000, concrete: 45, titanium: 2000}, state),
+		new UpgradeAction("TitaniumWarehouses", {science: 70000, titanium: 50, steel: 500, scaffold: 500}, state),
+		new UpgradeAction("AlloyWarehouses", {science: 90000, titanium: 750, alloy: 50}, state),
+		new UpgradeAction("ConcreteWarehouses", {science: 100000, titanium: 1250, concrete: 35}, state),
+		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
+		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),
 	].filter(a => a.available(state));
 }
 
