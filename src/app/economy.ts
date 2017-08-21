@@ -23,6 +23,7 @@ function updateEconomy() {
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
+	price.unobtainium = 6666.66; // TODO find source for it
 
 	const huntingBonus = 0;
 	conversions = [
@@ -100,16 +101,25 @@ function basicProduction(state: GameState): Cart {
 	const paragonBonus = 1 + 0.01 * hyperbolicLimit(state.paragon, 200);
 	const autoParagonBonus = 1 + 0.0005 * hyperbolicLimit(state.paragon, 200);
 
-	const scienceBonus = level.Library * 0.1 + level.Academy * 0.2 + level.Observatory * 0.25 * level.BioLab * 0.70;
+	const scienceBonus = level.Library * 0.1 
+											+ level.Academy * 0.2 
+											+ level.Observatory * 0.25 * (1 + level.Satellite * 0.05) 
+											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35));
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50) * (1 + state.paragon * 0.001);
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * 10;
-	const energyConsumption = level.Calciner * 1 + level.Factory * 2 + (upgrades.Pumpjack && level.OilWell * 1) + (upgrades.BiofuelProcessing && level.BioLab * 1);
+	const energyConsumption = level.Calciner * 1 
+											+ level.Factory * 2 
+											+ (upgrades.Pumpjack && level.OilWell * 1) 
+											+ (upgrades.BiofuelProcessing && level.BioLab * 1)
+											+ level.Satellite * 1;
 	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 	const reactorBonus = 1 + level.Reactor * 0.05;
+
+	const spaceRatio = 1;
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -145,8 +155,8 @@ function basicProduction(state: GameState): Cart {
 		fur: level.Mint * 0.0000875 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.0000210 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
-		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075)),
-		starchart: astroChance * 1,
+		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
+		starchart: astroChance * 1 + level.Satellite * 0.005 * spaceRatio,
 		uranium: level.Reactor * -0.005,
 	}
 }
@@ -576,6 +586,8 @@ function updateActions() {
 		new BuildingAction("Mint", {minerals: 5000, plate: 200, gold: 500}, 1.15),
 		new BuildingAction("UnicornPasture", {unicorn: 2}, 1.75),
 
+		new BuildingAction("Satellite", {starchart: 325, science: 100000, unobtainium: 50}, 1.15),
+
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
 		new UpgradeAction("MineralAxe", {science: 100, minerals: 500}),
@@ -606,6 +618,7 @@ function updateActions() {
 		new UpgradeAction("NuclearSmelters", {uranium: 250, science: 165000}),
 		new UpgradeAction("PrintingPress", {gear: 45, science: 7500}),
 		new UpgradeAction("OffsetPress", {gear: 250, oil: 15000, science: 100000}),
+		new UpgradeAction("Photolithography", {alloy: 1250, oil: 50000, uranium: 250, science: 250000}),
 		new UpgradeAction("HighPressureEngine", {gear: 25, science: 20000, blueprint: 5}),
 		new UpgradeAction("FuelInjectors", {gear: 250, oil: 20000, science: 100000}),
 		new UpgradeAction("FactoryLogistics", {gear: 250, titanium: 2000, science: 100000}),

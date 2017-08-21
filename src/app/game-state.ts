@@ -103,6 +103,7 @@ const convertedResources = {
 	starchart: x,
 	titanium: x,
 	uranium: x,
+	unobtainium: x,
 	fur: x,
 	ivory: x,
 	beam: x,
@@ -172,6 +173,8 @@ const building = {
 	TradePost: x,
 	Mint: x,
 	UnicornPasture: x,
+
+	Satellite: x,
 }
 const upgrade = {
 	MineralHoes: x,
@@ -218,6 +221,7 @@ const upgrade = {
 	NuclearSmelters: x,
 	PrintingPress: x,
 	OffsetPress: x,
+	Photolithography: x,
 	HighPressureEngine: x,
 	FuelInjectors: x,
 	FactoryLogistics: x,
