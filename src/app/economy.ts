@@ -23,12 +23,19 @@ function updateEconomy() {
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
+	price.starchart = 1000 * priceMarkup.starchart;
 	price.unobtainium = 6666.66; // TODO find source for it
 
-	const huntingBonus = 0;
+	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
+	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
+	// and affixing the priceMarkup to any single contribution therefore has counter intuitive side effects
+	// instead, we introduce a separate contribution to affix the priceMarkup
+	const smelter = delta(basicProduction, s => s.level.Smelter++);
+	const ironPrice = (priceMarkup.iron - smelter.wood * price.wood - smelter.minerals * price.minerals) / smelter.iron;
+	price.iron = ironPrice;
+
 	conversions = [
 		// the constructor sets the price of the product
-		new Smelting(),
 		new Hunt(),
 		new CraftingConversion("parchment", {fur: 175}),
 		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
@@ -44,9 +51,8 @@ function updateEconomy() {
 		new CraftingConversion("concrete", {slab: 2500, steel: 25}),
 		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
 		new CraftingConversion("scaffold", {beam: 50}),
+		new Smelting(ironPrice),
 	];
-
-	price.starchart = 1000 * priceMarkup.starchart;
 }
 
 function workerProduction(job: Job, res: Res) {
@@ -244,7 +250,7 @@ export abstract class Conversion extends CostBenefitAnalysis {
 	instanteneous = true;
 
 	/** also sets the price of the product! */
-	constructor(public product: ConvertedRes | "iron", resourceInvestment: Cart) {
+	constructor(public product: ConvertedRes | "iron", resourceInvestment: Cart, productPrice?: number) {
 		super();
 		let cost = 0;
 		let benefit = 0;
@@ -268,16 +274,16 @@ export abstract class Conversion extends CostBenefitAnalysis {
 				}
 			}
 		}
-		price[this.product] = Math.max(0, (cost * (state.priceMarkup[product] || 1) - benefit) / currentlyProduced[this.product]);
+		price[this.product] = productPrice || Math.max(0, (cost * (state.priceMarkup[product] || 1) - benefit) / currentlyProduced[this.product]);
 		this.return.add(new Expediture(currentlyProduced[this.product], this.product));
 	}
 
-	abstract produced(state: GameState): {[R in Res]?: number};
+	abstract produced(state: GameState): Cart;
 }
 
 class Smelting extends Conversion {
-	constructor() {
-		super("iron", {});
+	constructor(ironPrice: number) {
+		super("iron", {}, ironPrice);
 		this.instanteneous = false;
 	}
 
