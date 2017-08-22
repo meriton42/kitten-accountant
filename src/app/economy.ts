@@ -310,10 +310,16 @@ class Hunt extends Conversion {
 
 abstract class Trade extends Conversion {
 	static opportunityCosts: Cart = {gold: 15, catpower: 50};
-	
 
-	constructor(product: ConvertedRes, input: Cart, private attitude: "friendly" | "neutral" | "hostile", private standing: number) {
+	constructor(product: ConvertedRes, input: Cart) {
 		super(product, Object.assign({}, Trade.opportunityCosts, input));
+	}
+
+	get friendly() {
+		return 0;
+	}
+	get hostile() {
+		return 0;
 	}
 
 	produced(state: GameState) {
@@ -321,8 +327,8 @@ abstract class Trade extends Conversion {
 
 		let output = this.output(state, 1 + level.TradePost * 0.015);
 
-		const friendlyChance = this.attitude == "friendly" ? Math.max(1, this.standing + level.TradePost * 0.0035 / 2) : 0;
-		const hostileChance = this.attitude == "hostile" ? Math.max(0, this.standing - level.TradePost * 0.0035) : 0;
+		const friendlyChance = this.friendly && Math.max(1, this.friendly + level.TradePost * 0.0035 / 2);
+		const hostileChance = this.hostile && Math.max(0, this.hostile - level.TradePost * 0.0035);
 		const expectedSuccess = 1 - hostileChance + friendlyChance * 0.25;
 
 		for (const k in output) {
@@ -337,7 +343,12 @@ abstract class Trade extends Conversion {
 
 class ZebraTrade extends Trade {
 	constructor() {
-		super("titanium", {slab: 50}, "hostile", 0.3);
+		super("titanium", {slab: 50});
+	}
+
+	// must be a getter to be available to the super constructor
+	get hostile() {
+		return 0.3;
 	}
 
 	output(state: GameState, tradeRatio: number) {
@@ -356,7 +367,7 @@ class ZebraTrade extends Trade {
 
 class DragonTrade extends Trade {
 	constructor() {
-		super("uranium", {titanium: 250}, "neutral", 0.25);
+		super("uranium", {titanium: 250});
 	}
 
 	output(state: GameState, tradeRatio: number) {
