@@ -129,6 +129,7 @@ const userPricedResources: {[R in Res]?} = {
 	faith: x,
 	starchart: x,
 	blueprint: x,
+	uranium: x,
 }
 
 const job = {
@@ -159,6 +160,7 @@ const building = {
 	Quarry: x,
 	LumberMill: x,
 	OilWell: x,
+	Accelerator: x, 
 	Steamworks: x,
 	Magneto: x,
 	Smelter: x,
@@ -205,6 +207,7 @@ const upgrade = {
 	Refrigeration: x,
 	CompositeBow: x,
 	Crossbow: x,
+	Railgun: x,
 	Bolas: x,
 	HuntingArmor: x,
 	SteelArmor: x,
@@ -232,6 +235,7 @@ const upgrade = {
 	CADsystem: x,
 	SETI: x,
 	Logistics: x,
+	EnrichedUranium: x,
 	OilRefinery: x,
 	OilDistillation: x,
 	Telecommunication: x,

@@ -114,6 +114,9 @@ export class AppComponent implements OnInit {
       if (state.priceMarkup.coal > 1) {
         state.priceMarkup.coal = 1;
       }
+      if (state.priceMarkup.uranium > 1) {
+        state.priceMarkup.uranium = 1;
+      }
       this.update();
       return false;
     }

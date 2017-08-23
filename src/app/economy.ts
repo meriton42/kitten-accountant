@@ -119,7 +119,8 @@ function basicProduction(state: GameState): Cart {
 											+ level.Factory * 2 
 											+ (upgrades.Pumpjack && level.OilWell * 1) 
 											+ (upgrades.BiofuelProcessing && level.BioLab * 1)
-											+ level.Satellite * 1;
+											+ level.Satellite * 1
+											+ level.Accelerator * 2;
 	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
@@ -140,7 +141,7 @@ function basicProduction(state: GameState): Cart {
 		      - level.Smelter * 0.25,
 		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * paragonBonus * magnetoBonus * reactorBonus
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
-		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25)) * paragonBonus
+		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25) + (upgrades.Railgun && 0.25)) * paragonBonus
 					- level.Mint * 3.75,
 		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75))) * autoParagonBonus * magnetoBonus * reactorBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
@@ -154,7 +155,8 @@ function basicProduction(state: GameState): Cart {
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) 
 					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
-					* autoParagonBonus * magnetoBonus * reactorBonus,
+					* autoParagonBonus * magnetoBonus * reactorBonus
+					- level.Accelerator * 0.075,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
 		culture: (level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
 		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * paragonBonus,
@@ -163,7 +165,8 @@ function basicProduction(state: GameState): Cart {
 		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 + level.Satellite * 0.005 * spaceRatio,
-		uranium: level.Reactor * -0.005,
+		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus 
+					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25)),
 	}
 }
 
@@ -588,6 +591,7 @@ function updateActions() {
 		new BuildingAction("Quarry", {scaffold: 50, steel: 125, slab:1000}, 1.15),
 		new BuildingAction("LumberMill", {wood: 100, iron: 50, minerals: 250}, 1.15),
 		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15),
+		new BuildingAction("Accelerator", {titanium: 7500, concrete: 125, uranium: 25}, 1.15),
 		new BuildingAction("Steamworks", {steel: 65, gear: 20, blueprint: 1}, 1.25),
 		new BuildingAction("Magneto", {alloy: 10, gear: 5, blueprint: 1}, 1.25),
 		new BuildingAction("Smelter", {minerals: 200}, 1.15),
@@ -620,6 +624,7 @@ function updateActions() {
 		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),
 		new UpgradeAction("CompositeBow", {science: 500, iron: 100, wood: 200}),
 		new UpgradeAction("Crossbow", {science: 12000, iron: 1500}),
+		new UpgradeAction("Railgun", {science: 150000, titanium: 5000, blueprint: 25}),
 		new UpgradeAction("Bolas", {science: 1000, minerals: 250, wood: 50}),
 		new UpgradeAction("HuntingArmor", {science: 2000, iron: 750}),
 		new UpgradeAction("SteelArmor", {science: 10000, steel: 50}),
@@ -646,6 +651,7 @@ function updateActions() {
 		new UpgradeAction("CADsystem", {titanium: 750, science: 125000}),
 		new UpgradeAction("SETI", {titanium: 250, science: 125000}),
 		new UpgradeAction("Logistics", {gear: 100, scaffold: 1000, science: 100000}),
+		new UpgradeAction("EnrichedUranium", {titanium: 7500, uranium: 150, science: 175000}),
 		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
 		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
 		// new UpgradeAction("Telecommunication", {titanium: 5000, uranium: 50, science: 150000}), // effect not calculated (increases learn ratio)
