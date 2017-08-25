@@ -93,7 +93,7 @@ function basicProduction(state: GameState): Cart {
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
-	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15));  // the more kittens, the older the average kitten (assuming no deaths)
+	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15) + (upgrades.Augmentations && 1));  // the more kittens, the older the average kitten (assuming no deaths)
 	const workerEfficiency = happiness * workerProficiency;
 
 	let idle = kittens;
@@ -114,7 +114,7 @@ function basicProduction(state: GameState): Cart {
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50) * (1 + state.paragon * 0.001);
 
-	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * 10;
+	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * 10 + level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5));
 	const energyConsumption = level.Calciner * 1 
 											+ level.Factory * 2 
 											+ (upgrades.Pumpjack && level.OilWell * 1) 
@@ -143,7 +143,7 @@ function basicProduction(state: GameState): Cart {
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
 		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25) + (upgrades.Railgun && 0.25)) * paragonBonus
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75))) * autoParagonBonus * magnetoBonus * reactorBonus,
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75) + (upgrades.FluidizedReactors && 1))) * autoParagonBonus * magnetoBonus * reactorBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
@@ -153,7 +153,7 @@ function basicProduction(state: GameState): Cart {
 					- level.Mint * 0.025,
 		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
-		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25)) 
+		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25) + (upgrades.FluidizedReactors && 3)) 
 					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
 					* autoParagonBonus * magnetoBonus * reactorBonus
 					- level.Accelerator * 0.075,
@@ -303,7 +303,7 @@ class Hunt extends Conversion {
 
 	produced(state: GameState){
 		const {upgrades} = state;
-		const huntingBonus = 0 + (upgrades.Bolas && 1) + (upgrades.HuntingArmor && 2) + (upgrades.SteelArmor && 0.5) + (upgrades.AlloyArmor && 0.5);
+		const huntingBonus = 0 + (upgrades.Bolas && 1) + (upgrades.HuntingArmor && 2) + (upgrades.SteelArmor && 0.5) + (upgrades.AlloyArmor && 0.5) + (upgrades.Nanosuits && 0.5);
 		return {
 			fur: 40 + huntingBonus * 32,
 			ivory: (0.44 + huntingBonus * 0.02) * (25 + huntingBonus * 20),
@@ -497,10 +497,12 @@ export abstract class Action extends CostBenefitAnalysis {
 const obsoletes: {[B in Building]?: Building} = {
 	BroadcastTower: "Amphitheatre",
 	HydroPlant: "Aqueduct",
+	SolarFarm: "Pasture",
 }
 const obsoletedBy: {[B in Building]?: Building} = {
 	Amphitheatre: "BroadcastTower",
 	Aqueduct: "HydroPlant",
+	Pasture: "SolarFarm",
 }
 
 class BuildingAction extends Action {
@@ -578,6 +580,7 @@ function updateActions() {
 	actions = [
 		new BuildingAction("CatnipField", {catnip: 10}, 1.12),
 		new BuildingAction("Pasture", {catnip: 100, wood: 10}, 1.15),
+		new BuildingAction("SolarFarm", {titanium: 250}, 1.15),
 		new BuildingAction("Aqueduct", {minerals: 75}, 1.12),
 		new BuildingAction("HydroPlant", {concrete: 100, titanium: 2500}, 1.15),
 		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3)),
@@ -620,6 +623,7 @@ function updateActions() {
 		new UpgradeAction("TitaniumSaw", {science: 75000, titanium: 500}),
 		new UpgradeAction("TitaniumAxe", {science: 38000, titanium: 10}),
 		new UpgradeAction("AlloyAxe", {science: 70000, alloy: 25}),
+		new UpgradeAction("PhotovoltaicCells", {titanium: 5000, science: 75000}), 
 		new UpgradeAction("IronWoodHuts", {science: 30000, wood: 15000, iron: 3000}),
 		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),
 		new UpgradeAction("CompositeBow", {science: 500, iron: 100, wood: 200}),
@@ -629,6 +633,7 @@ function updateActions() {
 		new UpgradeAction("HuntingArmor", {science: 2000, iron: 750}),
 		new UpgradeAction("SteelArmor", {science: 10000, steel: 50}),
 		new UpgradeAction("AlloyArmor", {science: 50000, alloy: 25}),
+		new UpgradeAction("Nanosuits", {science: 185000, alloy: 250}),
 		new UpgradeAction("Geodesy", {titanium: 250, starchart: 500, science: 90000}),
 		new UpgradeAction("MiningDrill", {titanium: 1750, steel: 750, science: 100000}),
 		new UpgradeAction("CoalFurnace", {minerals: 5000, iron: 2000, beam: 35, science: 5000}),
@@ -637,6 +642,7 @@ function updateActions() {
 		new UpgradeAction("ElectrolyticSmelting", {titanium: 2000, science: 100000}),
 		new UpgradeAction("Oxidation", {steel: 5000, science: 100000}),
 		new UpgradeAction("RotaryKiln", {titanium: 5000, gear: 500, science: 145000}),
+		new UpgradeAction("FluidizedReactors", {alloy: 200, science: 175000}),
 		new UpgradeAction("NuclearSmelters", {uranium: 250, science: 165000}),
 		new UpgradeAction("PrintingPress", {gear: 45, science: 7500}),
 		new UpgradeAction("OffsetPress", {gear: 250, oil: 15000, science: 100000}),
@@ -651,6 +657,7 @@ function updateActions() {
 		new UpgradeAction("CADsystem", {titanium: 750, science: 125000}),
 		new UpgradeAction("SETI", {titanium: 250, science: 125000}),
 		new UpgradeAction("Logistics", {gear: 100, scaffold: 1000, science: 100000}),
+		new UpgradeAction("Augmentations", {titanium: 5000, uranium: 50, science: 150000}),
 		new UpgradeAction("EnrichedUranium", {titanium: 7500, uranium: 150, science: 175000}),
 		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
 		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
