@@ -93,7 +93,7 @@ function basicProduction(state: GameState): Cart {
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
-									+ (upgrades.SunAltar && level.Temple * 0.005) - unhappiness;
+									+ (level.SunAltar && level.Temple * (0.004 + level.SunAltar * 0.001)) - unhappiness;
 	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15) + (upgrades.Augmentations && 1));  // the more kittens, the older the average kitten (assuming no deaths)
 	const workerEfficiency = happiness * workerProficiency;
 
@@ -113,7 +113,7 @@ function basicProduction(state: GameState): Cart {
 											+ level.Observatory * 0.25 * (1 + level.Satellite * 0.05) 
 											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35));
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
-	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50) * (1 + state.paragon * 0.001);
+	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50 + level.Temple * (level.Templars && 50 + level.Templars * 25)) * (1 + state.paragon * 0.001);
 
 	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * 10 + level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5));
 	const energyConsumption = level.Calciner * 1 
@@ -159,8 +159,8 @@ function basicProduction(state: GameState): Cart {
 					* autoParagonBonus * magnetoBonus * reactorBonus
 					- level.Accelerator * 0.075,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
-		culture: (level.Amphitheatre * 0.025 + level.Temple * 0.5 + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
-		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * paragonBonus,
+		culture: (level.Amphitheatre * 0.025 + level.Temple * (0.25 + (level.StainedGlass && 0.25 + level.StainedGlass * 0.5) + (level.Basilica && 0.75 + level.Basilica * 0.25)) + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
+		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * (1 + level.SolarChant * 0.1) * paragonBonus,
 		fur: level.Mint * 0.0004375 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.000105 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
@@ -211,7 +211,7 @@ function storage(state: GameState): Storage {
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok
-		faith: 1e9, // I never hit the limit, so this should be ok
+		faith: level.Temple * (100 + (level.SunAltar && 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
 	}
 }
@@ -551,6 +551,17 @@ class BuildingAction extends Action {
 	}
 }
 
+class ReligiousAction extends BuildingAction {
+	constructor(name: Building, initialConstructionResources: Cart, s = state) {
+		super(name, initialConstructionResources, 2.5, s);
+	}
+
+	available(state: GameState) {
+		const {level, upgrades} = state;
+		return super.available(state) && (level[this.name] == 0 || upgrades.Transcendence || state.showResearchedUpgrades);
+	}
+}
+
 class UpgradeAction extends Action {
 	constructor(name: Upgrade, resourceCost: Cart, s = state) {
 		super(s, name, resourceCost);
@@ -679,7 +690,13 @@ function updateActions() {
 		// new UpgradeAction("Telecommunication", {titanium: 5000, uranium: 50, science: 150000}), // effect not calculated (increases learn ratio)
 		new UpgradeAction("RoboticAssistance", {steel: 10000, gear: 250, science: 100000}),
 
-		new UpgradeAction("SunAltar", {faith: 500, gold: 250}),
+		new ReligiousAction("SolarChant", {faith: 100}),
+		// new ReligiousAction("Scholasticism", {faith: 250}), // effect not calculated (increases science storage)
+		new ReligiousAction("SunAltar", {faith: 500, gold: 250}),
+		new ReligiousAction("StainedGlass", {faith: 500, gold: 250}),
+		new ReligiousAction("Basilica", {faith: 1250, gold: 750}), // effect on culture storage not calculated
+		new ReligiousAction("Templars", {faith: 3500, gold: 3000}),
+		new UpgradeAction("Transcendence", {faith: 7500, gold: 7500}),
 
 		new TradeshipAction(),
 	];
@@ -707,6 +724,8 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ConcreteWarehouses", {science: 100000, titanium: 1250, concrete: 35}, state),
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),
+
+		new ReligiousAction("GoldenSpire", {faith: 350, gold: 150}),
 	].filter(a => a.available(state));
 }
 

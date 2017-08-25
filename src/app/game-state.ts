@@ -178,6 +178,14 @@ const building = {
 	Mint: x,
 	UnicornPasture: x,
 
+	SolarChant: x,
+	Scholasticism: x,
+	GoldenSpire: x,
+	SunAltar: x,
+	StainedGlass: x,
+	Basilica: x,
+	Templars: x,
+
 	Satellite: x,
 }
 const upgrade = {
@@ -248,7 +256,7 @@ const upgrade = {
 	Telecommunication: x,
 	RoboticAssistance: x,
 
-	SunAltar: x,
+	Transcendence: x,
 }
 
 export type BasicRes = keyof typeof basicResources;
