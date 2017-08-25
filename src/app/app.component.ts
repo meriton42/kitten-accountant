@@ -105,9 +105,6 @@ export class AppComponent implements OnInit {
   increasePrice(res: Res, count: number) {
     if (userPricedResourceNames.includes(<any>res)) {
       state.priceMarkup[res] *= Math.pow(1.15, count);
-      if (state.priceMarkup.blueprint > 1) {
-        state.priceMarkup.blueprint = 1;
-      }
       if (state.priceMarkup.faith > 1) {
         state.priceMarkup.faith = 1;
       }
