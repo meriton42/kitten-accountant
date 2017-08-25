@@ -114,6 +114,7 @@ const convertedResources = {
 	gear: x,
 	alloy: x,
 	scaffold: x,
+	kerosene: x,
 	parchment: x,
 	manuscript: x,
 	compendium: x,
@@ -243,6 +244,7 @@ const upgrade = {
 	EnrichedUranium: x,
 	OilRefinery: x,
 	OilDistillation: x,
+	FactoryProcessing: x,
 	Telecommunication: x,
 	RoboticAssistance: x,
 

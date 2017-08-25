@@ -52,6 +52,7 @@ function updateEconomy() {
 		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
 		new CraftingConversion("scaffold", {beam: 50}),
 		new Smelting(ironPrice),
+		new KeroseneConversion(),
 	];
 }
 
@@ -387,10 +388,23 @@ class CraftingConversion extends Conversion {
 
 	produced(state: GameState) {
 		const {level, upgrades} = state;
-		const produced: {[R in Res]?: number} = {};
+		const produced: Cart = {};
 		produced[this.product] = craftRatio(state)
 													 + (this.product == "blueprint" && upgrades.CADsystem && 0.01 * (level.Library + level.Academy + level.Observatory + level.BioLab));
 		return produced;
+	}
+}
+
+class KeroseneConversion extends CraftingConversion {
+	constructor() {
+		super("kerosene", {oil: 7500});
+	}
+
+	produced(state: GameState) {
+		const {level, upgrades} = state;
+		const p = super.produced(state);
+		p[this.product] *= 1 + level.Factory * (upgrades.FactoryProcessing && 0.05) * 0.75;
+		return p;
 	}
 }
 
@@ -661,6 +675,7 @@ function updateActions() {
 		new UpgradeAction("EnrichedUranium", {titanium: 7500, uranium: 150, science: 175000}),
 		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
 		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
+		new UpgradeAction("FactoryProcessing", {titanium: 7500, concrete: 125, science: 195000}),
 		// new UpgradeAction("Telecommunication", {titanium: 5000, uranium: 50, science: 150000}), // effect not calculated (increases learn ratio)
 		new UpgradeAction("RoboticAssistance", {steel: 10000, gear: 250, science: 100000}),
 
