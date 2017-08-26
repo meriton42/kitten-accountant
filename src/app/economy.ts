@@ -636,7 +636,7 @@ function updateActions() {
 		new BuildingAction("Mint", {minerals: 5000, plate: 200, gold: 500}, 1.15),
 		new BuildingAction("UnicornPasture", {unicorn: 2}, 1.75),
 
-		new BuildingAction("Satellite", {starchart: 325, science: 100000, unobtainium: 50}, 1.15),
+		new BuildingAction("Satellite", {starchart: 325, titanium: 2500, science: 100000, oil: 15000}, 1.08),
 
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
