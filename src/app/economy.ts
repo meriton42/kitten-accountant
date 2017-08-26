@@ -199,16 +199,17 @@ function storage(state: GameState): Storage {
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25 + (upgrades.ReactorVessel && level.Reactor * 0.05)));
+	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1);
 	const paragonBonus = 1 + state.paragon * 0.001;
 	return {
-		catnip: (5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) 
-					* (1 + (upgrades.Silos && barnRatio * 0.25)) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75)),
-		wood: (200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio * paragonBonus,
-		minerals: (250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio * paragonBonus,
-		iron: (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio * paragonBonus,
+		catnip: ((5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)) 
+				+  level.Accelerator * acceleratorRatio * 30000) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75)),
+		wood: ((200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 20000) * paragonBonus,
+		minerals: ((250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000) * paragonBonus,
+		iron: ((level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500) * paragonBonus,
 		coal: 0,
 		oil: level.OilWell * 1500 * paragonBonus,
-		gold: (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio * paragonBonus,
+		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok
@@ -717,6 +718,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ReinforcedBarns", {science: 800, beam: 25, slab: 10, iron: 100}, state),
 		new UpgradeAction("ReinforcedWarehouses", {science: 15000, plate: 50, steel: 50, scaffold: 25}, state),
 		new UpgradeAction("Silos", {science: 50000, steel: 125, blueprint: 5}, state),
+		// LHC would give science storage
 		new UpgradeAction("ExpandedCargo", {science: 55000, blueprint: 15}, state),
 		new UpgradeAction("ReactorVessel", {science: 135000, titanium: 5000, uranium: 125}, state),
 		new UpgradeAction("TitaniumBarns", {science: 60000, titanium: 25, steel: 200, scaffold: 250}, state),
@@ -725,6 +727,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("TitaniumWarehouses", {science: 70000, titanium: 50, steel: 500, scaffold: 500}, state),
 		new UpgradeAction("AlloyWarehouses", {science: 90000, titanium: 750, alloy: 50}, state),
 		new UpgradeAction("ConcreteWarehouses", {science: 100000, titanium: 1250, concrete: 35}, state),
+		new UpgradeAction("EnergyRifts", {science: 200000, titanium: 7500, uranium: 250}),
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),
 
