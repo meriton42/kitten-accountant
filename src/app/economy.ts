@@ -25,6 +25,7 @@ function updateEconomy() {
 	price = <any>basicPrice;
 	price.starchart = 1000 * priceMarkup.starchart;
 	price.unobtainium = 6666.66; // TODO find source for it
+	price.eludium = 6666.66; // TODO find source for it
 
 	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
 	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
@@ -115,7 +116,7 @@ function basicProduction(state: GameState): Cart {
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50 + level.Temple * (level.Templars && 50 + level.Templars * 25)) * (1 + state.paragon * 0.001);
 
-	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * 10 + level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5));
+	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) + level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5));
 	const energyConsumption = level.Calciner * 1 
 											+ level.Factory * 2 
 											+ (upgrades.Pumpjack && level.OilWell * 1) 
@@ -127,7 +128,7 @@ function basicProduction(state: GameState): Cart {
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 	const reactorBonus = 1 + level.Reactor * 0.05;
 
-	const spaceRatio = 1;
+	const spaceRatio = 1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75); // TODO: space manuf. does not apply to uranium
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -675,6 +676,7 @@ function updateActions() {
 		new UpgradeAction("HighPressureEngine", {gear: 25, science: 20000, blueprint: 5}),
 		new UpgradeAction("FuelInjectors", {gear: 250, oil: 20000, science: 100000}),
 		new UpgradeAction("FactoryLogistics", {gear: 250, titanium: 2000, science: 100000}),
+		new UpgradeAction("SpaceManufacturing", {titanium: 125000, science: 250000}),
 		new UpgradeAction("Astrolabe", {titanium: 5, starchart: 75, science: 25000}),
 		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}),
 		new UpgradeAction("Pumpjack", {titanium: 250, gear: 125, science: 100000}),
@@ -684,6 +686,7 @@ function updateActions() {
 		new UpgradeAction("Logistics", {gear: 100, scaffold: 1000, science: 100000}),
 		new UpgradeAction("Augmentations", {titanium: 5000, uranium: 50, science: 150000}),
 		new UpgradeAction("EnrichedUranium", {titanium: 7500, uranium: 150, science: 175000}),
+		new UpgradeAction("ColdFusion", {eludium: 25, science: 200000}),
 		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
 		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
 		new UpgradeAction("FactoryProcessing", {titanium: 7500, concrete: 125, science: 195000}),
