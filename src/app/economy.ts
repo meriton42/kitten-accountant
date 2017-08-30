@@ -91,7 +91,7 @@ function hyperbolicLimit(x: number, limit: number) {
 function basicProduction(state: GameState): Cart {
 	let {level, upgrades, workers, luxury} = state;
 
-	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1;
+	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1 + level.SpaceStation * 2;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (level.SunAltar && level.Temple * (0.004 + level.SunAltar * 0.001)) - unhappiness;
@@ -112,23 +112,31 @@ function basicProduction(state: GameState): Cart {
 	const scienceBonus = level.Library * 0.1 
 											+ level.Academy * 0.2 
 											+ level.Observatory * 0.25 * (1 + level.Satellite * 0.05) 
-											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35));
+											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35))
+											+ level.SpaceStation * 0.5;
 	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50 + level.Temple * (level.Templars && 50 + level.Templars * 25)) * (1 + state.paragon * 0.001);
 
-	const energyProduction = level.Steamworks * 1 + level.Magneto * 5 + level.HydroPlant * 5 + level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) + level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5));
+	const energyProduction = level.Steamworks * 1 
+											+ level.Magneto * 5 
+											+ level.HydroPlant * 5 
+											+ level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) 
+											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5))
+											+ (upgrades.SolarSatellites && level.Satellite * 1);
 	const energyConsumption = level.Calciner * 1 
 											+ level.Factory * 2 
 											+ (upgrades.Pumpjack && level.OilWell * 1) 
 											+ (upgrades.BiofuelProcessing && level.BioLab * 1)
-											+ level.Satellite * 1
-											+ level.Accelerator * 2;
+											+ (!upgrades.SolarSatellites && level.Satellite * 1)
+											+ level.Accelerator * 2
+											+ level.SpaceStation * 10;
 	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 	const reactorBonus = 1 + level.Reactor * 0.05;
 
-	const spaceRatio = 1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75); // TODO: space manuf. does not apply to uranium
+	const spaceRatio = (1 + level.SpaceElevator * 0.01)
+								* (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)); // TODO: space manuf. does not apply to uranium
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -166,7 +174,9 @@ function basicProduction(state: GameState): Cart {
 		ivory: level.Mint * 0.000105 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
 		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
-		starchart: astroChance * 1 + level.Satellite * 0.005 * spaceRatio * paragonBonus,
+		starchart: astroChance * 1 
+					+ level.Satellite * 0.005 * (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * spaceRatio * paragonBonus
+					+ (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency * paragonBonus),
 		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus 
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25)),
 	}
@@ -553,6 +563,15 @@ class BuildingAction extends Action {
 	}
 }
 
+class SpaceAction extends BuildingAction {
+	constructor(name: Building, initialConstructionResources: Cart, priceRatio: number, s = state) {
+		if (initialConstructionResources.oil) {
+			initialConstructionResources.oil *= 1 - s.level.SpaceElevator * 0.05;
+		}
+		super(name, initialConstructionResources, priceRatio, s);
+	}
+}
+
 class ReligiousAction extends BuildingAction {
 	constructor(name: Building, initialConstructionResources: Cart, s = state) {
 		super(name, initialConstructionResources, 2.5, s);
@@ -637,7 +656,9 @@ function updateActions() {
 		new BuildingAction("Mint", {minerals: 5000, plate: 200, gold: 500}, 1.15),
 		new BuildingAction("UnicornPasture", {unicorn: 2}, 1.75),
 
-		new BuildingAction("Satellite", {starchart: 325, titanium: 2500, science: 100000, oil: 15000}, 1.08),
+		new SpaceAction("SpaceElevator", {titanium: 6000, science: 100000, unobtainium: 50}, 1.15), // TODO also boost hydraulicFracturers
+		new SpaceAction("Satellite", {starchart: 325, titanium: 2500, science: 100000, oil: 15000}, 1.08),
+		new SpaceAction("SpaceStation", {starchart: 425, alloy: 750, science: 150000, oil: 35000}, 1.12),
 
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
@@ -651,6 +672,7 @@ function updateActions() {
 		new UpgradeAction("TitaniumAxe", {science: 38000, titanium: 10}),
 		new UpgradeAction("AlloyAxe", {science: 70000, alloy: 25}),
 		new UpgradeAction("PhotovoltaicCells", {titanium: 5000, science: 75000}), 
+		new UpgradeAction("SolarSatellites", {alloy: 750, science: 225000}),
 		new UpgradeAction("IronWoodHuts", {science: 30000, wood: 15000, iron: 3000}),
 		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),
 		new UpgradeAction("CompositeBow", {science: 500, iron: 100, wood: 200}),
@@ -689,6 +711,8 @@ function updateActions() {
 		new UpgradeAction("EnrichedUranium", {titanium: 7500, uranium: 150, science: 175000}),
 		new UpgradeAction("ColdFusion", {eludium: 25, science: 200000}),
 		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
+		new UpgradeAction("HubbleSpaceTelescope", {alloy: 1250, oil: 50000, science: 250000}),
+		new UpgradeAction("AstroPhysicists", {unobtainium: 350, science: 250000}),
 		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
 		new UpgradeAction("FactoryProcessing", {titanium: 7500, concrete: 125, science: 195000}),
 		// new UpgradeAction("Telecommunication", {titanium: 5000, uranium: 50, science: 150000}), // effect not calculated (increases learn ratio)

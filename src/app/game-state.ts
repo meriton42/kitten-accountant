@@ -187,7 +187,9 @@ const building = {
 	Basilica: x,
 	Templars: x,
 
+	SpaceElevator: x,
 	Satellite: x,
+	SpaceStation: x,
 }
 const upgrade = {
 	MineralHoes: x,
@@ -212,6 +214,7 @@ const upgrade = {
 	ConcreteWarehouses: x,
 	EnergyRifts: x,
 	PhotovoltaicCells: x,
+	SolarSatellites: x,
 	ExpandedCargo: x,
 	ReactorVessel: x,
 	IronWoodHuts: x,
@@ -255,6 +258,8 @@ const upgrade = {
 	EnrichedUranium: x,
 	ColdFusion: x,
 	OilRefinery: x,
+	HubbleSpaceTelescope: x,
+	AstroPhysicists: x,
 	OilDistillation: x,
 	FactoryProcessing: x,
 	Telecommunication: x,
