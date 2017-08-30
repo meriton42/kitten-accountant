@@ -132,6 +132,7 @@ const userPricedResources: {[R in Res]?} = {
 	starchart: x,
 	blueprint: x,
 	uranium: x,
+	unobtainium: x,
 }
 
 const job = {

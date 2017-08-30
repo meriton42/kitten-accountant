@@ -24,7 +24,7 @@ function updateEconomy() {
 	};
 	price = <any>basicPrice;
 	price.starchart = 1000 * priceMarkup.starchart;
-	price.unobtainium = 6666.66; // TODO find source for it
+	price.unobtainium = 1000 * priceMarkup.unobtainium;
 	price.eludium = 6666.66; // TODO find source for it
 
 	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
@@ -472,18 +472,20 @@ export abstract class Action extends CostBenefitAnalysis {
 					let bestRoI = 0;
 					let bestAction: Action = null;
 					let bestStorage: Storage;
-					for (const sa of storageActions(currentState)) {
-						sa.applyTo(currentState);
-						let newStorage = storage(currentState);
-						sa.undo(currentState);
-
-						const gain = newStorage[xp.res] - currentStorage[xp.res];
-						const cost = sa.investment.cost;
-						const roi = gain / cost;
-						if (roi > bestRoI) {
-							bestRoI = roi;
-							bestAction = sa;
-							bestStorage = newStorage;
+					if (this.investment.expenses.length < 9) { // limit depth to save CPU time
+						for (const sa of storageActions(currentState)) {
+							sa.applyTo(currentState);
+							let newStorage = storage(currentState);
+							sa.undo(currentState);
+	
+							const gain = newStorage[xp.res] - currentStorage[xp.res];
+							const cost = sa.investment.cost;
+							const roi = gain / cost;
+							if (roi > bestRoI) {
+								bestRoI = roi;
+								bestAction = sa;
+								bestStorage = newStorage;
+							}
 						}
 					}
 
