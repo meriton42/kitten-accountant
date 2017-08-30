@@ -129,7 +129,9 @@ function basicProduction(state: GameState): Cart {
 											+ (upgrades.BiofuelProcessing && level.BioLab * 1)
 											+ (!upgrades.SolarSatellites && level.Satellite * 1)
 											+ level.Accelerator * 2
-											+ level.SpaceStation * 10;
+											+ level.SpaceStation * 10
+											+ level.LunarOutpost * 5
+											+ level.MoonBase * 10;
 	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
@@ -178,7 +180,9 @@ function basicProduction(state: GameState): Cart {
 					+ level.Satellite * 0.005 * (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * spaceRatio * paragonBonus
 					+ (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency * paragonBonus),
 		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus 
-					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25)),
+					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
+					- level.LunarOutpost * 1.75,
+		unobtainium: level.LunarOutpost * 0.035 * spaceRatio,
 	}
 }
 
@@ -213,12 +217,12 @@ function storage(state: GameState): Storage {
 	const paragonBonus = 1 + state.paragon * 0.001;
 	return {
 		catnip: ((5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)) 
-				+  level.Accelerator * acceleratorRatio * 30000) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75)),
-		wood: ((200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 20000) * paragonBonus,
-		minerals: ((250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000) * paragonBonus,
-		iron: ((level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500) * paragonBonus,
+				+  level.Accelerator * acceleratorRatio * 30000 + level.MoonBase * 45000) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75)),
+		wood: ((200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 20000 + level.MoonBase * 25000) * paragonBonus,
+		minerals: ((250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000 + level.MoonBase * 30000) * paragonBonus,
+		iron: ((level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500 + level.MoonBase * 9000) * paragonBonus,
 		coal: 0,
-		oil: level.OilWell * 1500 * paragonBonus,
+		oil: (level.OilWell * 1500 + level.MoonBase * 3500) * paragonBonus,
 		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
@@ -659,6 +663,7 @@ function updateActions() {
 		new SpaceAction("SpaceElevator", {titanium: 6000, science: 100000, unobtainium: 50}, 1.15), // TODO also boost hydraulicFracturers
 		new SpaceAction("Satellite", {starchart: 325, titanium: 2500, science: 100000, oil: 15000}, 1.08),
 		new SpaceAction("SpaceStation", {starchart: 425, alloy: 750, science: 150000, oil: 35000}, 1.12),
+		new SpaceAction("LunarOutpost", {starchart: 650, uranium: 500, alloy: 750, concrete: 150, science: 100000, oil: 55000}, 1.12),
 
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
@@ -737,6 +742,8 @@ function storageActions(state: GameState) {
 		new BuildingAction("Barn", {wood: 50}, 1.75, state),
 		new BuildingAction("Warehouse", {beam: 1.5, slab: 2}, 1.15, state),
 		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
+
+		new SpaceAction("MoonBase", {starchart: 700, titanium: 9500, concrete: 250, science: 100000, unobtainium: 50, oil: 70000}, 1.12, state),
 
 		new UpgradeAction("ExpandedBarns", {science: 500, wood: 1000, minerals: 750, iron: 50}, state),
 		new UpgradeAction("ReinforcedBarns", {science: 800, beam: 25, slab: 10, iron: 100}, state),

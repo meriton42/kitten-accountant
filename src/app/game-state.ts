@@ -190,6 +190,8 @@ const building = {
 	SpaceElevator: x,
 	Satellite: x,
 	SpaceStation: x,
+	LunarOutpost: x,
+	MoonBase: x,
 }
 const upgrade = {
 	MineralHoes: x,
