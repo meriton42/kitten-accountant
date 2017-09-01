@@ -108,6 +108,26 @@
         <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
       </td>
     </tr>  
+  </tbody>
+</table>
+
+<table class="panel table">
+  <thead>
+    <tr>
+      <th colspan="2" style="text-align: center">
+        Metaphysics
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let a of metaphysicActions" (click)="apply(a)" (contextmenu)="undo(a)">
+      <td>{{a.name}}</td>
+      <td style="position: relative">
+        {{a.stateInfo()}}
+        <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
+      </td>
+    </tr>  
+  </tbody>
 </table>
 
 <div style="clear: both; height: 15em"></div>

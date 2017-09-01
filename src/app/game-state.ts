@@ -269,6 +269,9 @@ const upgrade = {
 	RoboticAssistance: x,
 
 	Transcendence: x,
+
+	Engineering: x,
+	Diplomacy: x,
 }
 
 export type BasicRes = keyof typeof basicResources;

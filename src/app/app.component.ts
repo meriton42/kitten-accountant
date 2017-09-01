@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
   production: {[R in Res]: number};
   actions: Action[];
   storageActions: Action[];
+  metaphysicActions: Action[];
   furReport: CostBenefitAnalysis;
   conversions: {[R in ConvertedRes]?: Conversion};
 
@@ -37,6 +38,7 @@ export class AppComponent implements OnInit {
     this.production = eco.production;
     this.actions = eco.actions;
     this.storageActions = eco.storageActions;
+    this.metaphysicActions = eco.metaphysicActions;
     this.furReport = eco.furReport;
     this.conversions = {};
     for (const conv of eco.conversions) {

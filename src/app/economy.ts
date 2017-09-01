@@ -343,12 +343,13 @@ abstract class Trade extends Conversion {
 	}
 
 	produced(state: GameState) {
-		const {level} = state;
+		const {level, upgrades} = state;
 
 		let output = this.output(state, 1 + level.TradePost * 0.015);
 
-		const friendlyChance = this.friendly && Math.max(1, this.friendly + level.TradePost * 0.0035 / 2);
-		const hostileChance = this.hostile && Math.max(0, this.hostile - level.TradePost * 0.0035);
+		const standingRatio = level.TradePost * 0.0035 + (upgrades.Diplomacy && 0.1);
+		const friendlyChance = this.friendly && Math.max(1, this.friendly + standingRatio / 2);
+		const hostileChance = this.hostile && Math.max(0, this.hostile - standingRatio);
 		const expectedSuccess = 1 - hostileChance + friendlyChance * 0.25;
 
 		for (const k in output) {
@@ -440,7 +441,9 @@ export abstract class Action extends CostBenefitAnalysis {
 		}
 
 		this.procureStorage(this.investment.expeditures, s);
+	}
 
+	assess() {
 		const deltaProduction = delta(production, state => this.applyTo(state));
 		for (const r of resourceNames) {
 			if (deltaProduction[r]) {
@@ -452,6 +455,8 @@ export abstract class Action extends CostBenefitAnalysis {
 		if (this.return.cost < 0 || this.roi > 1e6) {
 			this.roi = Infinity;
 		}
+		
+		return this; // for chaining
 	}
 
 	private static procuringStorage = false;
@@ -540,7 +545,7 @@ const obsoletedBy: {[B in Building]?: Building} = {
 class BuildingAction extends Action {
 
 	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state) {
-		super(s, name, initialConstructionResources, Math.pow(priceRatio, s.level[name]));
+		super(s, name, initialConstructionResources, Math.pow(priceRatio - (s.upgrades.Engineering && 0.01), s.level[name]));
 	}
 
   available(state: GameState) {
@@ -608,6 +613,22 @@ class UpgradeAction extends Action {
 
 	undo(state: GameState) {
 		state.upgrades[this.name] = false;
+	}
+}
+
+class MetaphysicAction extends UpgradeAction {
+	constructor(name: Upgrade, private paragonCost: number, s = state) {
+		super(name, {}, s);
+	}
+
+	applyTo(state: GameState) {
+		super.applyTo(state);
+		state.paragon -= this.paragonCost;
+	}
+
+	undo(state: GameState) {
+		super.undo(state);
+		state.paragon += this.paragonCost;
 	}
 }
 
@@ -735,7 +756,7 @@ function updateActions() {
 
 		new TradeshipAction(),
 	];
-	actions = actions.filter(a => a.available(state));
+	actions = actions.filter(a => a.available(state)).map(a => a.assess());
 	actions.sort((a,b) => a.roi - b.roi);
 }
 
@@ -765,7 +786,14 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),
 
 		new ReligiousAction("GoldenSpire", {faith: 350, gold: 150}),
-	].filter(a => a.available(state));
+	].filter(a => a.available(state)).map(a => a.assess());
+}
+
+function metaphysicActions() {
+	return [
+		new MetaphysicAction("Engineering", 5),
+		new MetaphysicAction("Diplomacy", 5),
+	].filter(a => a.available(state)).map(a => a.assess());
 }
 
 class FurConsumptionReport extends CostBenefitAnalysis {
@@ -791,6 +819,7 @@ export function economyReport() {
 		conversions,
 		actions, 
 		storageActions: storageActions(state), 
+		metaphysicActions: metaphysicActions(),
 		furReport: new FurConsumptionReport(state),
 	};
 }
