@@ -272,6 +272,7 @@ const upgrade = {
 
 	Engineering: x,
 	Diplomacy: x,
+	GoldenRatio: x,
 }
 
 export type BasicRes = keyof typeof basicResources;

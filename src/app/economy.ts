@@ -545,7 +545,7 @@ const obsoletedBy: {[B in Building]?: Building} = {
 class BuildingAction extends Action {
 
 	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state) {
-		super(s, name, initialConstructionResources, Math.pow(priceRatio - (s.upgrades.Engineering && 0.01), s.level[name]));
+		super(s, name, initialConstructionResources, Math.pow(priceRatio - (s.upgrades.Engineering && 0.01) - (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01), s.level[name]));
 	}
 
   available(state: GameState) {
@@ -793,6 +793,7 @@ function metaphysicActions() {
 	return [
 		new MetaphysicAction("Engineering", 5),
 		new MetaphysicAction("Diplomacy", 5),
+		new MetaphysicAction("GoldenRatio", 50),
 	].filter(a => a.available(state)).map(a => a.assess());
 }
 
