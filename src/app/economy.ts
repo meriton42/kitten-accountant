@@ -119,7 +119,7 @@ function basicProduction(state: GameState): Cart {
 
 	const energyProduction = level.Steamworks * 1 
 											+ level.Magneto * 5 
-											+ level.HydroPlant * 5 
+											+ level.HydroPlant * 5 * (1 + (upgrades.HydroPlantTurbines && 0.15))
 											+ level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) 
 											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5))
 											+ (upgrades.SolarSatellites && level.Satellite * 1);
@@ -156,12 +156,13 @@ function basicProduction(state: GameState): Cart {
 		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25) + (upgrades.Railgun && 0.25)) * paragonBonus
 					- level.Mint * 3.75,
 		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75) + (upgrades.FluidizedReactors && 1))) * autoParagonBonus * magnetoBonus * reactorBonus,
-		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05)))
+		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05) + (upgrades.UnobtainiumDrill && 0.075)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
 						* paragonBonus * magnetoBonus * reactorBonus
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))) * autoParagonBonus,
-		gold: (level.Smelter * 0.005 * autoParagonBonus + (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) * paragonBonus))) * magnetoBonus * reactorBonus
+		gold: (level.Smelter * 0.005 * autoParagonBonus 
+				+ (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) + (upgrades.UnobtainiumDrill && 0.0025)) * paragonBonus)) * magnetoBonus * reactorBonus
 					- level.Mint * 0.025,
 		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
@@ -656,7 +657,7 @@ function updateActions() {
 		new BuildingAction("SolarFarm", {titanium: 250}, 1.15),
 		new BuildingAction("Aqueduct", {minerals: 75}, 1.12),
 		new BuildingAction("HydroPlant", {concrete: 100, titanium: 2500}, 1.15),
-		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3)),
+		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3) - (upgrades.UnobtainiumHuts && 0.25)),
 		new BuildingAction("LogHouse", {wood: 200, minerals: 250}, 1.15),
 		new BuildingAction("Mansion", {slab: 185, steel: 75, titanium: 25}, 1.15),
 		new BuildingAction("Library", {wood: 25}, 1.15),
@@ -703,6 +704,7 @@ function updateActions() {
 		new UpgradeAction("SolarSatellites", {alloy: 750, science: 225000}),
 		new UpgradeAction("IronWoodHuts", {science: 30000, wood: 15000, iron: 3000}),
 		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),
+		new UpgradeAction("UnobtainiumHuts", {science: 200000, unobtainium: 350, titanium: 15000}),
 		new UpgradeAction("CompositeBow", {science: 500, iron: 100, wood: 200}),
 		new UpgradeAction("Crossbow", {science: 12000, iron: 1500}),
 		new UpgradeAction("Railgun", {science: 150000, titanium: 5000, blueprint: 25}),
@@ -713,6 +715,7 @@ function updateActions() {
 		new UpgradeAction("Nanosuits", {science: 185000, alloy: 250}),
 		new UpgradeAction("Geodesy", {titanium: 250, starchart: 500, science: 90000}),
 		new UpgradeAction("MiningDrill", {titanium: 1750, steel: 750, science: 100000}),
+		new UpgradeAction("UnobtainiumDrill", {unobtainium: 250, alloy: 1250, science: 250000}),
 		new UpgradeAction("CoalFurnace", {minerals: 5000, iron: 2000, beam: 35, science: 5000}),
 		new UpgradeAction("DeepMining", {iron: 1200, beam: 50, science: 5000}),
 		new UpgradeAction("Pyrolysis", {compendium: 5, science: 35000}),
@@ -729,7 +732,9 @@ function updateActions() {
 		new UpgradeAction("FactoryLogistics", {gear: 250, titanium: 2000, science: 100000}),
 		new UpgradeAction("SpaceManufacturing", {titanium: 125000, science: 250000}),
 		new UpgradeAction("Astrolabe", {titanium: 5, starchart: 75, science: 25000}),
-		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}),
+		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}), // effect not calculated (science storage)
+		new UpgradeAction("UnobtainiumReflectors", {unobtainium: 75, starchart: 750, science: 250000}), // effect not calculated (science storage)
+		new UpgradeAction("HydroPlantTurbines", {unobtainium: 125, science: 250000}),
 		new UpgradeAction("Pumpjack", {titanium: 250, gear: 125, science: 100000}),
 		new UpgradeAction("BiofuelProcessing", {titanium: 1250, science: 150000}),
 		new UpgradeAction("CADsystem", {titanium: 750, science: 125000}),
