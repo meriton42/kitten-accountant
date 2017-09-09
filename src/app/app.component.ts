@@ -104,6 +104,15 @@ export class AppComponent implements OnInit {
     return state.paragon;
   }
 
+  setConversionProportion(res: Res, p: number) {
+    state.conversionProportion[res] = p;
+    this.update();
+  }
+
+  getConversionProportion(res: Res) {
+    return state.conversionProportion[res];
+  }
+
   increasePrice(res: Res, count: number) {
     if (userPricedResourceNames.includes(<any>res)) {
       state.priceMarkup[res] *= Math.pow(1.15, count);
@@ -116,14 +125,6 @@ export class AppComponent implements OnInit {
       if (state.priceMarkup.uranium > 1) {
         state.priceMarkup.uranium = 1;
       }
-      this.update();
-      return false;
-    }
-  }
-
-  increaseProduction(res: Res, count: number) {
-    if (convertedResourceNames.includes(<any>res)) {
-      state.conversionProportion[res] = Math.max(0, state.conversionProportion[res] + 0.1 * count);
       this.update();
       return false;
     }
