@@ -137,8 +137,10 @@ function basicProduction(state: GameState): Cart {
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 	const reactorBonus = 1 + level.Reactor * 0.05;
 
-	const spaceRatio = (1 + level.SpaceElevator * 0.01)
-								* (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)); // TODO: space manuf. does not apply to uranium
+	const spaceRatioUranium = (1 + level.SpaceElevator * 0.01) // for some reason, space manuf. does not apply to uranium
+	const spaceRatio = spaceRatioUranium * (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)); 
+	const prodTransferBonus = level.SpaceElevator * 0.001;
+	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -165,6 +167,7 @@ function basicProduction(state: GameState): Cart {
 				+ (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) + (upgrades.UnobtainiumDrill && 0.0025)) * paragonBonus)) * magnetoBonus * reactorBonus
 					- level.Mint * 0.025,
 		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
+					+ level.HydraulicFracturer * 2.5 * spaceRatio
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25) + (upgrades.FluidizedReactors && 3)) 
 					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
@@ -181,6 +184,7 @@ function basicProduction(state: GameState): Cart {
 					+ level.Satellite * 0.005 * (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * spaceRatio * paragonBonus
 					+ (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency * paragonBonus),
 		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus 
+					+ level.PlanetCracker * 1.5 * spaceRatioUranium
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
 					- level.LunarOutpost * 1.75,
 		unobtainium: level.LunarOutpost * 0.035 * spaceRatio,
@@ -684,10 +688,12 @@ function updateActions() {
 		new BuildingAction("Mint", {minerals: 5000, plate: 200, gold: 500}, 1.15),
 		new BuildingAction("UnicornPasture", {unicorn: 2}, 1.75),
 
-		new SpaceAction("SpaceElevator", {titanium: 6000, science: 100000, unobtainium: 50}, 1.15), // TODO also boost hydraulicFracturers
+		new SpaceAction("SpaceElevator", {titanium: 6000, science: 100000, unobtainium: 50}, 1.15),
 		new SpaceAction("Satellite", {starchart: 325, titanium: 2500, science: 100000, oil: 15000}, 1.08),
 		new SpaceAction("SpaceStation", {starchart: 425, alloy: 750, science: 150000, oil: 35000}, 1.12),
 		new SpaceAction("LunarOutpost", {starchart: 650, uranium: 500, alloy: 750, concrete: 150, science: 100000, oil: 55000}, 1.12),
+		new SpaceAction("PlanetCracker", {starchart: 2500, alloy: 1750, science: 125000, kerosene: 50}, 1.18),
+		new SpaceAction("HydraulicFracturer", {starchart: 750, alloy: 1025, science: 150000, kerosene: 100}, 1.18),
 
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),

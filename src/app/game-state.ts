@@ -193,6 +193,9 @@ const building = {
 	SpaceStation: x,
 	LunarOutpost: x,
 	MoonBase: x,
+	PlanetCracker: x,
+	HydraulicFracturer: x,
+	SpiceRefinery: x,
 }
 const upgrade = {
 	MineralHoes: x,
