@@ -626,6 +626,10 @@ class MetaphysicAction extends UpgradeAction {
 		super(name, {}, s);
 	}
 
+	available(state: GameState) {
+		return true;
+	}
+
 	applyTo(state: GameState) {
 		super.applyTo(state);
 		state.paragon -= this.paragonCost;
