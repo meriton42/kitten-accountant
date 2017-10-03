@@ -16,6 +16,8 @@ export interface GameState {
 	ships: number;
 	karma: number;
 	paragon: number;
+
+	notes: string;
 }
 
 function readGameState() : GameState {

@@ -136,4 +136,13 @@ export class AppComponent implements OnInit {
     event.stopPropagation();
     return false;
   }
+
+  set notes(notes: string) {
+    state.notes = notes;
+    saveGameState();
+  }
+
+  get notes() {
+    return state.notes;
+  }
 }

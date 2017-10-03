@@ -1,138 +1,110 @@
 <div style="position: absolute; left: 0; right: 0; top:0; overflow-y: auto; padding: 0.5em" [style.bottom]="showGame ? '50%' : 0">
-<h1 style="margin-top: 0">
-  Kitten Accountant
-</h1>
-
 <a href="" style="float:right" (click)="forget()">Reset</a>
 
-<table class="panel table">
-  <thead>
-    <tr><th style="text-align: center" colspan="2">Jobs</th></tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let j of jobNames" (click)="addWorker(j, 1)" (contextmenu)="addWorker(j, -1)">
-      <td>{{workers[j]}}</td>
-      <td style="text-align: left">{{j}}</td>
-    </tr>
-  </tbody>
-</table>
+<panel heading="Jobs">
+  <table class="table">
+    <tbody>
+      <tr *ngFor="let j of jobNames" (click)="addWorker(j, 1)" (contextmenu)="addWorker(j, -1)">
+        <td>{{workers[j]}}</td>
+        <td style="text-align: left">{{j}}</td>
+      </tr>
+    </tbody>
+  </table>
+</panel>
 
-<table class="panel table">
-  <thead>
-    <tr>
-      <th colspan="5" style="text-align: center">Production</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let r of resourceNames">
-      <td>
-        <input *ngIf="conversions[r] && r !='iron'" [ngModel]="getConversionProportion(r)" (ngModelChange)="setConversionProportion(r, $event)" 
-          type="range" min="0" max="1" step="0.1">
-      </td>
-      <td>
-        {{production[r] | number:'1.2-2'}}
-      </td>
-      <td style="text-align:left">{{r}}</td>
-      <td>@</td>
-      <td (click)="increasePrice(r,1)" (contextmenu)="increasePrice(r, -1)">
-        {{price[r] | number:'1.2-2'}}
-      </td>
-      <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
-          <cost-benefit-analysis *ngIf="r == 'fur'" [cba]="furReport" class="tooltip"></cost-benefit-analysis>
-          {{luxury[r] ? 'A' : ''}}
-      </td>
-      <ng-template #conversionBlock>
-        <td style="width: 1em; position: relative">
-          <cost-benefit-analysis *ngIf="conversions[r]" [cba]="conversions[r]" class="tooltip"></cost-benefit-analysis>
+<panel heading="Production">
+  <table class="table">
+    <tbody>
+      <tr *ngFor="let r of resourceNames">
+        <td>
+          <input *ngIf="conversions[r] && r !='iron'" [ngModel]="getConversionProportion(r)" (ngModelChange)="setConversionProportion(r, $event)" 
+            type="range" min="0" max="1" step="0.1">
         </td>
-      </ng-template>
-    </tr>
-  </tbody>
-  <tbody>
-    <tr>
-      <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="ships" style="width: 3em; text-align: right"></td><td style="text-align: left">ships</td>
-    </tr>
-    <tr>
-      <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="karma" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
-    </tr>
-    <tr>
-      <td></td><td><input type="number" step="1" min="0" class="nospinner" [(ngModel)]="paragon" style="width: 3em; text-align: right"></td><td style="text-align: left">paragon</td>
-    </tr>
-  </tbody>
-</table>
+        <td>
+          {{production[r] | number:'1.2-2'}}
+        </td>
+        <td style="text-align:left">{{r}}</td>
+        <td>@</td>
+        <td (click)="increasePrice(r,1)" (contextmenu)="increasePrice(r, -1)">
+          {{price[r] | number:'1.2-2'}}
+        </td>
+        <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
+            <cost-benefit-analysis *ngIf="r == 'fur'" [cba]="furReport" class="tooltip"></cost-benefit-analysis>
+            {{luxury[r] ? 'A' : ''}}
+        </td>
+        <ng-template #conversionBlock>
+          <td style="width: 1em; position: relative">
+            <cost-benefit-analysis *ngIf="conversions[r]" [cba]="conversions[r]" class="tooltip"></cost-benefit-analysis>
+          </td>
+        </ng-template>
+      </tr>
+    </tbody>
+    <tbody>
+      <tr>
+        <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="ships" style="width: 3em; text-align: right"></td><td style="text-align: left">ships</td>
+      </tr>
+      <tr>
+        <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="karma" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
+      </tr>
+      <tr>
+        <td></td><td><input type="number" step="1" min="0" class="nospinner" [(ngModel)]="paragon" style="width: 3em; text-align: right"></td><td style="text-align: left">paragon</td>
+      </tr>
+    </tbody>
+  </table>
+</panel>
 
-<table class="panel table">
-  <thead>
-    <tr>
-      <th>
-        RoI
-      </th>
-      <th>
-        building
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)">
-      <td>{{a.roi | number:'1.0-0'}}</td>
-      <td>
-        {{a.name}}
-      </td>
-      <td style="position: relative">
-        {{a.stateInfo()}}
-        <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
-      </td>
-    </tr>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td colspan="3" style="text-align: center; border-top: 0.5em solid transparent">
-        <label>
-          <input type="checkbox" [(ngModel)]="showResearchedUpgrades">
-          show researched
-        </label>
-      </td>
-    </tr>
-  </tfoot>
-</table>
+<panel heading="Buildings and Upgrades">
+  <table class="table">
+    <tbody>
+      <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)">
+        <td>{{a.roi | number:'1.0-0'}}</td>
+        <td>
+          {{a.name}}
+        </td>
+        <td style="position: relative">
+          {{a.stateInfo()}}
+          <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <label style="margin-top: 3em">
+    <input type="checkbox" [(ngModel)]="showResearchedUpgrades">
+    show researched
+  </label>
+</panel>
 
-<table class="panel table">
-  <thead>
-    <tr>
-      <th colspan="2" style="text-align: center">
-        Storage
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let a of storageActions" (click)="apply(a)" (contextmenu)="undo(a)">
-      <td>{{a.name}}</td>
-      <td style="position: relative">
-        {{a.stateInfo()}}
-        <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
-      </td>
-    </tr>  
-  </tbody>
-</table>
+<panel heading="Storage">
+  <table class="table">
+    <tbody>
+      <tr *ngFor="let a of storageActions" (click)="apply(a)" (contextmenu)="undo(a)">
+        <td>{{a.name}}</td>
+        <td style="position: relative">
+          {{a.stateInfo()}}
+          <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
+        </td>
+      </tr>  
+    </tbody>
+  </table>
+</panel>
 
-<table class="panel table">
-  <thead>
-    <tr>
-      <th colspan="2" style="text-align: center">
-        Metaphysics
-      </th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let a of metaphysicActions" (click)="apply(a)" (contextmenu)="undo(a)">
-      <td>{{a.name}}</td>
-      <td style="position: relative">
-        {{a.stateInfo()}}
-        <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
-      </td>
-    </tr>  
-  </tbody>
-</table>
+<panel heading="Metaphysics">
+  <table class="table">
+    <tbody>
+      <tr *ngFor="let a of metaphysicActions" (click)="apply(a)" (contextmenu)="undo(a)">
+        <td>{{a.name}}</td>
+        <td style="position: relative">
+          {{a.stateInfo()}}
+          <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
+        </td>
+      </tr>  
+    </tbody>
+  </table>
+</panel>
+
+<panel heading="Notes">
+  <textarea [(ngModel)]="notes" rows="10" style="font-size: 1em"></textarea>
+</panel>
 
 <div style="clear: both; height: 15em"></div>
 </div>
