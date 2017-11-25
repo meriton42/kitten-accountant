@@ -93,6 +93,8 @@ const basicResources = {
 	coal: x,
 	iron: x,
 	titanium: x,
+	uranium: x,
+	unobtainium: x,
 	gold: x,
 	oil: x,
 	catpower: x,

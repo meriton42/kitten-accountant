@@ -14,6 +14,8 @@ function updateEconomy() {
 		minerals: wage / workerProduction("miner", "minerals"),
 		iron: 0, // assigned below
 		titanium: 0, // assigned below
+		uranium: 0, // assigned below
+		unobtainium: 1000 * priceMarkup.unobtainium,
 		coal: wage / workerProduction("geologist", "coal") * priceMarkup.coal,
 		gold: 10 * priceMarkup.gold,
 		oil: 5 * priceMarkup.oil,
@@ -25,7 +27,6 @@ function updateEconomy() {
 	};
 	price = <any>basicPrice;
 	price.starchart = 1000 * priceMarkup.starchart;
-	price.unobtainium = 1000 * priceMarkup.unobtainium;
 	price.eludium = 6666.66; // TODO find source for it
 
 	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
@@ -228,6 +229,8 @@ function storage(state: GameState): Storage {
 		minerals: ((250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000 + level.MoonBase * 30000) * paragonBonus,
 		iron: ((level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500 + level.MoonBase * 9000) * paragonBonus,
 		titanium: ((level.Barn * 2 + level.Warehouse * 10 + level.Harbor * harborRatio * 50) * warehouseRatio + level.Accelerator * acceleratorRatio * 750 + level.MoonBase * 1250) * paragonBonus,
+		uranium: (250 + level.Reactor * 250 + level.MoonBase * 1750) * paragonBonus,
+		unobtainium: (150 + level.MoonBase * 150) * paragonBonus,
 		coal: 0,
 		oil: (level.OilWell * 1500 + level.MoonBase * 3500) * paragonBonus,
 		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
@@ -524,7 +527,7 @@ export abstract class Action extends CostBenefitAnalysis {
 
 	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
-			if (xp.res != "catnip" && xp.res != "wood" && xp.res != "titanium" && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
+			if (!["catnip", "wood", "titanium", "uranium"].includes(xp.res) && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
 				return false;
 			}
 		}
