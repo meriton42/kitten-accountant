@@ -13,6 +13,7 @@ function updateEconomy() {
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
 		iron: 0, // assigned below
+		titanium: 0, // assigned below
 		coal: wage / workerProduction("geologist", "coal") * priceMarkup.coal,
 		gold: 10 * priceMarkup.gold,
 		oil: 5 * priceMarkup.oil,
@@ -226,9 +227,10 @@ function storage(state: GameState): Storage {
 		wood: ((200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 20000 + level.MoonBase * 25000) * paragonBonus,
 		minerals: ((250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000 + level.MoonBase * 30000) * paragonBonus,
 		iron: ((level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500 + level.MoonBase * 9000) * paragonBonus,
+		titanium: ((level.Barn * 2 + level.Warehouse * 10 + level.Harbor * harborRatio * 50) * warehouseRatio + level.Accelerator * acceleratorRatio * 750 + level.MoonBase * 1250) * paragonBonus,
 		coal: 0,
 		oil: (level.OilWell * 1500 + level.MoonBase * 3500) * paragonBonus,
-		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
+		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok
@@ -275,7 +277,7 @@ export abstract class Conversion extends CostBenefitAnalysis {
 	instanteneous = true;
 
 	/** also sets the price of the product! */
-	constructor(public product: ConvertedRes | "iron", resourceInvestment: Cart, productPrice?: number) {
+	constructor(public product: ConvertedRes, resourceInvestment: Cart, productPrice?: number) {
 		super();
 		let cost = 0;
 		let benefit = 0;
@@ -522,7 +524,7 @@ export abstract class Action extends CostBenefitAnalysis {
 
 	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
-			if (xp.res != "catnip" && xp.res != "wood" && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
+			if (xp.res != "catnip" && xp.res != "wood" && xp.res != "titanium" && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
 				return false;
 			}
 		}

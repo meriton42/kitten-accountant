@@ -92,6 +92,7 @@ const basicResources = {
 	minerals: x,
 	coal: x,
 	iron: x,
+	titanium: x,
 	gold: x,
 	oil: x,
 	catpower: x,
@@ -102,8 +103,9 @@ const basicResources = {
 };
 // created on command by conversion, unlimited storage
 const convertedResources = {
-	starchart: x,
+	iron: x,
 	titanium: x,
+	starchart: x,
 	uranium: x,
 	unobtainium: x,
 	eludium: x,
@@ -295,7 +297,7 @@ export type UserPricedRes = keyof typeof userPricedResources;
 export const userPricedResourceNames = keyNames(userPricedResources);
 
 export type Res = BasicRes | ConvertedRes;
-export const resourceNames = (<Res[]>basicResourceNames).concat(convertedResourceNames);
+export const resourceNames = keyNames(Object.assign({}, basicResources, convertedResources));
 
 export type Job = keyof typeof job;
 export const jobNames = keyNames(job);
