@@ -126,6 +126,8 @@ const convertedResources = {
 	manuscript: x,
 	compendium: x,
 	blueprint: x,
+	megalith: x,
+	tear: x,
 }
 
 const userPricedResources: {[R in Res]?} = {
@@ -185,6 +187,10 @@ const building = {
 	TradePost: x,
 	Mint: x,
 	UnicornPasture: x,
+	Ziggurat: x,
+
+	UnicornTomb: x,
+	IvoryTower: x,
 
 	SolarChant: x,
 	Scholasticism: x,

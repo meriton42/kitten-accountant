@@ -56,6 +56,8 @@ function updateEconomy() {
 		new CraftingConversion("scaffold", {beam: 50}),
 		new Smelting(ironPrice),
 		new KeroseneConversion(),
+		new CraftingConversion("megalith", {slab: 50, beam: 25, plate: 5}),
+		new UnicornSacrifice(),
 	];
 }
 
@@ -144,6 +146,8 @@ function basicProduction(state: GameState): Cart {
 	const prodTransferBonus = level.SpaceElevator * 0.001;
 	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium
 
+	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1;
+
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * workerEfficiency * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
@@ -180,7 +184,9 @@ function basicProduction(state: GameState): Cart {
 		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * (1 + level.SolarChant * 0.1) * paragonBonus,
 		fur: level.Mint * 0.0004375 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.000105 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
-		unicorn: level.UnicornPasture * 0.005 * paragonBonus + (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
+		unicorn: level.UnicornPasture * 0.005 * (1 + unicornRatioReligion) * paragonBonus 
+					+ level.IvoryTower * 0.00025 * 500 * (1 + unicornRatioReligion * 0.1) 
+					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
 					+ level.Satellite * 0.005 * (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * spaceRatio * paragonBonus
@@ -236,7 +242,7 @@ function storage(state: GameState): Storage {
 		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
-		culture: 1e9, // I never hit the limit, so this should be ok
+		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
 		faith: level.Temple * (100 + (level.SunAltar && 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
 	}
@@ -435,6 +441,18 @@ class KeroseneConversion extends CraftingConversion {
 	}
 }
 
+class UnicornSacrifice extends Conversion {
+  constructor() {
+		super("tear", {unicorn: 2500});
+	}
+
+	produced(state: GameState): Cart {
+		return {
+			tear: state.level.Ziggurat
+		}
+	}
+}
+
 function craftRatio(state: GameState) {
 	const {level, upgrades} = state;
 	return 1 + level.Workshop * 0.06 + level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01))
@@ -604,6 +622,16 @@ class ReligiousAction extends BuildingAction {
 	}
 }
 
+class ZigguratBuilding extends BuildingAction {
+	constructor(name: Building, initialConstructionResources: Cart, priceRatio: number, s = state) {
+		super(name, initialConstructionResources, priceRatio, s);
+	}
+
+	available(state: GameState) {
+		return super.available(state) && state.level.Ziggurat > 0;
+	}
+}
+
 class UpgradeAction extends Action {
 	constructor(name: Upgrade, resourceCost: Cart, s = state) {
 		super(s, name, resourceCost);
@@ -696,6 +724,7 @@ function updateActions() {
 		new BuildingAction("TradePost", {wood: 500, minerals: 200, gold: 10}, 1.15),
 		new BuildingAction("Mint", {minerals: 5000, plate: 200, gold: 500}, 1.15),
 		new BuildingAction("UnicornPasture", {unicorn: 2}, 1.75),
+		new BuildingAction("Ziggurat", {megalith: 50, scaffold: 50, blueprint: 1}, 1.25),
 
 		new SpaceAction("SpaceElevator", {titanium: 6000, science: 100000, unobtainium: 50}, 1.15),
 		new SpaceAction("Satellite", {starchart: 325, titanium: 2500, science: 100000, oil: 15000}, 1.08),
@@ -773,6 +802,9 @@ function updateActions() {
 		new ReligiousAction("Basilica", {faith: 1250, gold: 750}), // effect on culture storage not calculated
 		new ReligiousAction("Templars", {faith: 3500, gold: 3000}),
 		new UpgradeAction("Transcendence", {faith: 7500, gold: 7500}),
+
+		new ZigguratBuilding("UnicornTomb", {ivory: 500, tear: 5}, 1.15),
+		new ZigguratBuilding("IvoryTower", {ivory: 25000, tear: 25}, 1.15),
 
 		new TradeshipAction(),
 	];
