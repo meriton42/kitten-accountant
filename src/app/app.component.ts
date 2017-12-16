@@ -1,10 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "app/game-state";
 import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion } from "app/economy";
+import { CbaTooltipService } from 'app/cba-tooltip.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
+  providers: [
+    CbaTooltipService
+  ]
 })
 export class AppComponent implements OnInit {
   title = 'app works!';
@@ -26,6 +30,8 @@ export class AppComponent implements OnInit {
   conversions: {[R in ConvertedRes]?: Conversion};
 
   shipsAsString: string;
+
+  constructor(public cbaTooltip: CbaTooltipService) {}
 
   ngOnInit() {
     this.update();

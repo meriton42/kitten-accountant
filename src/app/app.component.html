@@ -15,7 +15,7 @@
 <panel heading="Production">
   <table class="table">
     <tbody>
-      <tr *ngFor="let r of resourceNames">
+      <tr *ngFor="let r of resourceNames" [cba-tooltip]="r == 'fur' ? furReport : conversions[r]">
         <td>
           <input *ngIf="conversions[r] && r !='iron'" [ngModel]="getConversionProportion(r)" (ngModelChange)="setConversionProportion(r, $event)" 
             type="range" min="0" max="1" step="0.1">
@@ -28,14 +28,11 @@
         <td (click)="increasePrice(r,1)" (contextmenu)="increasePrice(r, -1)">
           {{price[r] | number:'1.2-2'}}
         </td>
-        <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center; position: relative">
-            <cost-benefit-analysis *ngIf="r == 'fur'" [cba]="furReport" class="tooltip"></cost-benefit-analysis>
+        <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center">
             {{luxury[r] ? 'A' : ''}}
         </td>
         <ng-template #conversionBlock>
-          <td style="width: 1em; position: relative">
-            <cost-benefit-analysis *ngIf="conversions[r]" [cba]="conversions[r]" class="tooltip"></cost-benefit-analysis>
-          </td>
+          <td style="width: 1em"></td>
         </ng-template>
       </tr>
     </tbody>
@@ -56,14 +53,13 @@
 <panel heading="Buildings and Upgrades">
   <table class="table">
     <tbody>
-      <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)">
+      <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)" [cba-tooltip]="a">
         <td>{{a.roi | number:'1.0-0'}}</td>
         <td>
           {{a.name}}
         </td>
-        <td style="position: relative">
+        <td>
           {{a.stateInfo()}}
-          <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
         </td>
       </tr>
     </tbody>
@@ -77,11 +73,10 @@
 <panel heading="Storage">
   <table class="table">
     <tbody>
-      <tr *ngFor="let a of storageActions" (click)="apply(a)" (contextmenu)="undo(a)">
+      <tr *ngFor="let a of storageActions" (click)="apply(a)" (contextmenu)="undo(a)" [cba-tooltip]="a">
         <td>{{a.name}}</td>
         <td style="position: relative">
           {{a.stateInfo()}}
-          <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
         </td>
       </tr>  
     </tbody>
@@ -91,11 +86,10 @@
 <panel heading="Metaphysics">
   <table class="table">
     <tbody>
-      <tr *ngFor="let a of metaphysicActions" (click)="apply(a)" (contextmenu)="undo(a)">
+      <tr *ngFor="let a of metaphysicActions" (click)="apply(a)" (contextmenu)="undo(a)" [cba-tooltip]="a">
         <td>{{a.name}}</td>
         <td style="position: relative">
           {{a.stateInfo()}}
-          <cost-benefit-analysis [cba]="a" class="tooltip"></cost-benefit-analysis>
         </td>
       </tr>  
     </tbody>
@@ -105,6 +99,8 @@
 <panel heading="Notes">
   <textarea [(ngModel)]="notes" rows="10" style="font-size: 1em"></textarea>
 </panel>
+
+<cost-benefit-analysis [cba]="cbaTooltip.cba" *ngIf="cbaTooltip.cba" style="position: fixed; z-index: 1; background: #e0e0e0; padding: .3em;" [style.left]="cbaTooltip.left + 'px'" [style.top]="cbaTooltip.top + 'px'"></cost-benefit-analysis>
 
 <div style="clear: both; height: 15em"></div>
 </div>

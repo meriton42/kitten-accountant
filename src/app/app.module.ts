@@ -6,11 +6,13 @@ import { HttpModule } from '@angular/http';
 import { AppComponent } from './app.component';
 import { CostBenefitAnalysisComponent } from './cost-benefit-analysis.component';
 import { PanelComponent } from './panel.component';
+import { CbaTooltipDirective } from 'app/cba-tooltip.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CostBenefitAnalysisComponent,
+    CbaTooltipDirective,
+    CostBenefitAnalysisComponent,    
     PanelComponent,
   ],
   imports: [
