@@ -92,6 +92,16 @@ function hyperbolicLimit(x: number, limit: number) {
 	return a * limit;
 }
 
+/** called getTriValue in kittens game source code */
+function triValue(value: number, stripe: number){
+	return (Math.sqrt(1 + 8 * value / stripe) - 1) / 2;
+}
+
+/** multiplier to production caused by solar revolution */
+export function solarRevolutionProductionBonus(state: GameState) {
+	return 1 + (state.upgrades.SolarRevolution && hyperbolicLimit(triValue(state.faith.stored, 1000), 1000) * 0.01);
+}
+
 function basicProduction(state: GameState): Cart {
 	let {level, upgrades, workers, luxury} = state;
 
@@ -110,6 +120,7 @@ function basicProduction(state: GameState): Cart {
 		workers.farmer += idle; // so additional kittens are known to contribute production
 	}
 
+	const faithBonus = solarRevolutionProductionBonus(state);
 	const paragonBonus = 1 + 0.01 * hyperbolicLimit(state.paragon, 200);
 	const autoParagonBonus = 1 + 0.0005 * hyperbolicLimit(state.paragon, 200);
 
@@ -151,47 +162,47 @@ function basicProduction(state: GameState): Cart {
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
 				    + workers.farmer * workerEfficiency * 5 * (1 + (upgrades.MineralHoes && 0.5) + (upgrades.IronHoes && 0.3))
-					) * (1 + level.Aqueduct * 0.03) * paragonBonus
+					) * (1 + level.Aqueduct * 0.03) * paragonBonus * faithBonus
 					- kittens * 4.25 * Math.max(1, happiness) * hyperbolicDecrease(level.Pasture * 0.005 + level.UnicornPasture * 0.0015) * (1 - (upgrades.RoboticAssistance && 0.25))
 					- (upgrades.BiofuelProcessing && level.BioLab * 5),
 		wood: workers.woodcutter * 0.09 * workerEfficiency 
 					* (1 + (upgrades.MineralAxe && 0.7) + (upgrades.IronAxe && 0.5) + (upgrades.SteelAxe && 0.5) + (upgrades.TitaniumAxe && 0.5) + (upgrades.AlloyAxe && 0.5))
 					* (1 + level.LumberMill * 0.1 * (1 + (upgrades.ReinforcedSaw && 0.2) + (upgrades.SteelSaw && 0.2) + (upgrades.TitaniumSaw && 0.15) + (upgrades.AlloySaw && 0.15)))
-					* paragonBonus * magnetoBonus * reactorBonus
+					* paragonBonus * magnetoBonus * reactorBonus * faithBonus
 		      - level.Smelter * 0.25,
-		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * paragonBonus * magnetoBonus * reactorBonus
+		minerals: workers.miner * 0.25 * workerEfficiency * (1 + level.Mine * 0.2 + level.Quarry * 0.35) * paragonBonus * magnetoBonus * reactorBonus * faithBonus
 					- level.Smelter * 0.5 - level.Calciner * 7.5,
-		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25) + (upgrades.Railgun && 0.25)) * paragonBonus
+		catpower: workers.hunter * 0.3 * workerEfficiency * (1 + (upgrades.CompositeBow && 0.5) + (upgrades.Crossbow && 0.25) + (upgrades.Railgun && 0.25)) * paragonBonus * faithBonus
 					- level.Mint * 3.75,
-		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75) + (upgrades.FluidizedReactors && 1))) * autoParagonBonus * magnetoBonus * reactorBonus,
+		iron: (level.Smelter * 0.1 * (1 + (upgrades.ElectrolyticSmelting && 0.95)) + level.Calciner * 0.75 * (1 + (upgrades.Oxidation && 1) + (upgrades.RotaryKiln && 0.75) + (upgrades.FluidizedReactors && 1))) * autoParagonBonus * magnetoBonus * reactorBonus * faithBonus,
 		coal: 0 + ((upgrades.DeepMining && level.Mine * 0.015) + level.Quarry * 0.075 + workers.geologist * workerEfficiency * (0.075 + (upgrades.Geodesy && 0.0375) + (upgrades.MiningDrill && 0.05) + (upgrades.UnobtainiumDrill && 0.075)))
 						* (1 + (upgrades.Pyrolysis && 0.2))
 						* (1 + (level.Steamworks && (-0.8 + (upgrades.HighPressureEngine && 0.2) + (upgrades.FuelInjectors && 0.2))))
-						* paragonBonus * magnetoBonus * reactorBonus
+						* paragonBonus * magnetoBonus * reactorBonus * faithBonus
 						+ (upgrades.CoalFurnace && level.Smelter * 0.025 * (1 + (upgrades.ElectrolyticSmelting && 0.95))) * autoParagonBonus,
 		gold: (level.Smelter * 0.005 * autoParagonBonus 
-				+ (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) + (upgrades.UnobtainiumDrill && 0.0025)) * paragonBonus)) * magnetoBonus * reactorBonus
+				+ (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) + (upgrades.UnobtainiumDrill && 0.0025)) * paragonBonus)) * magnetoBonus * reactorBonus * faithBonus
 					- level.Mint * 0.025,
-		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus
+		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus * faithBonus
 					+ level.HydraulicFracturer * 2.5 * spaceRatio
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25) + (upgrades.FluidizedReactors && 3)) 
 					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
-					* autoParagonBonus * magnetoBonus * reactorBonus
+					* autoParagonBonus * magnetoBonus * reactorBonus * faithBonus
 					- level.Accelerator * 0.075,
-		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus + astroChance * (30 * scienceBonus),
-		culture: (level.Amphitheatre * 0.025 + level.Temple * (0.25 + (level.StainedGlass && 0.25 + level.StainedGlass * 0.5) + (level.Basilica && 0.75 + level.Basilica * 0.25)) + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus,
-		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * (1 + level.SolarChant * 0.1) * paragonBonus,
-		fur: level.Mint * 0.0004375 * maxCatpower - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
+		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus * faithBonus + astroChance * (30 * scienceBonus),
+		culture: (level.Amphitheatre * 0.025 + level.Temple * (0.25 + (level.StainedGlass && 0.25 + level.StainedGlass * 0.5) + (level.Basilica && 0.75 + level.Basilica * 0.25)) + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus * faithBonus,
+		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * (1 + level.SolarChant * 0.1) * paragonBonus * faithBonus,
+		fur: level.Mint * 0.0004375 * maxCatpower  - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.000105 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
-		unicorn: level.UnicornPasture * 0.005 * (1 + unicornRatioReligion) * paragonBonus 
+		unicorn: level.UnicornPasture * 0.005 * (1 + unicornRatioReligion) * paragonBonus * faithBonus
 					+ level.IvoryTower * 0.00025 * 500 * (1 + unicornRatioReligion * 0.1) 
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
 					+ level.Satellite * 0.005 * (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * spaceRatio * paragonBonus
-					+ (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency * paragonBonus),
-		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus 
+					+ (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency * paragonBonus * faithBonus),
+		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
 					+ level.PlanetCracker * 1.5 * spaceRatioUranium
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
 					- level.LunarOutpost * 1.75,
@@ -690,6 +701,23 @@ class TradeshipAction extends Action {
 	}
 }
 
+class PraiseAction extends Action {
+	constructor() {
+		super(state, "PraiseTheSun", {faith: 1000});
+	}
+
+	applyTo(state: GameState) {
+		state.faith.stored += 1000 * (1 + state.faith.apocryphaBonus * 0.01);
+	}
+
+	undo(state: GameState) {
+		state.faith.stored -= 1000 * (1 + state.faith.apocryphaBonus * 0.01);
+	}
+	stateInfo() {
+		return "";
+	}
+}
+
 function updateActions() {
 	const {upgrades} = state;
 	actions = [
@@ -801,12 +829,14 @@ function updateActions() {
 		new ReligiousAction("StainedGlass", {faith: 500, gold: 250}),
 		new ReligiousAction("Basilica", {faith: 1250, gold: 750}), // effect on culture storage not calculated
 		new ReligiousAction("Templars", {faith: 3500, gold: 3000}),
+		new UpgradeAction("SolarRevolution", {faith: 750, gold: 500}),
 		new UpgradeAction("Transcendence", {faith: 7500, gold: 7500}),
 
 		new ZigguratBuilding("UnicornTomb", {ivory: 500, tear: 5}, 1.15),
 		new ZigguratBuilding("IvoryTower", {ivory: 25000, tear: 25}, 1.15),
 
 		new TradeshipAction(),
+		new PraiseAction(),
 	];
 	actions = actions.filter(a => a.available(state)).map(a => a.assess());
 	actions.sort((a,b) => a.roi - b.roi);

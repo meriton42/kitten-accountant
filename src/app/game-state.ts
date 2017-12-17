@@ -5,7 +5,11 @@ export interface GameState {
 		fur: boolean;
 		ivory: boolean;
 		unicorn: boolean;
-	}
+	};
+	faith: {
+		stored: number,
+		apocryphaBonus: number,
+	};
 
 	level : {[B in Building] : number};
 	upgrades : {[U in Upgrade] : boolean};
@@ -34,6 +38,9 @@ function readGameState() : GameState {
 	state.luxury.fur = state.luxury.fur || false;
 	state.luxury.ivory = state.luxury.ivory || false;
 	state.luxury.unicorn = state.luxury.unicorn || false;
+	state.faith = state.faith || <any>{};
+	state.faith.stored = state.faith.stored || 0;
+	state.faith.apocryphaBonus = state.faith.apocryphaBonus || 0;
 	state.level = state.level || <any>{};
 	for (const b of buildingNames) {
 		state.level[b] = state.level[b] || 0;
@@ -287,6 +294,7 @@ const upgrade = {
 	Telecommunication: x,
 	RoboticAssistance: x,
 
+	SolarRevolution: x,
 	Transcendence: x,
 
 	Engineering: x,

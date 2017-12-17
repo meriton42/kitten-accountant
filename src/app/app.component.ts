@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "app/game-state";
-import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion } from "app/economy";
+import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus } from "app/economy";
 import { CbaTooltipService } from 'app/cba-tooltip.service';
 
 @Component({
@@ -12,6 +12,8 @@ import { CbaTooltipService } from 'app/cba-tooltip.service';
 })
 export class AppComponent implements OnInit {
   title = 'app works!';
+
+  state = state;
 
   resourceNames = resourceNames;
   jobNames = jobNames;
@@ -35,6 +37,10 @@ export class AppComponent implements OnInit {
 
   ngOnInit() {
     this.update();
+  }
+
+  saveGameState() {
+    saveGameState();
   }
 
   update() {
@@ -72,51 +78,6 @@ export class AppComponent implements OnInit {
     action.undo(state);
     this.update();
     return false; // suppress context menu
-  } 
-
-  set showResearchedUpgrades(newValue: boolean) {
-    state.showResearchedUpgrades = newValue;
-    this.update();
-  }
-
-  get showResearchedUpgrades() {
-    return state.showResearchedUpgrades;
-  }
-
-  set karma(newValue: number) {
-    state.karma = newValue;
-    this.update();
-  }
-
-  get karma() {
-    return state.karma;
-  }
-
-  set ships(newValue: number) {
-    state.ships = newValue;
-    this.update();
-  }
-
-  get ships() {
-    return state.ships;
-  }
-
-  set paragon(newValue: number) {
-    state.paragon = newValue;
-    this.update();
-  }
-
-  get paragon() {
-    return state.paragon;
-  }
-
-  setConversionProportion(res: Res, p: number) {
-    state.conversionProportion[res] = p;
-    this.update();
-  }
-
-  getConversionProportion(res: Res) {
-    return state.conversionProportion[res];
   }
 
   increasePrice(res: Res, count: number) {
@@ -143,12 +104,7 @@ export class AppComponent implements OnInit {
     return false;
   }
 
-  set notes(notes: string) {
-    state.notes = notes;
-    saveGameState();
-  }
-
-  get notes() {
-    return state.notes;
+  get faithBonus() {
+    return solarRevolutionProductionBonus(state);
   }
 }
