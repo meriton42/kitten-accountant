@@ -254,7 +254,7 @@ function storage(state: GameState): Storage {
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
-		faith: level.Temple * (100 + (level.SunAltar && 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire)) * paragonBonus,
+		faith: (100 + level.Temple * (100 + (level.SunAltar && 50))) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire * 0.1)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
 	}
 }
