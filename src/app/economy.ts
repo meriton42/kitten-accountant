@@ -250,7 +250,7 @@ function storage(state: GameState): Storage {
 		unobtainium: (150 + level.MoonBase * 150) * paragonBonus,
 		coal: 0,
 		oil: (level.OilWell * 1500 + level.MoonBase * 3500) * paragonBonus,
-		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
+		gold: ((level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
