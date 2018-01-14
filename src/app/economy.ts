@@ -183,7 +183,7 @@ function basicProduction(state: GameState): Cart {
 		gold: (level.Smelter * 0.005 * autoParagonBonus 
 				+ (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) + (upgrades.UnobtainiumDrill && 0.0025)) * paragonBonus)) * magnetoBonus * reactorBonus * faithBonus
 					- level.Mint * 0.025,
-		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02)) * paragonBonus * reactorBonus * faithBonus
+		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02 * (1 + (upgrades.GMCatnip && 0.25)))) * paragonBonus * reactorBonus * faithBonus
 					+ level.HydraulicFracturer * 2.5 * spaceRatio
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25) + (upgrades.FluidizedReactors && 3)) 
@@ -195,7 +195,7 @@ function basicProduction(state: GameState): Cart {
 		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * (1 + level.SolarChant * 0.1) * paragonBonus * faithBonus,
 		fur: level.Mint * 0.0004375 * maxCatpower  - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.000105 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
-		unicorn: level.UnicornPasture * 0.005 * (1 + unicornRatioReligion) * paragonBonus * faithBonus
+		unicorn: level.UnicornPasture * 0.005 * (1 + unicornRatioReligion + (upgrades.UnicornSelection && 0.25)) * paragonBonus * faithBonus
 					+ level.IvoryTower * 0.00025 * 500 * (1 + unicornRatioReligion * 0.1) 
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
@@ -809,6 +809,8 @@ function updateActions() {
 		new UpgradeAction("HydroPlantTurbines", {unobtainium: 125, science: 250000}),
 		new UpgradeAction("Pumpjack", {titanium: 250, gear: 125, science: 100000}),
 		new UpgradeAction("BiofuelProcessing", {titanium: 1250, science: 150000}),
+		new UpgradeAction("UnicornSelection", {titanium: 1500, science: 175000}),
+		new UpgradeAction("GMCatnip", {titanium: 1500, catnip: 1000000, science: 175000}),
 		new UpgradeAction("CADsystem", {titanium: 750, science: 125000}),
 		new UpgradeAction("SETI", {titanium: 250, science: 125000}),
 		new UpgradeAction("Logistics", {gear: 100, scaffold: 1000, science: 100000}),

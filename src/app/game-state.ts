@@ -280,6 +280,8 @@ const upgrade = {
 	HydroPlantTurbines: x,
 	Pumpjack: x,
 	BiofuelProcessing: x,
+	UnicornSelection: x,
+	GMCatnip: x,
 	CADsystem: x,
 	SETI: x,
 	Logistics: x,
