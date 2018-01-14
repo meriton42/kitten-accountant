@@ -198,6 +198,7 @@ const building = {
 
 	UnicornTomb: x,
 	IvoryTower: x,
+	IvoryCitadel: x,
 
 	SolarChant: x,
 	Scholasticism: x,

@@ -157,7 +157,7 @@ function basicProduction(state: GameState): Cart {
 	const prodTransferBonus = level.SpaceElevator * 0.001;
 	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium
 
-	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1;
+	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1 + level.IvoryCitadel * 0.25;
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -836,6 +836,7 @@ function updateActions() {
 
 		new ZigguratBuilding("UnicornTomb", {ivory: 500, tear: 5}, 1.15),
 		new ZigguratBuilding("IvoryTower", {ivory: 25000, tear: 25}, 1.15),
+		new ZigguratBuilding("IvoryCitadel", {ivory: 50000, tear: 50}, 1.15), // effect on ivory meteors not calculated
 
 		new TradeshipAction(),
 		new PraiseAction(),
