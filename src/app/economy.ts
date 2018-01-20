@@ -583,11 +583,18 @@ const obsoletedBy: {[B in Building]?: Building} = {
 
 class BuildingAction extends Action {
 
-	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state) {
-		super(s, name, initialConstructionResources, Math.pow(priceRatio - (s.upgrades.Engineering && 0.01) - (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) - (s.upgrades.DivineProportion && 0.017), s.level[name]));
+	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state, applyPriceReduction = true) {
+		super(s, name, initialConstructionResources, Math.pow(BuildingAction.priceRatio(s, priceRatio, applyPriceReduction), s.level[name]));
 	}
 
-  available(state: GameState) {
+	static priceRatio(s: GameState, priceRatio: number, applyPriceReduction: boolean) {
+		if (applyPriceReduction) {
+			priceRatio = priceRatio - (s.upgrades.Engineering && 0.01) - (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) - (s.upgrades.DivineProportion && 0.017);
+		}
+		return priceRatio;
+	}
+
+	available(state: GameState) {
 		return super.available(state) && !this.obsolete(state);
 	}
 
@@ -618,13 +625,13 @@ class SpaceAction extends BuildingAction {
 		if (initialConstructionResources.oil) {
 			initialConstructionResources.oil *= 1 - s.level.SpaceElevator * 0.05;
 		}
-		super(name, initialConstructionResources, priceRatio, s);
+		super(name, initialConstructionResources, priceRatio, s, false);
 	}
 }
 
 class ReligiousAction extends BuildingAction {
 	constructor(name: Building, initialConstructionResources: Cart, s = state) {
-		super(name, initialConstructionResources, 2.5, s);
+		super(name, initialConstructionResources, 2.5, s, false);
 	}
 
 	available(state: GameState) {
@@ -635,7 +642,7 @@ class ReligiousAction extends BuildingAction {
 
 class ZigguratBuilding extends BuildingAction {
 	constructor(name: Building, initialConstructionResources: Cart, priceRatio: number, s = state) {
-		super(name, initialConstructionResources, priceRatio, s);
+		super(name, initialConstructionResources, priceRatio, s, false);
 	}
 
 	available(state: GameState) {
