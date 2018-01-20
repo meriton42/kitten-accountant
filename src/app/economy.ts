@@ -27,7 +27,6 @@ function updateEconomy() {
 	};
 	price = <any>basicPrice;
 	price.starchart = 1000 * priceMarkup.starchart;
-	price.eludium = 6666.66; // TODO find source for it
 
 	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
 	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
@@ -53,6 +52,7 @@ function updateEconomy() {
 		new CraftingConversion("gear", {steel: 15}),
 		new CraftingConversion("concrete", {slab: 2500, steel: 25}),
 		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
+		new CraftingConversion("eludium", {alloy: 2500, unobtainium: 1000}),
 		new CraftingConversion("scaffold", {beam: 50}),
 		new Smelting(ironPrice),
 		new KeroseneConversion(),
