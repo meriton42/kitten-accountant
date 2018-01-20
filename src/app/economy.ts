@@ -200,8 +200,8 @@ function basicProduction(state: GameState): Cart {
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
-					+ level.Satellite * 0.005 * (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * spaceRatio * paragonBonus
-					+ (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency * paragonBonus * faithBonus),
+					+ (level.Satellite * 0.005 * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
+					* (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * paragonBonus * faithBonus,
 		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
 					+ level.PlanetCracker * 1.5 * spaceRatioUranium
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
