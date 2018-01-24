@@ -216,6 +216,8 @@ const building = {
 	PlanetCracker: x,
 	HydraulicFracturer: x,
 	SpiceRefinery: x,
+	ResearchVessel: x,
+	OrbitalArray: x,
 }
 const upgrade = {
 	MineralHoes: x,

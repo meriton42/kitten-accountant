@@ -146,13 +146,14 @@ function basicProduction(state: GameState): Cart {
 											+ level.Accelerator * 2
 											+ level.SpaceStation * 10
 											+ level.LunarOutpost * 5
-											+ level.MoonBase * 10;
+											+ level.MoonBase * 10
+											+ level.OrbitalArray * 20;
 	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
 	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
 	const reactorBonus = 1 + level.Reactor * 0.05;
 
-	const spaceRatioUranium = (1 + level.SpaceElevator * 0.01) // for some reason, space manuf. does not apply to uranium
+	const spaceRatioUranium = (1 + level.SpaceElevator * 0.01 + level.OrbitalArray * 0.02) // for some reason, space manuf. does not apply to uranium
 	const spaceRatio = spaceRatioUranium * (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)); 
 	const prodTransferBonus = level.SpaceElevator * 0.001;
 	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium
@@ -200,7 +201,7 @@ function basicProduction(state: GameState): Cart {
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
-					+ (level.Satellite * 0.005 * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
+					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
 					* (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * paragonBonus * faithBonus,
 		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
 					+ level.PlanetCracker * 1.5 * spaceRatioUranium
@@ -767,6 +768,8 @@ function updateActions() {
 		new SpaceAction("LunarOutpost", {starchart: 650, uranium: 500, alloy: 750, concrete: 150, science: 100000, oil: 55000}, 1.12),
 		new SpaceAction("PlanetCracker", {starchart: 2500, alloy: 1750, science: 125000, kerosene: 50}, 1.18),
 		new SpaceAction("HydraulicFracturer", {starchart: 750, alloy: 1025, science: 150000, kerosene: 100}, 1.18),
+		new SpaceAction("ResearchVessel", {starchart: 500, alloy: 2500, titanium: 12500, kerosene: 250}, 1.15),
+		new SpaceAction("OrbitalArray", {eludium: 100, science: 250000, kerosene: 500}, 1.15),
 
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
