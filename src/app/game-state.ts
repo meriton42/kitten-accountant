@@ -218,6 +218,7 @@ const building = {
 	SpiceRefinery: x,
 	ResearchVessel: x,
 	OrbitalArray: x,
+	Cryostation: x,
 }
 const upgrade = {
 	MineralHoes: x,
