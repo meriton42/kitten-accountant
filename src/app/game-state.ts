@@ -307,6 +307,10 @@ const upgrade = {
 	Diplomacy: x,
 	GoldenRatio: x,
 	DivineProportion: x,
+	VitruvianFeline: x,
+	CodexVox: x,
+	Chronomancy: x,
+	Astromancy: x,
 }
 
 export type BasicRes = keyof typeof basicResources;

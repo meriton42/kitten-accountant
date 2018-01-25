@@ -129,7 +129,7 @@ function basicProduction(state: GameState): Cart {
 											+ level.Observatory * 0.25 * (1 + level.Satellite * 0.05) 
 											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35))
 											+ level.SpaceStation * 0.5;
-	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01);
+	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * (1 + (upgrades.Chronomancy && 0.1)) * (upgrades.Astromancy ? 2 : 1) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01 * (upgrades.Astromancy ? 2 : 1));
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50 + level.Temple * (level.Templars && 50 + level.Templars * 25)) * (1 + state.paragon * 0.001);
 
 	const energyProduction = level.Steamworks * 1 
@@ -433,9 +433,9 @@ class CraftingConversion extends Conversion {
 
 	produced(state: GameState) {
 		const {level, upgrades} = state;
+
 		const produced: Cart = {};
-		produced[this.product] = craftRatio(state)
-													 + (this.product == "blueprint" && upgrades.CADsystem && 0.01 * (level.Library + level.Academy + level.Observatory + level.BioLab));
+		produced[this.product] = craftRatio(state, this.product);
 		return produced;
 	}
 }
@@ -465,9 +465,20 @@ class UnicornSacrifice extends Conversion {
 	}
 }
 
-function craftRatio(state: GameState) {
+function craftRatio(state: GameState, res?: ConvertedRes) {
 	const {level, upgrades} = state;
-	return 1 + level.Workshop * 0.06 + level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01))
+	const ratio = 1 + level.Workshop * 0.06 + level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01))
+	let resCraftRatio = 0;
+	let globalResCraftRatio = 0;
+
+	if (res == "blueprint") {
+		resCraftRatio = upgrades.CADsystem && 0.01 * (level.Library + level.Academy + level.Observatory + level.BioLab);
+	} else if (res == "manuscript") {
+		resCraftRatio = upgrades.CodexVox && 0.25;
+		globalResCraftRatio = upgrades.CodexVox && 0.05;
+	}
+
+	return (ratio + resCraftRatio) * (1 + globalResCraftRatio);
 }
 
 export abstract class Action extends CostBenefitAnalysis {
@@ -590,7 +601,7 @@ class BuildingAction extends Action {
 
 	static priceRatio(s: GameState, priceRatio: number, applyPriceReduction: boolean) {
 		if (applyPriceReduction) {
-			priceRatio = priceRatio - (s.upgrades.Engineering && 0.01) - (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) - (s.upgrades.DivineProportion && 0.017);
+			priceRatio = priceRatio - (s.upgrades.Engineering && 0.01) - (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) - (s.upgrades.DivineProportion && 0.017) - (s.upgrades.VitruvianFeline && 0.02);
 		}
 		return priceRatio;
 	}
@@ -891,6 +902,10 @@ function metaphysicActions() {
 		new MetaphysicAction("Diplomacy", 5),
 		new MetaphysicAction("GoldenRatio", 50),
 		new MetaphysicAction("DivineProportion", 100),
+		new MetaphysicAction("VitruvianFeline", 250),
+		new MetaphysicAction("CodexVox", 25),
+		new MetaphysicAction("Chronomancy", 25),
+		new MetaphysicAction("Astromancy", 50),
 	].filter(a => a.available(state)).map(a => a.assess());
 }
 
