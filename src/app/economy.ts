@@ -7,7 +7,8 @@ let actions: Action[];
 
 function updateEconomy() {
 	const {priceMarkup} = state;
-  const wage = 1;
+	const wage = 1;
+	const goldPrice = 10 * priceMarkup.gold;
 	const basicPrice : {[R in BasicRes]: number} = {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
@@ -16,8 +17,8 @@ function updateEconomy() {
 		titanium: 0, // assigned below
 		uranium: 0, // assigned below
 		unobtainium: 1000 * priceMarkup.unobtainium,
-		coal: wage / workerProduction("geologist", "coal") * priceMarkup.coal,
-		gold: 10 * priceMarkup.gold,
+		coal: Math.max(0, wage - goldPrice * workerProduction("geologist", "gold")) / workerProduction("geologist", "coal") * priceMarkup.coal,
+		gold: goldPrice,
 		oil: 5 * priceMarkup.oil,
 		catpower: wage / workerProduction("hunter", "catpower"),
 		science: wage / workerProduction("scholar", "science"),
