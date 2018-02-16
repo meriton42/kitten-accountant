@@ -205,10 +205,10 @@ function basicProduction(state: GameState): Cart {
 					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
 					* (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * paragonBonus * faithBonus,
 		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
-					+ level.PlanetCracker * 1.5 * spaceRatioUranium
+					+ level.PlanetCracker * 1.5 * (1 + (upgrades.PlanetBuster && 1)) * spaceRatioUranium
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
 					- level.LunarOutpost * 1.75,
-		unobtainium: level.LunarOutpost * 0.035 * spaceRatio,
+		unobtainium: level.LunarOutpost * 0.035 * (1 + (upgrades.MicroWarpReactors && 1)) * spaceRatio,
 	}
 }
 
@@ -746,7 +746,7 @@ function updateActions() {
 		new BuildingAction("SolarFarm", {titanium: 250}, 1.15),
 		new BuildingAction("Aqueduct", {minerals: 75}, 1.12),
 		new BuildingAction("HydroPlant", {concrete: 100, titanium: 2500}, 1.15),
-		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3) - (upgrades.UnobtainiumHuts && 0.25)),
+		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3) - (upgrades.UnobtainiumHuts && 0.25) - (upgrades.EludiumHuts && 0.1)),
 		new BuildingAction("LogHouse", {wood: 200, minerals: 250}, 1.15),
 		new BuildingAction("Mansion", {slab: 185, steel: 75, titanium: 25}, 1.15),
 		new BuildingAction("Library", {wood: 25}, 1.15),
@@ -799,6 +799,7 @@ function updateActions() {
 		new UpgradeAction("IronWoodHuts", {science: 30000, wood: 15000, iron: 3000}),
 		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),
 		new UpgradeAction("UnobtainiumHuts", {science: 200000, unobtainium: 350, titanium: 15000}),
+		new UpgradeAction("EludiumHuts", {eludium: 125, science: 275000}),
 		new UpgradeAction("CompositeBow", {science: 500, iron: 100, wood: 200}),
 		new UpgradeAction("Crossbow", {science: 12000, iron: 1500}),
 		new UpgradeAction("Railgun", {science: 150000, titanium: 5000, blueprint: 25}),
@@ -842,6 +843,8 @@ function updateActions() {
 		new UpgradeAction("OilRefinery", {titanium: 1250, gear: 500, science: 125000}),
 		new UpgradeAction("HubbleSpaceTelescope", {alloy: 1250, oil: 50000, science: 250000}),
 		new UpgradeAction("AstroPhysicists", {unobtainium: 350, science: 250000}),
+		new UpgradeAction("MicroWarpReactors", {eludium: 50, science: 150000}),
+		new UpgradeAction("PlanetBuster", {eludium: 250, science: 275000}),
 		new UpgradeAction("OilDistillation", {titanium: 5000, science: 175000}),
 		new UpgradeAction("FactoryProcessing", {titanium: 7500, concrete: 125, science: 195000}),
 		// new UpgradeAction("Telecommunication", {titanium: 5000, uranium: 50, science: 150000}), // effect not calculated (increases learn ratio)
