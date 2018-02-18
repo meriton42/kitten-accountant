@@ -69,13 +69,19 @@ export class AppComponent implements OnInit {
     return false; // suppress context menu
   }
 
-  apply(action: Action) {
-    action.applyTo(state);
+  apply(action: Action, click: MouseEvent) {
+    const times = click.ctrlKey ? 10 : 1;
+    for (let i = 0; i < times; i++) {
+      action.applyTo(state);
+    }
     this.update();
   }
 
-  undo(action: Action) {
-    action.undo(state);
+  undo(action: Action, click: MouseEvent) {
+    const times = click.ctrlKey ? 10 : 1;
+    for (let i = 0; i < times; i++) {
+      action.undo(state);
+    }
     this.update();
     return false; // suppress context menu
   }

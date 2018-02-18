@@ -53,7 +53,7 @@
 <panel heading="Buildings and Upgrades">
   <table class="table">
     <tbody>
-      <tr *ngFor="let a of actions" (click)="apply(a)" (contextmenu)="undo(a)" [cba-tooltip]="a">
+      <tr *ngFor="let a of actions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
         <td>{{a.roi | number:'1.0-0'}}</td>
         <td>
           {{a.name}}
@@ -73,7 +73,7 @@
 <panel heading="Storage">
   <table class="table">
     <tbody>
-      <tr *ngFor="let a of storageActions" (click)="apply(a)" (contextmenu)="undo(a)" [cba-tooltip]="a">
+      <tr *ngFor="let a of storageActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
         <td>{{a.name}}</td>
         <td style="position: relative">
           {{a.stateInfo()}}
