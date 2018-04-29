@@ -121,11 +121,11 @@
 
 <cost-benefit-analysis [cba]="cbaTooltip.cba" *ngIf="cbaTooltip.cba" style="position: fixed; z-index: 1; background: #e0e0e0; padding: .3em;" [style.left]="cbaTooltip.left + 'px'" [style.top]="cbaTooltip.top + 'px'"></cost-benefit-analysis>
 
-<div style="clear: both; height: 15em"></div>
 </div>
 
-<div style="position: absolute; left:2em; right:2em; background: white; padding: 0.5em; text-align: center" [style.bottom]="showGame ? '50%' : 0">
+<div style="position: absolute; right:1em; background: white; padding: 0.5em; text-align: center" [style.bottom]="showGame ? '50%' : 0">
   <a (click)="showGame = !showGame" style="text-decoration: underline; color:blueviolet; cursor: pointer">{{showGame ? 'Hide' : 'Show'}} Game</a>
 </div>
+
 <iframe *ngIf="showGame" src="http://bloodrizer.ru/games/kittens/#" style="position: absolute; left: 0; width: 100%; bottom: 0; border: none" [style.height]="showGame ? '50%' : 0">
 </iframe> 
