@@ -105,7 +105,7 @@
 <panel heading="Metaphysics">
   <table class="table">
     <tbody>
-      <tr *ngFor="let a of metaphysicActions" (click)="apply(a)" (contextmenu)="undo(a)" [cba-tooltip]="a">
+      <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
         <td>{{a.name}}</td>
         <td style="position: relative">
           {{a.stateInfo()}}
