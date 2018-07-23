@@ -1,5 +1,4 @@
-<div style="position: absolute; left: 0; right: 0; top:0; overflow-y: auto; padding: 0.5em" [style.bottom]="showGame ? '50%' : 0">
-<a href="" style="float:right" (click)="forget()">Reset</a>
+<div style="position: absolute; left: 0; right: 0; top:0; overflow-y: auto; padding: 0.5em; display: flex; flex-flow: row wrap; justify-content: space-between" [style.bottom]="showGame ? '50%' : 0">
 
 <panel heading="Jobs">
   <table class="table">
@@ -39,12 +38,6 @@
     <tbody>
       <tr>
         <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="state.ships" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">ships</td>
-      </tr>
-      <tr>
-        <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="state.karma" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
-      </tr>
-      <tr>
-        <td></td><td><input type="number" step="1" min="0" class="nospinner" [(ngModel)]="state.paragon" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">paragon</td>
       </tr>
     </tbody>
   </table>
@@ -102,6 +95,20 @@
   </table>
 </panel>
 
+<panel heading="Time">
+  <table class="table">
+    <tbody>
+      <tr>
+        <td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="state.karma" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
+      </tr>
+      <tr>
+        <td><input type="number" step="1" min="0" class="nospinner" [(ngModel)]="state.paragon" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">paragon</td>
+      </tr>
+    </tbody>
+  </table>
+  <a href="" style="margin-top: .2em; display: block; text-align: center" (click)="forget()">Reset</a>
+</panel>
+  
 <panel heading="Metaphysics">
   <table class="table">
     <tbody>
@@ -118,6 +125,7 @@
 <panel heading="Notes">
   <textarea [(ngModel)]="state.notes" (ngModelChange)="saveGameState()" rows="10" style="font-size: 1em"></textarea>
 </panel>
+
 
 <cost-benefit-analysis [cba]="cbaTooltip.cba" *ngIf="cbaTooltip.cba" style="position: fixed; z-index: 1; background: #e0e0e0; padding: .3em;" [style.left]="cbaTooltip.left + 'px'" [style.top]="cbaTooltip.top + 'px'"></cost-benefit-analysis>
 
