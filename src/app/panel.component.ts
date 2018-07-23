@@ -1,12 +1,10 @@
 import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
-  selector: 'panel',
+	selector: 'panel',
 	template: `
-		<div style="float: left; margin-right: 3em; margin-bottom: 1em">
-			<h2 style="text-align: center">{{heading}}</h2>
-			<ng-content></ng-content>
-		</div>
+		<h2 style="text-align: center">{{heading}}</h2>
+		<ng-content></ng-content>
 	`
 })
 export class PanelComponent {

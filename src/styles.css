@@ -59,3 +59,9 @@ input[type="range"]::-webkit-slider-thumb {
 	background: gray;
 	margin-top: -4px;
 }
+
+panel {
+	float: left;
+	margin-right: 3em;
+	margin-bottom: 1em;
+}
