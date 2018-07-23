@@ -2,16 +2,18 @@ import { Component, OnInit } from '@angular/core';
 import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "app/game-state";
 import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus } from "app/economy";
 import { CbaTooltipService } from 'app/cba-tooltip.service';
+import { HelpService } from './help.service';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   providers: [
-    CbaTooltipService
+    CbaTooltipService,
+    HelpService,
   ]
 })
 export class AppComponent implements OnInit {
-  title = 'app works!';
+  showHelp = true;
 
   state = state;
 
@@ -33,7 +35,7 @@ export class AppComponent implements OnInit {
 
   shipsAsString: string;
 
-  constructor(public cbaTooltip: CbaTooltipService) {}
+  constructor(public cbaTooltip: CbaTooltipService, public helpService: HelpService) {}
 
   ngOnInit() {
     this.update();
@@ -90,12 +92,15 @@ export class AppComponent implements OnInit {
     if (userPricedResourceNames.includes(<any>res)) {
       state.priceMarkup[res] *= Math.pow(1.15, count);
       if (state.priceMarkup.faith > 1) {
+        alert("Using priests would be more efficient");
         state.priceMarkup.faith = 1;
       }
       if (state.priceMarkup.coal > 1) {
+        alert("using geologists would be more efficient");
         state.priceMarkup.coal = 1;
       }
       if (state.priceMarkup.uranium > 1) {
+        alert("trading with dragons would be more efficient");
         state.priceMarkup.uranium = 1;
       }
       this.update();

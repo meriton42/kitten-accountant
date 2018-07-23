@@ -61,7 +61,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 panel {
-	margin-bottom: 1em;
-	margin-left: .2em;
-	margin-right: .2em;
+	display: block;
+	margin: 0.5em;
 }
