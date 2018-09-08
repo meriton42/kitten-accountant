@@ -258,11 +258,11 @@
         </table>
       </panel>
       
-      <panel heading="Notes" [help]="noteHelp">
+      <panel heading="Notes" [help]="noteHelp" style="flex-grow: 1">
         <ng-template #noteHelp>
           This area is for taking notes about your current game.
         </ng-template>
-        <textarea [(ngModel)]="state.notes" (ngModelChange)="saveGameState()" rows="10" style="font-size: 1em"></textarea>
+        <textarea [(ngModel)]="state.notes" (ngModelChange)="saveGameState()" rows="10" style="box-sizing: border-box; width: 100%; font-size: 1em"></textarea>
       </panel>
       
       <cost-benefit-analysis [cba]="cbaTooltip.cba" *ngIf="cbaTooltip.cba" style="position: fixed; z-index: 1; background: #e0e0e0; padding: .3em;" [style.left]="cbaTooltip.left + 'px'" [style.top]="cbaTooltip.top + 'px'"></cost-benefit-analysis>
