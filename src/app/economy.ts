@@ -157,7 +157,7 @@ function basicProduction(state: GameState): Cart {
 	const spaceRatioUranium = (1 + level.SpaceElevator * 0.01 + level.OrbitalArray * 0.02) // for some reason, space manuf. does not apply to uranium
 	const spaceRatio = spaceRatioUranium * (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)); 
 	const prodTransferBonus = level.SpaceElevator * 0.001;
-	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium
+	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium; only used by buildings that we haven't implemented yet
 
 	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1 + level.IvoryCitadel * 0.25;
 
