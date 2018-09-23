@@ -244,15 +244,15 @@ function storage(state: GameState): Storage {
 	return {
 		catnip: ((5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)) 
 				+  level.Accelerator * acceleratorRatio * 30000 + level.MoonBase * 45000) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75)),
-		wood: (200 + (level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 20000 + level.MoonBase * 25000 + level.Cryostation * 200000) * paragonBonus,
-		minerals: (250 + (level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000 + level.MoonBase * 30000 + level.Cryostation * 200000) * paragonBonus,
-		iron: (50 + (level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500 + level.MoonBase * 9000 + level.Cryostation * 50000) * paragonBonus,
-		titanium: (2 + (level.Barn * 2 + level.Warehouse * 10 + level.Harbor * harborRatio * 50) * warehouseRatio + level.Accelerator * acceleratorRatio * 750 + level.MoonBase * 1250 + level.Cryostation * 7500) * paragonBonus,
+		wood: ((200 + level.Barn * 200 + level.Warehouse * 150 + level.Harbor * harborRatio * 700) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 20000 + level.MoonBase * 25000 + level.Cryostation * 200000) * paragonBonus,
+		minerals: ((250 + level.Barn * 250 + level.Warehouse * 200 + level.Harbor * harborRatio * 950) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 25000 + level.MoonBase * 30000 + level.Cryostation * 200000) * paragonBonus,
+		iron: ((50 + level.Barn * 50 + level.Warehouse * 25 + level.Harbor * harborRatio * 150) * (1 + barnRatio) * warehouseRatio + level.Accelerator * acceleratorRatio * 7500 + level.MoonBase * 9000 + level.Cryostation * 50000) * paragonBonus,
+		titanium: ((2 + level.Barn * 2 + level.Warehouse * 10 + level.Harbor * harborRatio * 50) * warehouseRatio + level.Accelerator * acceleratorRatio * 750 + level.MoonBase * 1250 + level.Cryostation * 7500) * paragonBonus,
 		uranium: (250 + level.Reactor * 250 + level.MoonBase * 1750 + level.Cryostation * 5000) * paragonBonus,
 		unobtainium: (150 + level.MoonBase * 150 + level.Cryostation * 750) * paragonBonus,
 		coal: 0,
 		oil: (1500 + level.OilWell * 1500 + level.MoonBase * 3500 + level.Cryostation * 7500) * paragonBonus,
-		gold: (10 + (level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
+		gold: ((10 + level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
