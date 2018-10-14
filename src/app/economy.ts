@@ -193,7 +193,7 @@ function basicProduction(state: GameState): Cart {
 					* autoParagonBonus * magnetoBonus * reactorBonus * faithBonus
 					- level.Accelerator * 0.075,
 		science: workers.scholar * 0.18 * workerEfficiency * (1 + scienceBonus) * paragonBonus * faithBonus + astroChance * (30 * scienceBonus),
-		culture: (level.Amphitheatre * 0.025 + level.Temple * (0.5 + (level.StainedGlass && 0.25 + level.StainedGlass * 0.5) + (level.Basilica && 0.75 + level.Basilica * 0.25)) + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus * faithBonus,
+		culture: (level.Amphitheatre * 0.025 + level.Temple * (0.5 + level.StainedGlass * 0.25 + (level.Basilica && 0.75 + level.Basilica * 0.25)) + level.Chapel * 0.25 + level.BroadcastTower * 5 * energyBonus) * paragonBonus * faithBonus,
 		faith: (level.Temple * 0.0075 + level.Chapel * 0.025 + workers.priest * workerEfficiency * 0.0075) * (1 + level.SolarChant * 0.1) * paragonBonus * faithBonus,
 		fur: level.Mint * 0.0004375 * maxCatpower  - (luxury.fur && kittens * 0.05) * hyperbolicDecrease(level.TradePost * 0.04),
 		ivory: level.Mint * 0.000105 * maxCatpower - (luxury.ivory && kittens * 0.035) * hyperbolicDecrease(level.TradePost * 0.04),
