@@ -15,7 +15,7 @@ function updateEconomy() {
 		minerals: wage / workerProduction("miner", "minerals"),
 		iron: 0, // assigned below
 		titanium: 0, // assigned below
-		uranium: 0, // assigned below
+		uranium: 1000 * priceMarkup.uranium, // not derived from dragon trade, because uranium is usually obtained from them only very briefly
 		unobtainium: 1000 * priceMarkup.unobtainium,
 		coal: Math.max(0, wage - goldPrice * workerProduction("geologist", "gold")) / workerProduction("geologist", "coal") * priceMarkup.coal,
 		gold: goldPrice,
@@ -27,18 +27,11 @@ function updateEconomy() {
 		unicorn: 1,
 	};
 	price = <any>basicPrice;
+	price.iron = ironPrice(state, basicPrice),
 	price.starchart = 1000 * priceMarkup.starchart;
 
-	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
-	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
-	// and affixing the priceMarkup to any single contribution therefore has counter intuitive side effects
-	// instead, we introduce a separate contribution to affix the priceMarkup
-	const smelter = delta(basicProduction, s => s.level.Smelter++);
-	const ironPrice = (priceMarkup.iron - smelter.wood * price.wood - smelter.minerals * price.minerals) / smelter.iron;
-	price.iron = ironPrice;
-
 	conversions = [
-		// the constructor sets the price of the product
+		// the constructor sets the price of the product (unless a price has already been set)
 		new Hunt(),
 		new CraftingConversion("parchment", {fur: 175}),
 		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
@@ -48,14 +41,14 @@ function updateEconomy() {
 		new CraftingConversion("slab", {minerals: 250}),
 		new CraftingConversion("plate", {iron: 125}),
 		new ZebraTrade(),
-		new DragonTrade(),
+		new DragonTrade(), 
 		new CraftingConversion("steel", {coal: 100, iron: 100}),
 		new CraftingConversion("gear", {steel: 15}),
 		new CraftingConversion("concrete", {slab: 2500, steel: 25}),
 		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
 		new CraftingConversion("eludium", {alloy: 2500, unobtainium: 1000}),
 		new CraftingConversion("scaffold", {beam: 50}),
-		new Smelting(ironPrice),
+		new Smelting(),
 		new KeroseneConversion(),
 		new CraftingConversion("megalith", {slab: 50, beam: 25, plate: 5}),
 		new UnicornSacrifice(),
@@ -64,6 +57,15 @@ function updateEconomy() {
 
 function workerProduction(job: Job, res: Res) {
 	return delta(basicProduction, (s) => s.workers[job]++)[res];
+}
+
+function ironPrice(state: GameState, price: {[R in BasicRes]: number}) {
+	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
+	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
+	// and affixing the priceMarkup to any single contribution therefore has counter intuitive side effects
+	// instead, we introduce a separate contribution to affix the priceMarkup
+	const smelter = delta(basicProduction, s => s.level.Smelter++);
+	return (state.priceMarkup.iron - smelter.wood * price.wood - smelter.minerals * price.minerals) / smelter.iron;
 }
 
 type Cart = {[R in Res]?: number};
@@ -299,7 +301,7 @@ export abstract class Conversion extends CostBenefitAnalysis {
 	instanteneous = true;
 
 	/** also sets the price of the product! */
-	constructor(public product: ConvertedRes, resourceInvestment: Cart, productPrice?: number) {
+	constructor(public product: ConvertedRes, resourceInvestment: Cart) {
 		super();
 		let cost = 0;
 		let benefit = 0;
@@ -323,7 +325,7 @@ export abstract class Conversion extends CostBenefitAnalysis {
 				}
 			}
 		}
-		price[this.product] = productPrice || Math.max(0, (cost * (state.priceMarkup[product] || 1) - benefit) / currentlyProduced[this.product]);
+		price[this.product] = price[this.product] || Math.max(0, (cost * (state.priceMarkup[product] || 1) - benefit) / currentlyProduced[this.product]);
 		this.return.add(new Expediture(currentlyProduced[this.product], this.product));
 	}
 
@@ -331,8 +333,8 @@ export abstract class Conversion extends CostBenefitAnalysis {
 }
 
 class Smelting extends Conversion {
-	constructor(ironPrice: number) {
-		super("iron", {}, ironPrice);
+	constructor() {
+		super("iron", {});
 		this.instanteneous = false;
 	}
 
@@ -358,10 +360,8 @@ class Hunt extends Conversion {
 }
 
 abstract class Trade extends Conversion {
-	static opportunityCosts: Cart = {gold: 15, catpower: 50};
-
 	constructor(product: ConvertedRes, input: Cart) {
-		super(product, Object.assign({}, Trade.opportunityCosts, input));
+		super(product, {gold: 15, catpower: 50, ...input});
 	}
 
 	get friendly() {
