@@ -194,6 +194,29 @@
         </table>
       </panel>
       
+      <panel heading="Science" [help]="scienceHelp">
+        <ng-template #scienceHelp>
+          <p>
+            This table shows investments into technology and metaphysics. It works like the storage table.
+          </p>
+
+          <p>
+            Note that costs for increasing science storage are not yet included, and the benefit of price reduction upgrades is estimated at 0, as they have no effect on ongoing production.
+          </p>          
+        </ng-template>
+
+        <table class="table">
+          <tbody>
+            <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
+              <td>{{a.name}}</td>
+              <td style="position: relative">
+                {{a.stateInfo()}}
+              </td>
+            </tr>  
+          </tbody>
+        </table>
+      </panel>
+      
       <panel heading="Religion" [help]="religionHelp">
         <ng-template #religionHelp>
           <p>This table shows religion bonuses (religous investments are under "Building and Upgrades")</p>
@@ -235,29 +258,6 @@
         <a href="" style="margin-top: .2em; display: block; text-align: center" (click)="forget()">Reset</a>
       </panel>
         
-      <panel heading="Metaphysics" [help]="metaHelp">
-        <ng-template #metaHelp>
-          <p>
-            This table shows the cost and effect of metaphysics upgrades.
-          </p>
-
-          <p>
-            Note that the benefit of price reduction upgrades is currently estimated at 0, as they have no effect on ongoing production.
-          </p>          
-        </ng-template>
-
-        <table class="table">
-          <tbody>
-            <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
-              <td>{{a.name}}</td>
-              <td style="position: relative">
-                {{a.stateInfo()}}
-              </td>
-            </tr>  
-          </tbody>
-        </table>
-      </panel>
-      
       <panel heading="Notes" [help]="noteHelp" style="flex-grow: 1">
         <ng-template #noteHelp>
           This area is for taking notes about your current game.
