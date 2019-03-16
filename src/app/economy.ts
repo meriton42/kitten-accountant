@@ -24,7 +24,7 @@ function updateEconomy() {
 		science: wage / workerProduction("scholar", "science"),
 		culture: priceMarkup.culture, 
 		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
-		unicorn: 1,
+		unicorn: priceMarkup.unicorn,
 	};
 	price = <any>basicPrice;
 	price.iron = ironPrice(state, basicPrice),

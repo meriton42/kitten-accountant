@@ -148,6 +148,7 @@ const userPricedResources: {[R in Res]?} = {
 	blueprint: x,
 	uranium: x,
 	unobtainium: x,
+	unicorn: x,
 }
 
 const job = {
