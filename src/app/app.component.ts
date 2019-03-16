@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "app/game-state";
-import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus } from "app/economy";
+import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo } from "app/economy";
 import { CbaTooltipService } from 'app/cba-tooltip.service';
 import { HelpService } from './help.service';
 
@@ -29,6 +29,7 @@ export class AppComponent implements OnInit {
   production: {[R in Res]: number};
   actions: Action[];
   storageActions: Action[];
+  sciences: ScienceInfo[];
   metaphysicActions: Action[];
   furReport: CostBenefitAnalysis;
   conversions: {[R in ConvertedRes]?: Conversion};
@@ -52,6 +53,7 @@ export class AppComponent implements OnInit {
     this.production = eco.production;
     this.actions = eco.actions;
     this.storageActions = eco.storageActions;
+    this.sciences = eco.sciences;
     this.metaphysicActions = eco.metaphysicActions;
     this.furReport = eco.furReport;
     this.conversions = {};

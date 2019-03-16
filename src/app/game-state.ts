@@ -13,6 +13,7 @@ export interface GameState {
 
 	level : {[B in Building] : number};
 	upgrades : {[U in Upgrade] : boolean};
+	researched: {[S in Science]: boolean};
 
 	priceMarkup: {[R in UserPricedRes]: number};
 
@@ -48,6 +49,10 @@ function readGameState() : GameState {
 	state.upgrades = state.upgrades || <any>{};
 	for (const u of upgradeNames) {
 		state.upgrades[u] = state.upgrades[u] || false;
+	}
+	state.researched = state.researched || <any>{};
+	for (const s of scienceNames) {
+		state.researched[s] = state.researched[s] || false;
 	}
 	state.priceMarkup = state.priceMarkup || <any>{};
 	for (const r of userPricedResourceNames) {
@@ -317,6 +322,69 @@ const upgrade = {
 	Astromancy: x,
 }
 
+const science = {
+	Calendar: x,
+	Agriculture: x,
+	Archery: x,
+	AnimalHusbandry: x,
+	Mining: x,
+	MetalWorking: x,
+	Mathematics: x,
+	Construction: x,
+	CivilService: x,
+	Engineering: x,
+	Currency: x,
+	Writing: x,
+	Philosophy: x,
+	Steel: x,
+	Machinery: x,
+	Theology: x,
+	Astronomy: x,
+	Navigation: x,
+	Architecture: x,
+	Physics: x,
+	Metaphysics: x,
+	Chemistry: x,
+	Acoustics: x,
+	Geology: x,
+	DramaAndPoetry: x,
+	Electricity: x,
+	Biology: x,
+	Biochemistry: x,
+	Genetics: x,
+	Industrialization: x,
+	Mechanization: x,
+	Combustion: x,
+	Metallurgy: x,
+	Ecology: x,
+	Electronics: x,
+	Robotics: x,
+	ArtificialIntelligence: x,
+	QuantumCryptography: x,
+	Blackchain: x,
+	NuclearFission: x,
+	Rocketry: x,
+	OilProcessing: x,
+	Satellites: x,
+	OrbitalEngineering: x,
+	Thorium: x,
+	Exogeology: x,
+	AdvancedExogeology: x,
+	Nanotechnology: x,
+	Superconductors: x,
+	Antimatter: x,
+	Terraformation: x,
+	Hydroponics: x,
+	Exophysics: x,
+	ParticlePhysics: x,
+	DimensionalPhysics: x,
+	Chronophysics: x,
+	TachyonTheory: x,
+	Cryptotheology: x,
+	VoidSpace: x,
+	ParadoxTheory: x,
+}
+
 export type BasicRes = keyof typeof basicResources;
 export const basicResourceNames = keyNames(basicResources);
 
@@ -337,6 +405,9 @@ export const buildingNames = keyNames(building);
 
 export type Upgrade = keyof typeof upgrade;
 export const upgradeNames = keyNames(upgrade);
+
+export type Science = keyof typeof science;
+export const scienceNames = keyNames(science);
 
 export const state = readGameState();
 window["state"] = state; // helpful for debugging

@@ -1,9 +1,11 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames } from "app/game-state";
+import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science } from "app/game-state";
 
 let currentBasicProduction: Cart;
 let price: {[R in Res]: number};
 let conversions: Conversion[];
 let actions: Action[];
+let sciences: ScienceInfo[];
+let prerequisite: {[A in string]: ScienceInfo};
 
 function updateEconomy() {
 	const {priceMarkup} = state;
@@ -263,7 +265,12 @@ function storage(state: GameState): Storage {
 	}
 }
 
-class Expediture {
+interface Expense {
+	name: string;
+	cost: number;
+}
+
+class Expediture implements Expediture {
 	price: number;
 	cost: number;
 
@@ -274,21 +281,30 @@ class Expediture {
 }
 
 export class Investment {
-    cost = 0;
-		expeditures: Expediture[] = [];
-		expenses: {name: string, cost: number}[] = [];
 
-		add(xp: Expediture) {
-			if (Math.abs(xp.cost) > 1e-6 || Math.abs(xp.amount) > 1e-6) {
-				this.expeditures.push(xp);
-				this.cost += xp.cost;
-			}
-		}
+	cost = 0;
+	expeditures: Expediture[] = [];
+	expenses: Expense[] = [];
 
-		addExpense(expense: {name: string, cost: number}) {
-			this.expenses.push(expense);
-			this.cost += expense.cost;
+	alsoRequired: Expense[] = [];
+	alsoRequiredCost = 0;
+
+	add(xp: Expediture) {
+		if (Math.abs(xp.cost) > 1e-6 || Math.abs(xp.amount) > 1e-6) {
+			this.expeditures.push(xp);
+			this.cost += xp.cost;
 		}
+	}
+
+	addExpense(expense: Expense) {
+		this.expenses.push(expense);
+		this.cost += expense.cost;
+	}
+
+	addAdditionalRequirement(expense: Expense) {
+		this.alsoRequired.push(expense);
+		this.alsoRequiredCost += expense.cost;
+	}
 }
 
 export class CostBenefitAnalysis {
@@ -482,6 +498,42 @@ function craftRatio(state: GameState, res?: ConvertedRes) {
 	return (ratio + resCraftRatio) * (1 + globalResCraftRatio);
 }
 
+export class ScienceInfo extends CostBenefitAnalysis {
+	constructor(public name: Science, public resourceInvestment: Cart, unlocks: Array<Science | Upgrade | Building | Job>) {
+		super();
+		for (const res in resourceInvestment) {
+			this.investment.add(new Expediture(resourceInvestment[res], <Res>res));
+		}
+		for (const unlock of unlocks) {
+			prerequisite[unlock] = this;
+		}
+	}
+
+	get visible() {
+		// how many technologies to we need to unlock for this?
+		let depth = 0;
+		let science: ScienceInfo = this;
+		while (science && !state.researched[science.name]) {
+			depth++;
+			science = prerequisite[science.name];
+		}
+
+		return depth >= (state.showResearchedUpgrades ? 0 : 1) && depth <= 3;
+	}
+
+	get stateInfo() {
+		return state.researched[this.name] ? 'R' : '';
+	}
+
+	applyTo(state: GameState) {
+		state.researched[this.name] = true;
+	}
+
+	undo(state: GameState) {
+		state.researched[this.name] = false;
+	}
+}
+
 export abstract class Action extends CostBenefitAnalysis {
 	roi: number;
 
@@ -492,6 +544,7 @@ export abstract class Action extends CostBenefitAnalysis {
 			this.investment.add(new Expediture(number * resourceMultiplier, <Res>res));
 		}
 
+		this.procurePrerequisite();
 		this.procureStorage(this.investment.expeditures, s);
 	}
 
@@ -567,6 +620,31 @@ export abstract class Action extends CostBenefitAnalysis {
 		}
 	}
 
+	procurePrerequisite() {
+		const prerequisites = this.findPrerequisites();
+
+		for (const p of prerequisites) {
+			const expense = {name: p.name, cost: p.investment.cost};
+			if (this.repeatable) {
+				this.investment.addAdditionalRequirement(expense); // it would be misleading to have the first action pay the entire cost
+			} else {
+				this.investment.addExpense(expense); // but here it makes sense
+			}
+		}
+	}
+
+	findPrerequisites() {
+		const prerequisites: ScienceInfo[] = [];
+		
+		let p = prerequisite[this.name];
+		while (p && !state.researched[p.name]) {
+			prerequisites.push(p);
+			p = prerequisite[p.name];
+		}
+		prerequisites.reverse();
+		return prerequisites;
+	}
+
 	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
 			if (!["catnip", "wood", "titanium", "uranium"].includes(xp.res) && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
@@ -581,7 +659,10 @@ export abstract class Action extends CostBenefitAnalysis {
 	abstract undo(state: GameState): void;
 
 	abstract stateInfo() : string;
+
+	abstract repeatable: boolean;
 }
+
 
 const obsoletes: {[B in Building]?: Building} = {
 	BroadcastTower: "Amphitheatre",
@@ -630,6 +711,10 @@ class BuildingAction extends Action {
 
 	undo(state: GameState) {
 		state.level[this.name]--;
+	}
+
+	get repeatable() {
+		return true;
 	}
 }
 
@@ -683,6 +768,10 @@ class UpgradeAction extends Action {
 	undo(state: GameState) {
 		state.upgrades[this.name] = false;
 	}
+
+	get repeatable() {
+		return false;
+	}
 }
 
 class MetaphysicAction extends UpgradeAction {
@@ -719,6 +808,9 @@ class TradeshipAction extends Action {
 	stateInfo() {
 		return "";
 	}
+	get repeatable() {
+		return true;
+	}
 }
 
 class PraiseAction extends Action {
@@ -736,6 +828,48 @@ class PraiseAction extends Action {
 	stateInfo() {
 		return "";
 	}
+	get repeatable() {
+		return true;
+	}
+}
+
+function updateSciences() {
+  prerequisite = {};
+
+	const infos = [
+		new ScienceInfo("Calendar", {science: 30}, ["Agriculture"]),
+		new ScienceInfo("Agriculture", {science: 100}, ["Mining", "Archery", "Barn", "farmer"]),
+		new ScienceInfo("Archery", {science: 300}, ["AnimalHusbandry", "hunter"]),
+		new ScienceInfo("AnimalHusbandry", {science: 500}, ["CivilService", "Mathematics", "Construction", "Pasture", "UnicornPasture"]),
+		new ScienceInfo("Mining", {science: 500}, ["MetalWorking", "Mine", "Workshop", "Bolas"]), // also enables meteors
+		new ScienceInfo("MetalWorking", {science: 900}, ["Smelter", "HuntingArmor"]),
+		new ScienceInfo("Mathematics", {science: 1000}, ["Academy"]), // celestial mechanics
+		new ScienceInfo("Construction", {science: 1300}, ["Engineering", "LogHouse", "Warehouse", "LumberMill", "Ziggurat", "CompositeBow", "ReinforcedSaw"]), // catnip enrichment
+		new ScienceInfo("CivilService", {science: 1500}, ["Currency"]),
+		new ScienceInfo("Engineering", {science: 1500}, ["Writing", "Aqueduct"]),
+		new ScienceInfo("Currency", {science: 2200}, ["TradePost"]),
+		new ScienceInfo("Writing", {science: 3600}, ["Philosophy", "Machinery", "Steel", "Amphitheatre"]), // register
+		new ScienceInfo("Philosophy", {science: 9500}, ["Theology", "Temple"]),
+		new ScienceInfo("Steel", {science: 12000}, ["SteelAxe", "ReinforcedWarehouses", "CoalFurnace", "DeepMining", "HighPressureEngine", "SteelArmor"]),
+		new ScienceInfo("Machinery", {science: 15000}, ["Steamworks", "PrintingPress", "Crossbow"]), // workshop automation
+		new ScienceInfo("Theology", {science: 20000, manuscript: 35}, ["Astronomy", "Cryptotheology", "priest"]),
+		new ScienceInfo("Astronomy", {science: 28000, manuscript: 65}, ["Navigation", "Observatory"]),
+		new ScienceInfo("Navigation", {science: 35000, manuscript: 100}, ["Architecture", "Physics", "Geology", "Harbor", "TitaniumAxe", "ExpandedCargo", "Astrolabe", "TitaniumReflectors"]), // Caravanserai
+		new ScienceInfo("Architecture", {science: 42000, compendium: 10}, ["Acoustics", "Mansion", "Mint"]),
+		new ScienceInfo("Physics", {science: 50000, compendium: 35}, ["Chemistry", "Electricity", "Metaphysics", "SteelSaw", "Pyrolysis"]), //pneumatic press
+		new ScienceInfo("Metaphysics", {science: 55000, unobtainium: 5}, []),
+		new ScienceInfo("Chemistry", {science: 60000, compendium: 50}, ["OilWell", "Calciner", "AlloyAxe", "AlloyBarns", "AlloyWarehouses", "AlloyArmor"]),
+		new ScienceInfo("Acoustics", {science: 60000, compendium: 60}, ["DramaAndPoetry", "Chapel"]),
+		new ScienceInfo("Geology", {science: 65000, compendium: 65}, ["Biology", "Quarry", "Geodesy", "geologist"]),
+		new ScienceInfo("DramaAndPoetry", {science: 90000, parchment: 5000}, []), // enables festivals
+		new ScienceInfo("Electricity", {science: 75000, compendium: 85}, ["Industrialization", "Magneto"]),
+		new ScienceInfo("Biology", {science: 85000, compendium: 100}, ["Biochemistry", "BioLab"]),
+		new ScienceInfo("Biochemistry", {science: 145000, compendium: 500}, ["Genetics", "BiofuelProcessing"]),
+		new ScienceInfo("Genetics", {science: 190000, compendium: 1500}, ["UnicornSelection", "GMCatnip"]),
+		// ...
+	];
+
+	sciences = infos.filter(info => info.visible);
 }
 
 function updateActions() {
@@ -927,6 +1061,7 @@ class FurConsumptionReport extends CostBenefitAnalysis {
 
 export function economyReport() {
 	updateEconomy();
+	updateSciences();
 	currentBasicProduction = basicProduction(state);
 	updateActions();
 
@@ -936,6 +1071,7 @@ export function economyReport() {
 		conversions,
 		actions, 
 		storageActions: storageActions(state), 
+		sciences,
 		metaphysicActions: metaphysicActions(),
 		furReport: new FurConsumptionReport(state),
 	};

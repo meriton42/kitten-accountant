@@ -197,16 +197,26 @@
       <panel heading="Science" [help]="scienceHelp">
         <ng-template #scienceHelp>
           <p>
-            This table shows investments into technology and metaphysics. It works like the storage table.
+            This table shows investments into technology and metaphysics. As Science has no value on its own, its cost is added to the investments that benefit from it, and considered when calculating their efficiency.
           </p>
 
           <p>
-            Note that costs for increasing science storage are not yet included, and the benefit of price reduction upgrades is estimated at 0, as they have no effect on ongoing production.
+            Exception: efficiency is not updated for buildings, because we do not know how many buildings to amortize over. 
+            We still show science cost in the respective tooltip, though.
+          </p>
+
+          <p>
+            Note that the benefit of price reduction upgrades is estimated at 0, as they have no effect on ongoing production.
           </p>          
         </ng-template>
 
         <table class="table">
           <tbody>
+            <tr *ngFor="let s of sciences" (click)="apply(s, $event)" (contextmenu)="undo(s, $event)" [cba-tooltip]="s">
+              <td>{{s.name}}</td>
+              <td>{{s.stateInfo}}</td>
+            </tr>
+            <tr style="height: 0.5em"></tr>
             <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
               <td>{{a.name}}</td>
               <td style="position: relative">
