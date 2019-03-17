@@ -28,6 +28,10 @@ table.table > tbody > tr > td {
 	padding-right: .2em;
 }
 
+table.table > tbody > tr.locked {
+	color: gray;
+}
+
 input[type="number"].nospinner::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;

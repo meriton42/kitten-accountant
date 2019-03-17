@@ -152,7 +152,7 @@
 
         <table class="table">
           <tbody>
-            <tr *ngFor="let a of actions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
+            <tr *ngFor="let a of actions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a" [class.locked]="a.investment.alsoRequiredCost">
               <td>{{a.roi | number:'1.0-0'}}</td>
               <td>
                 {{a.name}}
