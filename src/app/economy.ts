@@ -872,6 +872,11 @@ function updateSciences() {
 		new ScienceInfo("Metallurgy", {science: 125000, blueprint: 60}, ["ElectrolyticSmelting", "Oxidation", "MiningDrill"]),
 		new ScienceInfo("Ecology", {science: 125000, blueprint: 55}, ["SolarFarm"]),
 		new ScienceInfo("Electronics", {science: 135000, blueprint: 70}, ["Robotics", "NuclearFission", "Rocketry", "Refrigeration", "CADsystem", "SETI", "FactoryLogistics", "Telecommunication", "BroadcastTower"]), // FactoryOptimization
+		new ScienceInfo("Robotics", {science: 140000, blueprint: 80}, ["ArtificialIntelligence", "HydroPlant", "RotaryKiln", "RoboticAssistance"]), // SteelPlants, FactoryRobotics, Tanker
+		new ScienceInfo("ArtificialIntelligence", {science: 250000, blueprint: 150}, ["QuantumCryptography"]), // AICore, NeuralNetworks, AIEngineers
+		//new ScienceInfo("QuantumCryptography", {science: 1250000, relic: })
+		// new ScienceInfo("Blackchain"),
+		new ScienceInfo("NuclearFission", {science: 150000, blueprint: 100}, ["Nanotechnology", "ParticlePhysics", "Reactor", "ReactorVessel", "NuclearSmelters"]),
 		// ...
 	];
 
