@@ -866,6 +866,12 @@ function updateSciences() {
 		new ScienceInfo("Biology", {science: 85000, compendium: 100}, ["Biochemistry", "BioLab"]),
 		new ScienceInfo("Biochemistry", {science: 145000, compendium: 500}, ["Genetics", "BiofuelProcessing"]),
 		new ScienceInfo("Genetics", {science: 190000, compendium: 1500}, ["UnicornSelection", "GMCatnip"]),
+		new ScienceInfo("Industrialization", {science: 100000, blueprint: 25}, ["Mechanization", "Metallurgy", "Combustion", "Logistics"]), // Barges, AdvancedAutomation
+		new ScienceInfo("Mechanization", {science: 115000, blueprint: 45}, ["Electronics", "Factory", "ConcretePillars", "Pumpjack"]),
+		new ScienceInfo("Combustion", {science: 115000, blueprint: 45}, ["Ecology", "OffsetPress", "FuelInjectors", "OilRefinery"]),
+		new ScienceInfo("Metallurgy", {science: 125000, blueprint: 60}, ["ElectrolyticSmelting", "Oxidation", "MiningDrill"]),
+		new ScienceInfo("Ecology", {science: 125000, blueprint: 55}, ["SolarFarm"]),
+		new ScienceInfo("Electronics", {science: 135000, blueprint: 70}, ["Robotics", "NuclearFission", "Rocketry", "Refrigeration", "CADsystem", "SETI", "FactoryLogistics", "Telecommunication", "BroadcastTower"]), // FactoryOptimization
 		// ...
 	];
 
