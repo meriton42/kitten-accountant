@@ -877,6 +877,14 @@ function updateSciences() {
 		//new ScienceInfo("QuantumCryptography", {science: 1250000, relic: })
 		// new ScienceInfo("Blackchain"),
 		new ScienceInfo("NuclearFission", {science: 150000, blueprint: 100}, ["Nanotechnology", "ParticlePhysics", "Reactor", "ReactorVessel", "NuclearSmelters"]),
+		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation"]), // and space
+		new ScienceInfo("OilProcessing", {science: 215000, blueprint: 150}, ["FactoryProcessing"]), // kerosene
+		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography"]),
+		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites"]), // SpaceEngineers
+		new ScienceInfo("Thorium", {science: 375000, blueprint: 375}, []), // ThoriumReactors, ThoriumDrive
+		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines"]),
+		new ScienceInfo("AdvancedExogeology", {science: 325000, blueprint: 350}, ["PlanetBuster", "EludiumHuts", "MicroWarpReactors"]), // eludium reflectors
+		new ScienceInfo("Nanotechnology", {science: 200000, blueprint: 150}, ["Superconductors", "PhotovoltaicCells", "Nanosuits", "Augmentations", "FluidizedReactors", "SpaceElevator"]),
 		// ...
 	];
 
