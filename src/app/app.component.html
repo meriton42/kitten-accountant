@@ -24,7 +24,7 @@
 </ng-template>
   
 <div style="display: flex; flex-flow: column; position: absolute; left: 0; right: 0; top: 0; bottom: 0" [help]="generalHelp">
-  <div style="flex: 1 1 0; display: flex; flex-flow: row; position: relative">
+  <div style="flex: 1 1 0; display: flex; flex-flow: row; min-height: 0; position: relative">
     <div style="position: absolute; left: 0; bottom: 0; background: white; padding: 0.5em">
       <a (click)="showHelp = !showHelp" style="display: block; text-decoration: underline; color:blueviolet; cursor: pointer">{{showHelp ? 'Hide' : 'Show'}} Help</a>
       <a (click)="showGame = !showGame" style="display: block; text-decoration: underline; color:blueviolet; cursor: pointer">{{showGame ? 'Hide' : 'Show'}} Game</a>
