@@ -885,6 +885,13 @@ function updateSciences() {
 		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines"]),
 		new ScienceInfo("AdvancedExogeology", {science: 325000, blueprint: 350}, ["PlanetBuster", "EludiumHuts", "MicroWarpReactors"]), // eludium reflectors
 		new ScienceInfo("Nanotechnology", {science: 200000, blueprint: 150}, ["Superconductors", "PhotovoltaicCells", "Nanosuits", "Augmentations", "FluidizedReactors", "SpaceElevator"]),
+		new ScienceInfo("Superconductors", {science: 225000, blueprint: 175}, ["Antimatter", "ColdFusion", "SpaceManufacturing"]),
+		// new ScienceInfo("AntiMatter", )
+		// new ScienceInfo("Terraformation", )
+		// new ScienceInfo("Hydroponics", )
+		// new ScienceInfo("Exophysics", )
+		new ScienceInfo("ParticlePhysics", {science: 185000, blueprint: 135}, ["Chronophysics", "DimensionalPhysics", "Accelerator", "EnrichedUranium", "Railgun"]),
+		new ScienceInfo("DimensionalPhysics", {science: 235000}, ["EnergyRifts"]), // LHC
 		// ...
 	];
 
