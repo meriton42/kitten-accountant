@@ -371,6 +371,7 @@ class Hunt extends Conversion {
 		return {
 			fur: 40 + huntingBonus * 32,
 			ivory: (0.44 + huntingBonus * 0.02) * (25 + huntingBonus * 20),
+			unicorn: 0.05,
 		}
 	}
 }
