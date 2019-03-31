@@ -383,6 +383,21 @@ const science = {
 	Cryptotheology: x,
 	VoidSpace: x,
 	ParadoxTheory: x,
+
+	// space missions
+	OrbitalLaunch: x,
+	MoonMission: x,
+	DuneMission: x,
+	PiscineMission: x,
+	HeliosMission: x,
+	TMinusMission: x,
+	KairoMission: x,
+	RorschachMission: x,
+	YarnMission: x,
+	UmbraMission: x,
+	CharonMission: x,
+	CentaurusMission: x,
+	FurthestRingMission: x,
 }
 
 export type BasicRes = keyof typeof basicResources;

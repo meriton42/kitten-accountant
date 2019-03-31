@@ -877,7 +877,7 @@ function updateSciences() {
 		//new ScienceInfo("QuantumCryptography", {science: 1250000, relic: })
 		// new ScienceInfo("Blackchain"),
 		new ScienceInfo("NuclearFission", {science: 150000, blueprint: 100}, ["Nanotechnology", "ParticlePhysics", "Reactor", "ReactorVessel", "NuclearSmelters"]),
-		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation"]), // and space
+		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation", "OrbitalLaunch"]),
 		new ScienceInfo("OilProcessing", {science: 215000, blueprint: 150}, ["FactoryProcessing"]), // kerosene
 		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography"]),
 		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites"]), // SpaceEngineers
@@ -892,6 +892,13 @@ function updateSciences() {
 		// new ScienceInfo("Exophysics", )
 		new ScienceInfo("ParticlePhysics", {science: 185000, blueprint: 135}, ["Chronophysics", "DimensionalPhysics", "Accelerator", "EnrichedUranium", "Railgun"]),
 		new ScienceInfo("DimensionalPhysics", {science: 235000}, ["EnergyRifts"]), // LHC
+		// ...
+
+		new ScienceInfo("OrbitalLaunch", {starchart: 250, catpower: 5000, science: 100000, oil: 15000}, ["Satellite", "SpaceElevator", "MoonMission", "SpaceStation"]),
+		new ScienceInfo("MoonMission", {starchart: 500, titanium: 5000, science: 125000, oil: 45000}, ["LunarOutpost", "MoonBase", "DuneMission", "PiscineMission"]),
+		new ScienceInfo("DuneMission", {starchart: 1000, titanium: 7000, science: 175000, kerosene: 75}, ["HeliosMission", "PlanetCracker", "HydraulicFracturer", "SpiceRefinery"]),
+		new ScienceInfo("PiscineMission", {starchart: 1500, titanium: 9000, science: 200000, kerosene: 250}, ["TMinusMission", "ResearchVessel"]),
+		new ScienceInfo("HeliosMission", {starchart: 3000, titanium: 15000, science: 250000, kerosene: 1250}, ["YarnMission"]), // SunLifter
 		// ...
 	];
 
