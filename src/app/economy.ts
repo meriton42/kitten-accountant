@@ -48,7 +48,7 @@ function updateEconomy() {
 		new CraftingConversion("gear", {steel: 15}),
 		new CraftingConversion("concrete", {slab: 2500, steel: 25}),
 		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
-		new CraftingConversion("eludium", {alloy: 2500, unobtainium: 1000}),
+		new CraftingConversion("eludium", {unobtainium: 1000, alloy: 2500}),
 		new CraftingConversion("scaffold", {beam: 50}),
 		new Smelting(),
 		new KeroseneConversion(),
