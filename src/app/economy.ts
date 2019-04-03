@@ -85,6 +85,12 @@ function delta(metric: (state: GameState) => Cart, change: (state: GameState) =>
 	return delta;
 }
 
+function hardLimit(min: number, x: number, max: number) {
+	return x < min ? min
+			 : x > max ? max
+			 : x;
+}
+
 function hyperbolicDecrease(x: number) {
 	return x < 0.75 ? (1 - x) : 0.25 / ((x - 0.5) / 0.25);
 }
@@ -153,13 +159,16 @@ function basicProduction(state: GameState): Cart {
 											+ level.LunarOutpost * 5
 											+ level.MoonBase * 10
 											+ level.OrbitalArray * 20;
-	const energyBonus = Math.max(1, Math.min(1.75, (energyProduction / energyConsumption) || 1));
 
-	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15);
-	const reactorBonus = 1 + level.Reactor * 0.05;
+	const energyRatio = (energyProduction / energyConsumption) || 1;
+	const energyBonus = hardLimit(1, energyRatio, 1.75);
+	const energyDelta = hardLimit(0.25, energyRatio, 1); // TODO energy challenge reward 
+
+	const magnetoBonus = 1 + level.Magneto * 0.02 * (1 + level.Steamworks * 0.15) * energyDelta;
+	const reactorBonus = 1 + level.Reactor * 0.05 * energyDelta;
 
 	const spaceRatioUranium = (1 + level.SpaceElevator * 0.01 + level.OrbitalArray * 0.02) // for some reason, space manuf. does not apply to uranium
-	const spaceRatio = spaceRatioUranium * (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)); 
+	const spaceRatio = spaceRatioUranium * (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)) * energyDelta; 
 	const prodTransferBonus = level.SpaceElevator * 0.001;
 	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium; only used by buildings that we haven't implemented yet
 
