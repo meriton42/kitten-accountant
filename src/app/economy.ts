@@ -687,15 +687,22 @@ const obsoletedBy: {[B in Building]?: Building} = {
 
 class BuildingAction extends Action {
 
-	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state, applyPriceReduction = true) {
-		super(s, name, initialConstructionResources, Math.pow(BuildingAction.priceRatio(s, priceRatio, applyPriceReduction), s.level[name]));
+	constructor(name: Building, private initialConstructionResources: Cart, priceRatio: number, s = state, priceReduction: number | null = 0) {
+		super(s, name, initialConstructionResources, Math.pow(BuildingAction.priceRatio(s, priceRatio, priceReduction), s.level[name]));
 	}
 
-	static priceRatio(s: GameState, priceRatio: number, applyPriceReduction: boolean) {
-		if (applyPriceReduction) {
-			priceRatio = priceRatio - (s.upgrades.Engineering && 0.01) - (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) - (s.upgrades.DivineProportion && 0.017) - (s.upgrades.VitruvianFeline && 0.02);
+	static priceRatio(s: GameState, ratio: number, reduction: number | null) {
+		if (reduction !== null) {
+			// cf. getPriceRatioWithAccessor in buildings.js
+			const ratioBase = ratio - 1;
+			const ratioDiff = reduction 
+									 + (s.upgrades.Engineering && 0.01) 
+									 + (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) 
+									 + (s.upgrades.DivineProportion && 0.017) 
+									 + (s.upgrades.VitruvianFeline && 0.02);
+			ratio = ratio - hyperbolicLimit(ratioDiff, ratioBase);
 		}
-		return priceRatio;
+		return ratio;
 	}
 
 	available(state: GameState) {
@@ -733,13 +740,13 @@ class SpaceAction extends BuildingAction {
 		if (initialConstructionResources.oil) {
 			initialConstructionResources.oil *= 1 - s.level.SpaceElevator * 0.05;
 		}
-		super(name, initialConstructionResources, priceRatio, s, false);
+		super(name, initialConstructionResources, priceRatio, s, null);
 	}
 }
 
 class ReligiousAction extends BuildingAction {
 	constructor(name: Building, initialConstructionResources: Cart, s = state) {
-		super(name, initialConstructionResources, 2.5, s, false);
+		super(name, initialConstructionResources, 2.5, s, null);
 	}
 
 	available(state: GameState) {
@@ -750,7 +757,7 @@ class ReligiousAction extends BuildingAction {
 
 class ZigguratBuilding extends BuildingAction {
 	constructor(name: Building, initialConstructionResources: Cart, priceRatio: number, s = state) {
-		super(name, initialConstructionResources, priceRatio, s, false);
+		super(name, initialConstructionResources, priceRatio, s, null);
 	}
 
 	available(state: GameState) {
@@ -924,7 +931,7 @@ function updateActions() {
 		new BuildingAction("SolarFarm", {titanium: 250}, 1.15),
 		new BuildingAction("Aqueduct", {minerals: 75}, 1.12),
 		new BuildingAction("HydroPlant", {concrete: 100, titanium: 2500}, 1.15),
-		new BuildingAction("Hut", {wood: 5}, 2.5 - (upgrades.IronWoodHuts && 0.5) - (upgrades.ConcreteHuts && 0.3) - (upgrades.UnobtainiumHuts && 0.25) - (upgrades.EludiumHuts && 0.1)),
+		new BuildingAction("Hut", {wood: 5}, 2.5, state, (upgrades.IronWoodHuts && 0.5) + (upgrades.ConcreteHuts && 0.3) + (upgrades.UnobtainiumHuts && 0.25) + (upgrades.EludiumHuts && 0.1)),
 		new BuildingAction("LogHouse", {wood: 200, minerals: 250}, 1.15),
 		new BuildingAction("Mansion", {slab: 185, steel: 75, titanium: 25}, 1.15),
 		new BuildingAction("Library", {wood: 25}, 1.15),
