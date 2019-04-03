@@ -900,6 +900,7 @@ function updateSciences() {
 		new ScienceInfo("DuneMission", {starchart: 1000, titanium: 7000, science: 175000, kerosene: 75}, ["HeliosMission", "PlanetCracker", "HydraulicFracturer", "SpiceRefinery"]),
 		new ScienceInfo("PiscineMission", {starchart: 1500, titanium: 9000, science: 200000, kerosene: 250}, ["TMinusMission", "ResearchVessel"]),
 		new ScienceInfo("HeliosMission", {starchart: 3000, titanium: 15000, science: 250000, kerosene: 1250}, ["YarnMission"]), // SunLifter
+		new ScienceInfo("TMinusMission", {starchart: 2500, titanium: 12000, science: 225000, kerosene: 750}, ["HeliosMission", "KairoMission", "Cryostation"]),
 		// ...
 	];
 
