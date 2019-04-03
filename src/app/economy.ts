@@ -250,7 +250,7 @@ function storage(state: GameState): Storage {
 	let {level, upgrades, ships} = state;
 
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
-	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.ConcretePillars && 0.05);
+	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.StorageBunkers && 0.20) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25 + (upgrades.ReactorVessel && level.Reactor * 0.05)));
 	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1);
 	const paragonBonus = 1 + state.paragon * 0.001;
@@ -1070,6 +1070,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("TitaniumWarehouses", {science: 70000, titanium: 50, steel: 500, scaffold: 500}, state),
 		new UpgradeAction("AlloyWarehouses", {science: 90000, titanium: 750, alloy: 50}, state),
 		new UpgradeAction("ConcreteWarehouses", {science: 100000, titanium: 1250, concrete: 35}, state),
+		new UpgradeAction("StorageBunkers", {science: 25000, unobtainium: 500, concrete: 1250}, state),
 		new UpgradeAction("EnergyRifts", {science: 200000, titanium: 7500, uranium: 250}),
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),

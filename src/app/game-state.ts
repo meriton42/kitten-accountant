@@ -247,6 +247,7 @@ const upgrade = {
 	TitaniumWarehouses: x,
 	AlloyWarehouses: x,
 	ConcreteWarehouses: x,
+	StorageBunkers: x,
 	EnergyRifts: x,
 	PhotovoltaicCells: x,
 	SolarSatellites: x,
