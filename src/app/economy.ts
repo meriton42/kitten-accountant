@@ -899,7 +899,7 @@ function updateSciences() {
 		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography"]),
 		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites"]), // SpaceEngineers
 		new ScienceInfo("Thorium", {science: 375000, blueprint: 375}, []), // ThoriumReactors, ThoriumDrive
-		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines"]),
+		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["AdvancedExogeology", "UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines", "StorageBunkers"]),
 		new ScienceInfo("AdvancedExogeology", {science: 325000, blueprint: 350}, ["PlanetBuster", "EludiumHuts", "MicroWarpReactors"]), // eludium reflectors
 		new ScienceInfo("Nanotechnology", {science: 200000, blueprint: 150}, ["Superconductors", "PhotovoltaicCells", "Nanosuits", "Augmentations", "FluidizedReactors", "SpaceElevator"]),
 		new ScienceInfo("Superconductors", {science: 225000, blueprint: 175}, ["Antimatter", "ColdFusion", "SpaceManufacturing"]),
