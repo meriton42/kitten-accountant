@@ -120,7 +120,7 @@ function basicProduction(state: GameState): Cart {
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (level.SunAltar && level.Temple * (0.004 + level.SunAltar * 0.001)) - unhappiness;
-	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15) + (upgrades.Augmentations && 1));  // the more kittens, the older the average kitten (assuming no deaths)
+	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15) + (upgrades.Augmentations && 1));  // approximation: the more kittens, the older the average kitten (assuming no deaths)
 	const workerEfficiency = happiness * workerProficiency;
 
 	let idle = kittens;
