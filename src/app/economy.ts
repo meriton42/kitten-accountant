@@ -170,7 +170,8 @@ function basicProduction(state: GameState): Cart {
 	const spaceRatioUranium = (1 + level.SpaceElevator * 0.01 + level.OrbitalArray * 0.02) // for some reason, space manuf. does not apply to uranium
 	const spaceRatio = spaceRatioUranium * (1 + (upgrades.SpaceManufacturing && level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01)) * 0.75)) * energyDelta; 
 	const prodTransferBonus = level.SpaceElevator * 0.001;
-	const spaceAutoprodRatio = spaceRatio * (1 + (magnetoBonus * reactorBonus - 1) * prodTransferBonus); // TODO magneto does not apply for oil, reactor not for uranium; only used by buildings that we haven't implemented yet
+	const spaceParagonRatio = autoParagonBonus * magnetoBonus * reactorBonus * faithBonus;
+	const spaceAutoprodRatio = spaceRatio * (1 + (spaceParagonRatio - 1) * prodTransferBonus);
 
 	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1 + level.IvoryCitadel * 0.25;
 
@@ -198,8 +199,9 @@ function basicProduction(state: GameState): Cart {
 		gold: (level.Smelter * 0.005 * autoParagonBonus 
 				+ (upgrades.Geodesy && workers.geologist * workerEfficiency * (0.004 + (upgrades.MiningDrill && 0.0025) + (upgrades.UnobtainiumDrill && 0.0025)) * paragonBonus)) * magnetoBonus * reactorBonus * faithBonus
 					- level.Mint * 0.025,
-		oil: (level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) + (upgrades.BiofuelProcessing && level.BioLab * 0.02 * (1 + (upgrades.GMCatnip && 0.25)))) * paragonBonus * reactorBonus * faithBonus
-					+ level.HydraulicFracturer * 2.5 * spaceRatio
+		oil: level.OilWell * 0.1 * (1 + (upgrades.Pumpjack && 0.45) + (upgrades.OilRefinery && 0.35) + (upgrades.OilDistillation && 0.75)) * paragonBonus * reactorBonus * faithBonus
+					+ (upgrades.BiofuelProcessing && level.BioLab * 0.1 * (1 + (upgrades.GMCatnip && 0.6)))
+					+ level.HydraulicFracturer * 2.5 * spaceAutoprodRatio
 					- level.Calciner * 0.12 - level.Magneto * 0.25,
 		titanium: (level.Calciner * 0.0025 * (1 + (upgrades.Oxidation && 3) + (upgrades.RotaryKiln && 2.25) + (upgrades.FluidizedReactors && 3)) 
 					+ (upgrades.NuclearSmelters && level.Smelter * 0.0075))
