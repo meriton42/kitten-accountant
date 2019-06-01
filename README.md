@@ -4,11 +4,11 @@ Kitten Accountant is an automatic advisor for playing [bloodrizer's kitten's gam
 
 ## Running
 
-1. Install node
+1. Install node and yarn
 2. check out this repository
 3. open a shell to the directory you checked out, and do
     ```
-    npm install
+    yarn install
     ng serve
     ```
 4. point your browser to http://localhost:4200.
