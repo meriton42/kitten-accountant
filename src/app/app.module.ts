@@ -1,10 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { CostBenefitAnalysisComponent } from './cost-benefit-analysis.component';
 import { PanelComponent } from './panel.component';
-import { CbaTooltipDirective } from 'app/cba-tooltip.directive';
+import { CbaTooltipDirective } from './cba-tooltip.directive';
 import { HelpDirective } from './help.directive';
 
 @NgModule({
@@ -16,7 +17,8 @@ import { HelpDirective } from './help.directive';
     PanelComponent,
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    FormsModule,
   ],
   providers: [],
   bootstrap: [AppComponent]

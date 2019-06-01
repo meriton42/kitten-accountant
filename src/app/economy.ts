@@ -1,4 +1,4 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science } from "app/game-state";
+import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science } from "./game-state";
 
 let currentBasicProduction: Cart;
 let price: {[R in Res]: number};

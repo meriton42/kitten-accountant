@@ -1,6 +1,6 @@
 import { Directive, ElementRef, HostListener, Injectable, Input } from "@angular/core";
-import { CostBenefitAnalysis } from "app/economy";
-import { CbaTooltipService } from "app/cba-tooltip.service";
+import { CostBenefitAnalysis } from "./economy";
+import { CbaTooltipService } from "./cba-tooltip.service";
 
 @Directive({
 	selector: "[cba-tooltip]"

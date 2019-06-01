@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { resourceNames, Res, state, Building, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "app/game-state";
-import { economyReport, Action, Investment, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo } from "app/economy";
-import { CbaTooltipService } from 'app/cba-tooltip.service';
+import { resourceNames, Res, state, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "./game-state";
+import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo } from "./economy";
+import { CbaTooltipService } from './cba-tooltip.service';
 import { HelpService } from './help.service';
 
 @Component({

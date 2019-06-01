@@ -1,5 +1,5 @@
 import { Injectable, ElementRef } from "@angular/core";
-import { CostBenefitAnalysis } from "app/economy";
+import { CostBenefitAnalysis } from "./economy";
 
 @Injectable() 
 export class CbaTooltipService {
