@@ -1,6 +1,5 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { CostBenefitAnalysisComponent } from './cost-benefit-analysis.component';
@@ -17,8 +16,7 @@ import { HelpDirective } from './help.directive';
     PanelComponent,
   ],
   imports: [
-    BrowserModule,
-    FormsModule,
+    BrowserModule
   ],
   providers: [],
   bootstrap: [AppComponent]
