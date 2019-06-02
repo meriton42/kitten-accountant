@@ -13,6 +13,7 @@ import { HelpService } from './help.service';
   ]
 })
 export class AppComponent implements OnInit {
+  showGame = false;
   showHelp = false;
 
   state = state;
