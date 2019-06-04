@@ -279,6 +279,7 @@ const upgrade = {
 	RotaryKiln: x,
 	FluidizedReactors: x,
 	NuclearSmelters: x,
+	OrbitalGeodesy: x,
 	PrintingPress: x,
 	OffsetPress: x,
 	Photolithography: x,

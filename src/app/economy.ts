@@ -219,7 +219,8 @@ function basicProduction(state: GameState): Cart {
 		starchart: astroChance * 1 
 					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
 					* (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * paragonBonus * faithBonus,
-		uranium: level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
+		uranium: (upgrades.OrbitalGeodesy && level.Quarry * 0.0025 * paragonBonus * magnetoBonus * faithBonus)
+					+ level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
 					+ level.PlanetCracker * 1.5 * (1 + (upgrades.PlanetBuster && 1)) * spaceRatioUranium
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
 					- level.LunarOutpost * 1.75,
@@ -898,7 +899,7 @@ function updateSciences() {
 		new ScienceInfo("NuclearFission", {science: 150000, blueprint: 100}, ["Nanotechnology", "ParticlePhysics", "Reactor", "ReactorVessel", "NuclearSmelters"]),
 		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation", "OrbitalLaunch"]),
 		new ScienceInfo("OilProcessing", {science: 215000, blueprint: 150}, ["FactoryProcessing"]), // kerosene
-		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography"]),
+		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography", "OrbitalGeodesy"]),
 		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites"]), // SpaceEngineers
 		new ScienceInfo("Thorium", {science: 375000, blueprint: 375}, []), // ThoriumReactors, ThoriumDrive
 		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["AdvancedExogeology", "UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines", "StorageBunkers"]),
@@ -1006,6 +1007,7 @@ function updateActions() {
 		new UpgradeAction("RotaryKiln", {titanium: 5000, gear: 500, science: 145000}),
 		new UpgradeAction("FluidizedReactors", {alloy: 200, science: 175000}),
 		new UpgradeAction("NuclearSmelters", {uranium: 250, science: 165000}),
+		new UpgradeAction("OrbitalGeodesy", {alloy: 1000, oil: 35000, science: 150000}),
 		new UpgradeAction("PrintingPress", {gear: 45, science: 7500}),
 		new UpgradeAction("OffsetPress", {gear: 250, oil: 15000, science: 100000}),
 		new UpgradeAction("Photolithography", {alloy: 1250, oil: 50000, uranium: 250, science: 250000}),
