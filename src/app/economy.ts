@@ -702,7 +702,8 @@ class BuildingAction extends Action {
 									 + (s.upgrades.Engineering && 0.01) 
 									 + (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) 
 									 + (s.upgrades.DivineProportion && 0.017) 
-									 + (s.upgrades.VitruvianFeline && 0.02);
+									 + (s.upgrades.VitruvianFeline && 0.02)
+									 + (s.upgrades.Renaissance && 0.0225);
 			ratio = ratio - hyperbolicLimit(ratioDiff, ratioBase);
 		}
 		return ratio;
@@ -1097,6 +1098,7 @@ function metaphysicActions() {
 		new MetaphysicAction("GoldenRatio", 50),
 		new MetaphysicAction("DivineProportion", 100),
 		new MetaphysicAction("VitruvianFeline", 250),
+		new MetaphysicAction("Renaissance", 750),
 		new MetaphysicAction("CodexVox", 25),
 		new MetaphysicAction("Chronomancy", 25),
 		new MetaphysicAction("Astromancy", 50),

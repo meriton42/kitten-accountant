@@ -319,6 +319,7 @@ const upgrade = {
 	GoldenRatio: x,
 	DivineProportion: x,
 	VitruvianFeline: x,
+	Renaissance: x,
 	CodexVox: x,
 	Chronomancy: x,
 	Astromancy: x,
