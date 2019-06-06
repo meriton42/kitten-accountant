@@ -147,7 +147,7 @@ function basicProduction(state: GameState): Cart {
 											+ level.Magneto * 5 
 											+ level.HydroPlant * 5 * (1 + (upgrades.HydroPlantTurbines && 0.15))
 											+ level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) 
-											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5))
+											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5)) * 0.75 // assume worst season
 											+ (upgrades.SolarSatellites && level.Satellite * 1);
 	const energyConsumption = level.Calciner * 1 
 											+ level.Factory * 2 
