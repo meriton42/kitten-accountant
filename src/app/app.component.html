@@ -119,7 +119,7 @@
           </tbody>
           <tbody>
             <tr>
-              <td></td><td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="state.ships" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">ships</td>
+              <td></td><td><input type="number" step="0.01" min="0" [(ngModel)]="state.ships" (ngModelChange)="update()" style="width: 6ch"></td><td style="text-align: left">ships</td>
             </tr>
           </tbody>
         </table>
@@ -145,8 +145,7 @@
             Hover your paw over an investment to see a breakdown of investment cost and benefits.
           </p>
           <p>
-            Left click to implement an investment, right click to undo. Hold down CTRL to multiply your clicks by 10.
-            (useful when building dozens of building at once)
+            Left click to implement an investment, right click to undo, or click the level to edit the value directly.
           </p>
           <p>
             Note that the benefit of price reduction upgrades is currently estimated at 0, as they have no effect on ongoing production.
@@ -155,13 +154,14 @@
 
         <table class="table">
           <tbody>
-            <tr *ngFor="let a of actions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a" [class.locked]="a.investment.alsoRequiredCost">
+            <tr *ngFor="let a of actions; trackBy: sameName" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a" [class.locked]="a.investment.alsoRequiredCost">
               <td>{{a.roi | number:'1.0-0'}}</td>
               <td>
                 {{a.name}}
               </td>
               <td>
-                {{a.stateInfo()}}
+                <input #thisInput type="number" [(ngModel)]="a.stateInfo" (ngModelChange)="update(); thisInput.focus()" (click)="$event.stopPropagation()" style="width: 3ch" *ngIf="numeric(a.stateInfo)">
+                <span [innerText]="a.stateInfo" *ngIf="!numeric(a.stateInfo)"></span>
               </td>
             </tr>
           </tbody>
@@ -187,10 +187,11 @@
 
         <table class="table">
           <tbody>
-            <tr *ngFor="let a of storageActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
+            <tr *ngFor="let a of storageActions; trackBy: sameName" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
               <td>{{a.name}}</td>
-              <td style="position: relative">
-                {{a.stateInfo()}}
+              <td>
+                <input type="number" [(ngModel)]="a.stateInfo" (ngModelChange)="update()" (click)="$event.stopPropagation()" style="width: 3ch" *ngIf="numeric(a.stateInfo)">
+                <span [innerText]="a.stateInfo" *ngIf="!numeric(a.stateInfo)"></span>
               </td>
             </tr>  
           </tbody>
@@ -222,8 +223,8 @@
             <tr style="height: 0.5em"></tr>
             <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
               <td>{{a.name}}</td>
-              <td style="position: relative">
-                {{a.stateInfo()}}
+              <td>
+                {{a.stateInfo}}
               </td>
             </tr>  
           </tbody>
@@ -238,7 +239,7 @@
         <table class="table">
           <tbody>
             <tr>
-                <td style="text-align: left"><input type="number" min="0" class="nospinner" [(ngModel)]="state.faith.stored" (ngModelChange)="update()" style="width: 4em; text-align: right"></td>
+                <td style="text-align: left"><input type="number" min="0" [(ngModel)]="state.faith.stored" (ngModelChange)="update()" style="width: 10ch"></td>
                 <td style="text-align: left">total faith</td>
             </tr>
             <tr>
@@ -246,7 +247,7 @@
               <td style="text-align: left">bonus</td>
             </tr>
             <tr>
-              <td><input type="number" min="0" step="0.01" class="nospinner" [(ngModel)]="state.faith.apocryphaBonus" (ngModelChange)="update()" style="width: 4em; text-align: right"> %</td>
+              <td><input type="number" min="0" step="0.01" [(ngModel)]="state.faith.apocryphaBonus" (ngModelChange)="update()" style="width: 6ch"> %</td>
               <td style="text-align: left">praise bonus</td>
             </tr>
           </tbody>
@@ -261,10 +262,10 @@
         <table class="table">
           <tbody>
             <tr>
-              <td><input type="number" step="0.01" min="0" class="nospinner" [(ngModel)]="state.karma" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">karma</td>
+              <td><input type="number" step="0.01" min="0" [(ngModel)]="state.karma" (ngModelChange)="update()" style="width: 4ch"></td><td style="text-align: left">karma</td>
             </tr>
             <tr>
-              <td><input type="number" step="1" min="0" class="nospinner" [(ngModel)]="state.paragon" (ngModelChange)="update()" style="width: 3em; text-align: right"></td><td style="text-align: left">paragon</td>
+              <td><input type="number" step="1" min="0" [(ngModel)]="state.paragon" (ngModelChange)="update()" style="width: 4ch"></td><td style="text-align: left">paragon</td>
             </tr>
           </tbody>
         </table>

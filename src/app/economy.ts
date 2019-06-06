@@ -671,9 +671,9 @@ export abstract class Action extends CostBenefitAnalysis {
 	
 	abstract undo(state: GameState): void;
 
-	abstract stateInfo() : string;
+	abstract readonly stateInfo: string | number;
 
-	abstract repeatable: boolean;
+	abstract readonly repeatable: boolean;
 }
 
 
@@ -718,8 +718,12 @@ class BuildingAction extends Action {
 		return ob && state.level[ob];
 	}
 
-	stateInfo() {
+	get stateInfo(): number {
 		return state.level[this.name];
+	}
+
+	set stateInfo(info: number) {
+		state.level[this.name] = info;
 	}
 
 	applyTo(state: GameState) {
@@ -774,7 +778,7 @@ class UpgradeAction extends Action {
 		super(s, name, resourceCost);
 	}
 
-	stateInfo() {
+	get stateInfo() {
 		return state.upgrades[this.name] ? "R" : " ";
 	}
 
@@ -826,7 +830,7 @@ class TradeshipAction extends Action {
 	undo(state: GameState) {
 		state.ships -= craftRatio(state);
 	}
-	stateInfo() {
+	get stateInfo() {
 		return "";
 	}
 	get repeatable() {
@@ -846,7 +850,7 @@ class PraiseAction extends Action {
 	undo(state: GameState) {
 		state.faith.stored -= 1000 * (1 + state.faith.apocryphaBonus * 0.01);
 	}
-	stateInfo() {
+	get stateInfo() {
 		return "";
 	}
 	get repeatable() {

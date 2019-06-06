@@ -1,4 +1,4 @@
-body, textarea { 
+body, textarea, input { 
 	font-family: sans-serif;
 }
 
@@ -32,12 +32,18 @@ table.table > tbody > tr.locked {
 	color: gray;
 }
 
-input[type="number"].nospinner::-webkit-inner-spin-button {
+input[type="number"] {
+	text-align: right;
+	border: none;
+	padding: 0;
+	font-size: inherit;
+	background: transparent;
+	-moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
-}
-input[type="number"].nospinner {
-    -moz-appearance: textfield;
 }
 
 input[type="range"] {

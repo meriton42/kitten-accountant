@@ -121,4 +121,12 @@ export class AppComponent implements OnInit {
   get faithBonus() {
     return solarRevolutionProductionBonus(state);
   }
+
+  numeric(x: any) {
+    return typeof x === 'number';
+  }
+
+  sameName(index: number, action: Action) {
+    return action.name;
+  }
 }
