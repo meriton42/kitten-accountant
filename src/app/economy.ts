@@ -718,20 +718,27 @@ class BuildingAction extends Action {
 		return ob && state.level[ob];
 	}
 
-	get stateInfo(): number {
-		return state.level[this.name];
-	}
-
-	set stateInfo(info: number) {
-		state.level[this.name] = info;
-	}
-
-	applyTo(state: GameState) {
-		state.level[this.name]++;
+	private obsoletePrevious(state: GameState) {
 		const o = obsoletes[this.name];
 		if (o) {
 			state.level[o] = 0;
 		}
+	}
+
+	get stateInfo(): number {
+		return state.level[this.name];
+	}
+
+	set stateInfo(newValue: number) {
+		state.level[this.name] = newValue;
+		if (newValue) {
+			this.obsoletePrevious(state);
+		}
+	}
+
+	applyTo(state: GameState) {
+		state.level[this.name]++;
+		this.obsoletePrevious(state);
 	}
 
 	undo(state: GameState) {
