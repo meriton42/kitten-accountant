@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter } from '@angular/core';
 import { resourceNames, Res, state, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "./game-state";
 import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo } from "./economy";
 import { CbaTooltipService } from './cba-tooltip.service';
 import { HelpService } from './help.service';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -37,7 +38,20 @@ export class AppComponent implements OnInit {
 
   shipsAsString: string;
 
-  constructor(public cbaTooltip: CbaTooltipService, public helpService: HelpService) {}
+  updateRequest = new EventEmitter();
+
+  constructor(public cbaTooltip: CbaTooltipService, public helpService: HelpService) {
+    this.updateRequest.pipe(debounceTime(200)).subscribe(() => {
+      // since the Viewcontainer moves subviews by temporarily removing them, moved elements may lose keyboard focus
+      // we therefore delay the update until the user has (hopefullly) finished typing, and restore the focus manually afterwards
+      // (we realize this is hacky, but short of patching angular itself we didn't find a better solution)      
+      const previouslyFocused = document.activeElement as HTMLElement;
+      this.update();
+      setTimeout(() => { // after the DOM update
+        previouslyFocused.focus(); 
+      })
+    })
+  }
 
   ngOnInit() {
     this.update();

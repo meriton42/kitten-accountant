@@ -160,7 +160,7 @@
                 {{a.name}}
               </td>
               <td>
-                <input #thisInput type="number" [(ngModel)]="a.stateInfo" (ngModelChange)="update(); thisInput.focus()" (click)="$event.stopPropagation()" style="width: 3ch" *ngIf="numeric(a.stateInfo)">
+                <input type="number" [(ngModel)]="a.stateInfo" (ngModelChange)="updateRequest.emit()" (click)="$event.stopPropagation()" style="width: 3ch" *ngIf="numeric(a.stateInfo)">
                 <span [innerText]="a.stateInfo" *ngIf="!numeric(a.stateInfo)"></span>
               </td>
             </tr>
