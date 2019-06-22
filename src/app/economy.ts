@@ -375,11 +375,12 @@ export abstract class Conversion extends CostBenefitAnalysis {
 					} else {
 						benefit += p * priceFor(<Res>res);
 					}
+					this.return.add(new Expediture(p, <Res>res));
 				}
-				this.return.add(new Expediture(p, <Res>res));
 			}
 		}
 		price[this.product] = price[this.product] || Math.max(0, (cost * (state.priceMarkup[this.product] || 1) - benefit) / this.currentlyProduced[this.product]);
+		this.return.add(new Expediture(this.currentlyProduced[this.product], this.product)); // can't do this earlier, because it needs the price ...
 
 		this.initialized = true;
 	}
