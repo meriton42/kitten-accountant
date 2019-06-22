@@ -27,6 +27,7 @@ function updateEconomy() {
 		culture: priceMarkup.culture, 
 		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
 		unicorn: priceMarkup.unicorn,
+		antimatter: 1000 * priceMarkup.antimatter,
 	};
 	price = <any>basicPrice;
 	price.iron = ironPrice(state, basicPrice),
@@ -133,6 +134,10 @@ export function solarRevolutionProductionBonus(state: GameState) {
 }
 
 function basicProduction(state: GameState): Cart {
+	// production is per second real time (neither per tick, not per day)
+	const day = 2; // seconds
+	const year = 400 * day;
+
 	let {level, upgrades, workers, luxury} = state;
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1 + level.SpaceStation * 2;
@@ -167,7 +172,8 @@ function basicProduction(state: GameState): Cart {
 											+ level.HydroPlant * 5 * (1 + (upgrades.HydroPlantTurbines && 0.15))
 											+ level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) 
 											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5)) * 0.75 // assume worst season
-											+ (upgrades.SolarSatellites && level.Satellite * 1);
+											+ (upgrades.SolarSatellites && level.Satellite * 1)
+											+ level.Sunlifter * 30;
 	const energyConsumption = level.Calciner * 1 
 											+ level.Factory * 2 
 											+ (upgrades.Pumpjack && level.OilWell * 1) 
@@ -177,7 +183,8 @@ function basicProduction(state: GameState): Cart {
 											+ level.SpaceStation * 10
 											+ level.LunarOutpost * 5
 											+ level.MoonBase * 10
-											+ level.OrbitalArray * 20;
+											+ level.OrbitalArray * 20
+											+ level.ContainmentChamber * 50 * (1 + level.HeatSink * 0.01);
 
 	const energyRatio = (energyProduction / energyConsumption) || 1;
 	const energyBonus = hardLimit(1, energyRatio, 1.75);
@@ -236,7 +243,7 @@ function basicProduction(state: GameState): Cart {
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
-					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
+					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05 + level.SpaceBeacon * 0.625) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
 					* (1 + (upgrades.HubbleSpaceTelescope && 0.3)) * paragonBonus * faithBonus,
 		uranium: (upgrades.OrbitalGeodesy && level.Quarry * 0.0025 * paragonBonus * magnetoBonus * faithBonus)
 					+ level.Accelerator * 0.0125 * autoParagonBonus * magnetoBonus * faithBonus
@@ -244,6 +251,7 @@ function basicProduction(state: GameState): Cart {
 					- level.Reactor * 0.005 * (1 - (upgrades.EnrichedUranium && 0.25))
 					- level.LunarOutpost * 1.75,
 		unobtainium: level.LunarOutpost * 0.035 * (1 + (upgrades.MicroWarpReactors && 1)) * spaceRatio,
+		antimatter: energyRatio >= 1 && level.Sunlifter * 1 / year,
 	}
 }
 
@@ -293,6 +301,7 @@ function storage(state: GameState): Storage {
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
 		faith: (100 + level.Temple * (100 + level.SunAltar * 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire * 0.1)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
+		antimatter: (100 + level.ContainmentChamber * 50 * (1 + level.HeatSink * 0.02)) * paragonBonus, // TODO barnRatio? warehouseRatio? harborRatio?
 	}
 }
 
@@ -957,9 +966,10 @@ function updateSciences() {
 		new ScienceInfo("OrbitalLaunch", {starchart: 250, catpower: 5000, science: 100000, oil: 15000}, ["Satellite", "SpaceElevator", "MoonMission", "SpaceStation"]),
 		new ScienceInfo("MoonMission", {starchart: 500, titanium: 5000, science: 125000, oil: 45000}, ["LunarOutpost", "MoonBase", "DuneMission", "PiscineMission"]),
 		new ScienceInfo("DuneMission", {starchart: 1000, titanium: 7000, science: 175000, kerosene: 75}, ["HeliosMission", "PlanetCracker", "HydraulicFracturer", "SpiceRefinery"]),
-		new ScienceInfo("PiscineMission", {starchart: 1500, titanium: 9000, science: 200000, kerosene: 250}, ["TMinusMission", "ResearchVessel"]),
-		new ScienceInfo("HeliosMission", {starchart: 3000, titanium: 15000, science: 250000, kerosene: 1250}, ["YarnMission"]), // SunLifter
+		new ScienceInfo("PiscineMission", {starchart: 1500, titanium: 9000, science: 200000, kerosene: 250}, ["TMinusMission", "ResearchVessel", "OrbitalArray"]),
+		new ScienceInfo("HeliosMission", {starchart: 3000, titanium: 15000, science: 250000, kerosene: 1250}, ["YarnMission", "Sunlifter", "ContainmentChamber", "HeatSink", "Sunforge"]),
 		new ScienceInfo("TMinusMission", {starchart: 2500, titanium: 12000, science: 225000, kerosene: 750}, ["HeliosMission", "KairoMission", "Cryostation"]),
+		new ScienceInfo("KairoMission", {starchart: 5000, titanium: 20000, science: 300000, kerosene: 7500}, ["RorschachMission", "SpaceBeacon"]),
 		// ...
 	];
 
@@ -1010,6 +1020,8 @@ function updateActions() {
 		new SpaceAction("HydraulicFracturer", {starchart: 750, alloy: 1025, science: 150000, kerosene: 100}, 1.18),
 		new SpaceAction("ResearchVessel", {starchart: 100, alloy: 2500, titanium: 12500, kerosene: 250}, 1.15),
 		new SpaceAction("OrbitalArray", {starchart: 2000, eludium: 100, science: 250000, kerosene: 500}, 1.15),
+		new SpaceAction("Sunlifter", {science: 500000, eludium: 225, kerosene: 2500}, 1.15),
+		new SpaceAction("SpaceBeacon", {starchart: 25000, antimatter: 50, alloy: 25000, kerosene: 7500}, 1.15),
 
 		new UpgradeAction("MineralHoes", {science: 100, minerals: 275}),
 		new UpgradeAction("IronHoes", {science: 200, iron: 25}),
@@ -1107,6 +1119,9 @@ function storageActions(state: GameState) {
 
 		new SpaceAction("MoonBase", {starchart: 700, titanium: 9500, concrete: 250, science: 100000, unobtainium: 50, oil: 70000}, 1.12, state),
 		new SpaceAction("Cryostation", {eludium: 25, concrete: 1500, science: 200000, kerosene: 500}, 1.12, state),
+		new SpaceAction("ContainmentChamber", {science: 500000, kerosene: 2500}, 1.125, state),
+		// new SpaceAction("HeatSink", {science: 125000, thorium: 12500, relic: 1, kerosene: 5000}, 1.12, state), // needs thorium and relics
+		// new SpaceAction("Sunforge", {science: 100000, relic: 1, kerosene: 1250, antimatter: 250}, 1.12), // needs relic
 
 		new UpgradeAction("ExpandedBarns", {science: 500, wood: 1000, minerals: 750, iron: 50}, state),
 		new UpgradeAction("ReinforcedBarns", {science: 800, beam: 25, slab: 10, iron: 100}, state),

@@ -114,6 +114,7 @@ const basicResources = {
 	culture: x,
 	faith: x,
 	unicorn: x,
+	antimatter: x,
 };
 // created on command by conversion, unlimited storage
 const convertedResources = {
@@ -154,6 +155,7 @@ const userPricedResources: {[R in Res]?} = {
 	uranium: x,
 	unobtainium: x,
 	unicorn: x,
+	antimatter: x,
 }
 
 const job = {
@@ -224,7 +226,12 @@ const building = {
 	SpiceRefinery: x,
 	ResearchVessel: x,
 	OrbitalArray: x,
+	Sunlifter: x,
+	ContainmentChamber: x,
+	HeatSink: x,
+	Sunforge: x,
 	Cryostation: x,
+  SpaceBeacon: x,
 }
 const upgrade = {
 	MineralHoes: x,
