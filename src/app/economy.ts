@@ -27,7 +27,7 @@ function updateEconomy() {
 		culture: priceMarkup.culture, 
 		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
 		unicorn: priceMarkup.unicorn,
-		antimatter: 1000 * priceMarkup.antimatter,
+		antimatter: 5000 * priceMarkup.antimatter,
 	};
 	price = <any>basicPrice;
 	price.iron = ironPrice(state, basicPrice),
@@ -697,7 +697,7 @@ export abstract class Action extends CostBenefitAnalysis {
 
 	available(state: GameState) {
 		for (const xp of this.investment.expeditures) {
-			if (!["catnip", "wood", "titanium", "uranium"].includes(xp.res) && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
+			if (!["catnip", "wood", "titanium", "uranium", "antimatter"].includes(xp.res) && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
 				return false;
 			}
 		}
