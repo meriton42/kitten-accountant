@@ -33,7 +33,10 @@ function updateEconomy() {
 	price.starchart = 1000 * priceMarkup.starchart;
 
 	conversions = [
-		// the constructor sets the price of the product (unless a price has already been set)
+		// in resource flow order, so conversion production can be calculated in a single pass
+		// (this is, for each resource, the conversion that uses is primarily should appear last 
+		// among all conversions affecting that resource. This ensures that 100% conversionProportion 
+		// consumes everything)
 		new Hunt(),
 		new CraftingConversion("parchment", {fur: 175}),
 		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
@@ -41,20 +44,36 @@ function updateEconomy() {
 		new CraftingConversion("blueprint", {compendium: 25, science: 25000}),
 		new CraftingConversion("beam", {wood: 175}),
 		new CraftingConversion("slab", {minerals: 250}),
-		new CraftingConversion("plate", {iron: 125}),
+		new CraftingConversion("steel", {coal: 100, iron: 100}),
 		new ZebraTrade(),
 		new DragonTrade(), 
-		new CraftingConversion("steel", {coal: 100, iron: 100}),
-		new CraftingConversion("gear", {steel: 15}),
+		new CraftingConversion("plate", {iron: 125}),
+		new CraftingConversion("megalith", {slab: 50, beam: 25, plate: 5}),
+		new CraftingConversion("scaffold", {beam: 50}),
 		new CraftingConversion("concrete", {slab: 2500, steel: 25}),
+		new CraftingConversion("gear", {steel: 15}),
 		new CraftingConversion("alloy", {steel: 75, titanium: 10}),
 		new CraftingConversion("eludium", {unobtainium: 1000, alloy: 2500}),
-		new CraftingConversion("scaffold", {beam: 50}),
-		new Smelting(),
 		new KeroseneConversion(),
-		new CraftingConversion("megalith", {slab: 50, beam: 25, plate: 5}),
 		new UnicornSacrifice(),
+		new Smelting(), // only for display purposes (price is set previously)
 	];
+
+	const priceInitializer: {[R in ConvertedRes]: Conversion} = {} as any;
+	for (const conv of conversions) {
+		priceInitializer[conv.product] = conv;
+	}
+
+	const priceProvider = (res: Res) => {
+		if (price[res] === undefined) {
+			priceInitializer[res].init(priceProvider);
+		}
+		return price[res];
+	}
+	
+	for (const c of conversions) {
+		c.init(priceProvider);
+	}
 }
 
 function workerProduction(job: Job, res: Res) {
@@ -328,33 +347,41 @@ export class CostBenefitAnalysis {
 export abstract class Conversion extends CostBenefitAnalysis {
 	instanteneous = true;
 
-	/** also sets the price of the product! */
-	constructor(public product: ConvertedRes, resourceInvestment: Cart) {
+	private currentlyProduced = this.produced(state);
+	private initialized = false;
+
+	constructor(public product: ConvertedRes, public resourceInvestment: Cart) {
 		super();
+	}
+
+	/** also sets the price of the product! */
+	init(priceFor: (res: Res) => number) {
+		if (this.initialized) return;
+
 		let cost = 0;
 		let benefit = 0;
-		for (const res in resourceInvestment) {
-			const number = resourceInvestment[res]
+		for (const res in this.resourceInvestment) {
+			const number = this.resourceInvestment[res]
+			cost += number * priceFor(<Res>res);
 			this.investment.add(new Expediture(number, <Res>res));
-			cost += number * price[res];
 		}
 
-		const currentlyProduced = this.produced(state);		
-		for (const res in currentlyProduced) {
-			if (res != this.product) {
-				const p = currentlyProduced[res];
-				if (p) {
-					this.return.add(new Expediture(p, <Res>res));
+		for (const res in this.currentlyProduced) {
+			const p = this.currentlyProduced[res];
+			if (p) {
+				if (res != this.product) {
 					if (p < 0) {
-						cost -= p * price[res];
+						cost -= p * priceFor(<Res>res);
 					} else {
-						benefit += p * price[res];
+						benefit += p * priceFor(<Res>res);
 					}
 				}
+				this.return.add(new Expediture(p, <Res>res));
 			}
 		}
-		price[this.product] = price[this.product] || Math.max(0, (cost * (state.priceMarkup[product] || 1) - benefit) / currentlyProduced[this.product]);
-		this.return.add(new Expediture(currentlyProduced[this.product], this.product));
+		price[this.product] = price[this.product] || Math.max(0, (cost * (state.priceMarkup[this.product] || 1) - benefit) / this.currentlyProduced[this.product]);
+
+		this.initialized = true;
 	}
 
 	abstract produced(state: GameState): Cart;
