@@ -37,6 +37,8 @@ function updateEconomy() {
 		// (this is, for each resource, the conversion that uses is primarily should appear last 
 		// among all conversions affecting that resource. This ensures that 100% conversionProportion 
 		// consumes everything)
+		new ZebraTrade(),
+		new DragonTrade(), 
 		new Hunt(),
 		new CraftingConversion("parchment", {fur: 175}),
 		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
@@ -45,8 +47,6 @@ function updateEconomy() {
 		new CraftingConversion("beam", {wood: 175}),
 		new CraftingConversion("slab", {minerals: 250}),
 		new CraftingConversion("steel", {coal: 100, iron: 100}),
-		new ZebraTrade(),
-		new DragonTrade(), 
 		new CraftingConversion("plate", {iron: 125}),
 		new CraftingConversion("megalith", {slab: 50, beam: 25, plate: 5}),
 		new CraftingConversion("scaffold", {beam: 50}),
