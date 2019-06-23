@@ -141,6 +141,7 @@ const convertedResources = {
 	blueprint: x,
 	megalith: x,
 	tear: x,
+	relic: x,
 }
 
 const userPricedResources: {[R in Res]?} = {
@@ -231,9 +232,12 @@ const building = {
 	HeatSink: x,
 	Sunforge: x,
 	Cryostation: x,
-  SpaceBeacon: x,
+	SpaceBeacon: x,
+	TerraformingStation: x,
+	Hydroponics: x,
 }
 const upgrade = {
+	// same order as http://bloodrizer.ru/games/kittens/wiki/index.php?page=workshop
 	MineralHoes: x,
 	IronHoes: x,
 	MineralAxe: x,
@@ -298,6 +302,10 @@ const upgrade = {
 	TitaniumReflectors: x,
 	UnobtainiumReflectors: x,
 	HydroPlantTurbines: x,
+	AntimatterBases: x,
+	AntimatterFission: x,
+	AntimatterDrive: x,
+	AntimatterReactors: x,
 	Pumpjack: x,
 	BiofuelProcessing: x,
 	UnicornSelection: x,
@@ -384,7 +392,7 @@ const science = {
 	Superconductors: x,
 	Antimatter: x,
 	Terraformation: x,
-	Hydroponics: x,
+	HydroPonics: x, // weird spelling to avoid name clash with building
 	Exophysics: x,
 	ParticlePhysics: x,
 	DimensionalPhysics: x,
