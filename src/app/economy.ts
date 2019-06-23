@@ -813,7 +813,8 @@ class BuildingAction extends Action {
 class SpaceAction extends BuildingAction {
 	constructor(name: Building, initialConstructionResources: Cart, priceRatio: number, s = state) {
 		if (initialConstructionResources.oil) {
-			initialConstructionResources.oil *= 1 - s.level.SpaceElevator * 0.05;
+			initialConstructionResources.oil *= 1 - hyperbolicLimit(s.level.SpaceElevator * 0.05, 0.75);
+			initialConstructionResources.oil *= Math.pow(1.05, s.level[name]) / Math.pow(priceRatio, s.level[name]); // price ratio for oil is always 1.05
 		}
 		super(name, initialConstructionResources, priceRatio, s, null);
 	}
