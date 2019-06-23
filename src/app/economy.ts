@@ -59,6 +59,7 @@ function updateEconomy() {
 		new CraftingConversion("eludium", {unobtainium: 1000, alloy: 2500}),
 		new KeroseneConversion(),
 		new UnicornSacrifice(),
+		new AlicornSacrifice(),
 		new Smelting(), // only for display purposes (price is set previously)
 	];
 
@@ -534,6 +535,20 @@ class UnicornSacrifice extends Conversion {
 	produced(state: GameState): Cart {
 		return {
 			tear: state.level.Ziggurat
+		}
+	}
+}
+
+class AlicornSacrifice extends Conversion {
+	constructor() {
+		super("timecrystal", {alicorn: 25})
+	}
+
+	produced(state: GameState): Cart {
+		const {level} = state;		
+		const tcRefineRatio = 1 + level.UnicornUtopia * 0.05 + level.SunSpire * 0.10;
+		return {
+			timecrystal: 1 * tcRefineRatio
 		}
 	}
 }
@@ -1106,8 +1121,8 @@ function updateActions() {
 		new ZigguratBuilding("IvoryTower", {ivory: 25000, tear: 25}, 1.15),
 		new ZigguratBuilding("IvoryCitadel", {ivory: 50000, tear: 50}, 1.15), // effect on ivory meteors not calculated
 		new ZigguratBuilding("SkyPalace", {ivory: 125000, megalith: 5, tear: 500}, 1.15), // effect on ivory meteors not calculated
-		new ZigguratBuilding("UnicornUtopia", {ivory: 1000000, gold: 500, tear: 5000}, 1.15), // effect on ivory meteors and tcRefineRatio not calculated
-		new ZigguratBuilding("SunSpire", {ivory: 750000, gold: 1250, tear: 25000}, 1.15), // effect on ivory meteors and tcRefineRatio not calculated
+		new ZigguratBuilding("UnicornUtopia", {ivory: 1000000, gold: 500, tear: 5000}, 1.15), // effect on ivory meteors not calculated
+		new ZigguratBuilding("SunSpire", {ivory: 750000, gold: 1250, tear: 25000}, 1.15), // effect on ivory meteors not calculated
 
 		new TradeshipAction(),
 		new PraiseAction(),

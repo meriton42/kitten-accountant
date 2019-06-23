@@ -144,6 +144,7 @@ const convertedResources = {
 	blueprint: x,
 	megalith: x,
 	tear: x,
+	timecrystal: x,
 	relic: x,
 }
 
