@@ -8,19 +8,19 @@
     using these prices to calculate the costs and benefits of available investments.
   </p>
 
+  <p>
+    To learn more about the individual accounting tables, hover your paw over them.
+  </p>
+
   <p>Alas, your accountants are not omniscient. In particular, they do not consider:</p>
   <ul>
     <li>science storage</li>
     <li>synergies from buying science or storage</li>
     <li>benefits provided by your leader</li>
-    <li>unicorn religion beyond ivory citadels</li>
+    <li>unicorn religion beyond sun spires</li>
     <li>metaphysics beyond early price reduction upgrades</li>
     <li>investment opportunities beyond yarn</li>
   </ul>
-
-  <p>
-    To learn more about the individual accounting tables, hover your paw over them.
-  </p>
 </ng-template>
   
 <div style="display: flex; flex-flow: column; position: absolute; left: 0; right: 0; top: 0; bottom: 0" [help]="generalHelp">
@@ -109,7 +109,7 @@
               <td (click)="increasePrice(r,1)" (contextmenu)="increasePrice(r, -1)">
                 {{price[r] | number:'1.2-2'}}
               </td>
-              <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center">
+              <td *ngIf="r == 'fur' || r == 'ivory' || r =='unicorn' || r == 'alicorn'; else conversionBlock" (click)="toggleLuxury(r, $event)" (contextmenu)="toggleLuxury(r, $event)" style="width: 1em; text-align: center">
                   {{luxury[r] ? 'A' : ''}}
               </td>
               <ng-template #conversionBlock>

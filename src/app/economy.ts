@@ -27,6 +27,7 @@ function updateEconomy() {
 		culture: priceMarkup.culture, 
 		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
 		unicorn: priceMarkup.unicorn,
+		alicorn: 10000 * priceMarkup.alicorn,
 		antimatter: 5000 * priceMarkup.antimatter,
 	};
 	price = <any>basicPrice;
@@ -143,7 +144,7 @@ function basicProduction(state: GameState): Cart {
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1 + level.SpaceStation * 2 + level.TerraformingStation * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
-	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
+	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (luxury.alicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (level.SunAltar && level.Temple * (0.004 + level.SunAltar * 0.001)) - unhappiness;
 	const workerProficiency = 1 + 0.1875 * kittens / (kittens + 50) * (1 + (upgrades.Logistics && 0.15) + (upgrades.Augmentations && 1));  // approximation: the more kittens, the older the average kitten (assuming no deaths)
 	const workerEfficiency = happiness * workerProficiency;
@@ -200,7 +201,7 @@ function basicProduction(state: GameState): Cart {
 	const spaceParagonRatio = autoParagonBonus * magnetoBonus * reactorBonus * faithBonus;
 	const spaceAutoprodRatio = spaceRatio * (1 + (spaceParagonRatio - 1) * prodTransferBonus);
 
-	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1 + level.IvoryCitadel * 0.25;
+	const unicornRatioReligion = level.UnicornTomb * 0.05 + level.IvoryTower * 0.1 + level.IvoryCitadel * 0.25 + level.SkyPalace * 0.5 + level.UnicornUtopia * 2.5 + level.SunSpire * 5;
 
 	return {
 		catnip: (level.CatnipField * 0.63 * (1.5 + 1 + 1 + 0.25) / 4
@@ -242,6 +243,8 @@ function basicProduction(state: GameState): Cart {
 		unicorn: level.UnicornPasture * 0.005 * (1 + unicornRatioReligion + (upgrades.UnicornSelection && 0.25)) * paragonBonus * faithBonus
 					+ level.IvoryTower * 0.00025 * 500 * (1 + unicornRatioReligion * 0.1) 
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
+		alicorn: (level.SkyPalace * 10 + level.UnicornUtopia * 15 + level.SunSpire * 30) / 100000 / day 
+					+ (luxury.alicorn && level.SkyPalace * 0.0001 + level.UnicornUtopia * 0.000125 + level.SunSpire * 0.00025),
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
 					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05 + level.SpaceBeacon * 0.625) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
@@ -297,12 +300,13 @@ function storage(state: GameState): Storage {
 		unobtainium: (150 + level.MoonBase * 150 + level.Cryostation * 750) * baseMetalRatio * paragonBonus,
 		coal: 0,
 		oil: (1500 + level.OilWell * 1500 + level.MoonBase * 3500 + level.Cryostation * 7500) * paragonBonus,
-		gold: ((10 + level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * baseMetalRatio * paragonBonus,
+		gold: ((10 + level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * (1 + level.SkyPalace * 0.01) * baseMetalRatio * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
 		science: 1e9, // TODO rework if technologies are tracked too
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
 		faith: (100 + level.Temple * (100 + level.SunAltar * 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire * 0.1)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
+		alicorn: 1e9, // there is no limit
 		antimatter: (100 + level.ContainmentChamber * 50 * (1 + level.HeatSink * 0.02)) * paragonBonus, // TODO barnRatio? warehouseRatio? harborRatio?
 	}
 }
@@ -1101,6 +1105,9 @@ function updateActions() {
 		new ZigguratBuilding("UnicornTomb", {ivory: 500, tear: 5}, 1.15),
 		new ZigguratBuilding("IvoryTower", {ivory: 25000, tear: 25}, 1.15),
 		new ZigguratBuilding("IvoryCitadel", {ivory: 50000, tear: 50}, 1.15), // effect on ivory meteors not calculated
+		new ZigguratBuilding("SkyPalace", {ivory: 125000, megalith: 5, tear: 500}, 1.15), // effect on ivory meteors not calculated
+		new ZigguratBuilding("UnicornUtopia", {ivory: 1000000, gold: 500, tear: 5000}, 1.15), // effect on ivory meteors and tcRefineRatio not calculated
+		new ZigguratBuilding("SunSpire", {ivory: 750000, gold: 1250, tear: 25000}, 1.15), // effect on ivory meteors and tcRefineRatio not calculated
 
 		new TradeshipAction(),
 		new PraiseAction(),

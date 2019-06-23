@@ -5,6 +5,7 @@ export interface GameState {
 		fur: boolean;
 		ivory: boolean;
 		unicorn: boolean;
+		alicorn: boolean;
 	};
 	faith: {
 		stored: number,
@@ -39,6 +40,7 @@ function readGameState() : GameState {
 	state.luxury.fur = state.luxury.fur || false;
 	state.luxury.ivory = state.luxury.ivory || false;
 	state.luxury.unicorn = state.luxury.unicorn || false;
+	state.luxury.alicorn = state.luxury.alicorn || false;
 	state.faith = state.faith || <any>{};
 	state.faith.stored = state.faith.stored || 0;
 	state.faith.apocryphaBonus = state.faith.apocryphaBonus || 0;
@@ -114,6 +116,7 @@ const basicResources = {
 	culture: x,
 	faith: x,
 	unicorn: x,
+	alicorn: x,
 	antimatter: x,
 };
 // created on command by conversion, unlimited storage
@@ -144,7 +147,7 @@ const convertedResources = {
 	relic: x,
 }
 
-const userPricedResources: {[R in Res]?} = {
+const userPricedResources = {
 	iron: x,
 	coal: x,
 	gold: x,
@@ -156,6 +159,7 @@ const userPricedResources: {[R in Res]?} = {
 	uranium: x,
 	unobtainium: x,
 	unicorn: x,
+	alicorn: x,
 	antimatter: x,
 }
 
@@ -208,6 +212,9 @@ const building = {
 	UnicornTomb: x,
 	IvoryTower: x,
 	IvoryCitadel: x,
+	SkyPalace: x,
+	UnicornUtopia: x,
+	SunSpire: x,
 
 	SolarChant: x,
 	Scholasticism: x,
