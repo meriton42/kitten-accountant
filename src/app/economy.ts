@@ -60,6 +60,7 @@ function updateEconomy() {
 		new KeroseneConversion(),
 		new UnicornSacrifice(),
 		new AlicornSacrifice(),
+		new RefineTears(),
 		new Smelting(), // only for display purposes (price is set previously)
 	];
 
@@ -535,6 +536,18 @@ class UnicornSacrifice extends Conversion {
 	produced(state: GameState): Cart {
 		return {
 			tear: state.level.Ziggurat
+		}
+	}
+}
+
+class RefineTears extends Conversion {
+	constructor() {
+		super("sorrow", {tear: 10000});
+	}
+
+	produced(state: GameState): Cart {
+		return {
+			sorrow: 1
 		}
 	}
 }
@@ -1123,6 +1136,8 @@ function updateActions() {
 		new ZigguratBuilding("SkyPalace", {ivory: 125000, megalith: 5, tear: 500}, 1.15), // effect on ivory meteors not calculated
 		new ZigguratBuilding("UnicornUtopia", {ivory: 1000000, gold: 500, tear: 5000}, 1.15), // effect on ivory meteors not calculated
 		new ZigguratBuilding("SunSpire", {ivory: 750000, gold: 1250, tear: 25000}, 1.15), // effect on ivory meteors not calculated
+		// Markers, etc.
+		new ZigguratBuilding("BlackPyramid", {/*spice: 150000,*/ sorrow: 5, unobtainium: 5000, megalith: 2500}, 1.15),
 
 		new TradeshipAction(),
 		new PraiseAction(),

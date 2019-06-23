@@ -144,6 +144,7 @@ const convertedResources = {
 	blueprint: x,
 	megalith: x,
 	tear: x,
+	sorrow: x,
 	timecrystal: x,
 	relic: x,
 }
@@ -216,6 +217,7 @@ const building = {
 	SkyPalace: x,
 	UnicornUtopia: x,
 	SunSpire: x,
+	BlackPyramid: x,
 
 	SolarChant: x,
 	Scholasticism: x,
