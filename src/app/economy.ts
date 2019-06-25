@@ -27,8 +27,8 @@ function updateEconomy() {
 		culture: priceMarkup.culture, 
 		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
 		unicorn: priceMarkup.unicorn,
-		alicorn: 10000 * priceMarkup.alicorn,
-		necrocorn: 10000 * priceMarkup.alicorn + 1000 * priceMarkup.necrocorn,
+		alicorn: 20000 * priceMarkup.alicorn,
+		necrocorn: 20000 * priceMarkup.alicorn + 30000 * priceMarkup.necrocorn,
 		antimatter: 5000 * priceMarkup.antimatter,
 	};
 	price = <any>basicPrice;
