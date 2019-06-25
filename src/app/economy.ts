@@ -751,11 +751,6 @@ export abstract class Action extends CostBenefitAnalysis {
 	}
 
 	available(state: GameState) {
-		for (const xp of this.investment.expeditures) {
-			if (!["catnip", "wood", "titanium", "uranium", "antimatter"].includes(xp.res) && basicResourceNames.includes(<any>xp.res) && !currentBasicProduction[xp.res]) {
-				return false;
-			}
-		}
 		return true;
 	}
 
