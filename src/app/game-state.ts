@@ -22,6 +22,7 @@ export interface GameState {
 	ships: number;
 	karma: number;
 	paragon: number;
+	leviathanEnergy: number;
 
 	notes: string;
 }
@@ -66,6 +67,7 @@ function readGameState() : GameState {
 	state.ships = state.ships || 0;
 	state.karma = state.karma || 0;
 	state.paragon = state.paragon || 0;
+	state.leviathanEnergy = state.leviathanEnergy || 0;
 	return state;
 }
 
@@ -117,6 +119,7 @@ const basicResources = {
 	faith: x,
 	unicorn: x,
 	alicorn: x,
+	necrocorn: x,
 	antimatter: x,
 };
 // created on command by conversion, unlimited storage
@@ -162,7 +165,10 @@ const userPricedResources = {
 	unobtainium: x,
 	unicorn: x,
 	alicorn: x,
+	necrocorn: x,
 	antimatter: x,
+	sorrow: x,
+	timecrystal: x,
 }
 
 const job = {
@@ -217,6 +223,7 @@ const building = {
 	SkyPalace: x,
 	UnicornUtopia: x,
 	SunSpire: x,
+	Marker: x,
 	BlackPyramid: x,
 
 	SolarChant: x,

@@ -28,12 +28,12 @@ function updateEconomy() {
 		faith: wage / workerProduction("priest", "faith") * priceMarkup.faith,
 		unicorn: priceMarkup.unicorn,
 		alicorn: 10000 * priceMarkup.alicorn,
+		necrocorn: 10000 * priceMarkup.alicorn + 1000 * priceMarkup.necrocorn,
 		antimatter: 5000 * priceMarkup.antimatter,
 	};
 	price = <any>basicPrice;
 	price.iron = ironPrice(state, basicPrice),
 	price.starchart = 1000 * priceMarkup.starchart;
-	price.relic = 1E6; // TODO find means of production
 
 	conversions = [
 		// in resource flow order, so conversion production can be calculated in a single pass
@@ -42,6 +42,7 @@ function updateEconomy() {
 		// consumes everything)
 		new ZebraTrade(),
 		new DragonTrade(), 
+		new LeviathanTrade(),
 		new Hunt(),
 		new CraftingConversion("parchment", {fur: 175}),
 		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
@@ -246,7 +247,9 @@ function basicProduction(state: GameState): Cart {
 					+ level.IvoryTower * 0.00025 * 500 * (1 + unicornRatioReligion * 0.1) 
 					+ (luxury.unicorn && 1e-6), // add some unicorns so the building shows up
 		alicorn: (level.SkyPalace * 10 + level.UnicornUtopia * 15 + level.SunSpire * 30) / 100000 / day 
-					+ (luxury.alicorn && level.SkyPalace * 0.0001 + level.UnicornUtopia * 0.000125 + level.SunSpire * 0.00025),
+					+ (luxury.alicorn && level.SkyPalace * 0.0001 + level.UnicornUtopia * 0.000125 + level.SunSpire * 0.00025)
+					- level.Marker * 0.000005, // we assume no necrocorns yet - if you already have some the corruption will be slower
+		necrocorn: level.Marker * 0.000005, // likewise
 		manuscript: level.Steamworks * ((upgrades.PrintingPress && 0.0025) + (upgrades.OffsetPress && 0.0075) + (upgrades.Photolithography && 0.0225)),
 		starchart: astroChance * 1 
 					+ ((level.Satellite * 0.005 + level.ResearchVessel * 0.05 + level.SpaceBeacon * 0.625) * spaceRatio + (upgrades.AstroPhysicists && workers.scholar * 0.0005 * workerEfficiency))
@@ -268,8 +271,9 @@ function production(state: GameState): {[R in Res]: number} {
 			continue; // the conversion is ongoing and included in basicProduction (like smelting iron)
 		}
 
-		const frequency = production[conversion.investment.expeditures[0].res] * state.conversionProportion[conversion.product]
-										/ conversion.investment.expeditures[0].amount;										
+		const {primaryInput} = conversion;
+		const frequency = production[primaryInput] * state.conversionProportion[conversion.product]
+										/ conversion.resourceInvestment[primaryInput];										
 		for (const xp of conversion.investment.expeditures) {
 			production[xp.res] -= xp.amount * frequency;
 		}
@@ -309,6 +313,7 @@ function storage(state: GameState): Storage {
 		faith: (100 + level.Temple * (100 + level.SunAltar * 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire * 0.1)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
 		alicorn: 1e9, // there is no limit
+		necrocorn: 1e9, // there is no limit
 		antimatter: (100 + level.ContainmentChamber * 50 * (1 + level.HeatSink * 0.02)) * paragonBonus, // TODO barnRatio? warehouseRatio? harborRatio?
 	}
 }
@@ -400,6 +405,12 @@ export abstract class Conversion extends CostBenefitAnalysis {
 		this.return.add(new Expediture(this.currentlyProduced[this.product], this.product)); // can't do this earlier, because it needs the price ...
 
 		this.initialized = true;
+	}
+
+	get primaryInput(): Res {
+		for (const r in this.resourceInvestment) {
+			return <Res>r; // the first
+		}
 	}
 
 	abstract produced(state: GameState): Cart;
@@ -497,6 +508,27 @@ class DragonTrade extends Trade {
 	output(state: GameState, tradeRatio: number) {
 		return {
 			uranium: 0.95 * 1 * tradeRatio,
+		}
+	}
+}
+
+class LeviathanTrade extends Trade {
+	constructor() {
+		super("relic", {unobtainium: 5000});
+	}
+
+	get primaryInput(): Res {
+		return "unobtainium";
+	}
+
+	output(state: GameState, tradeRatio: number): Cart {
+		const raceRatio = 1 + state.leviathanEnergy * 0.02;
+		const ratio = tradeRatio * raceRatio;
+		return {
+			timecrystal: 0.98 * 0.25 * ratio,
+			sorrow: 0.15 * 1 * ratio,
+			starchart: 0.5 * 250 * ratio,
+			relic: 0.05 * 1 * ratio 
 		}
 	}
 }
@@ -926,6 +958,24 @@ class PraiseAction extends Action {
 	}
 }
 
+class FeedEldersAction extends Action {
+	constructor() {
+		super(state, "FeedElders", {necrocorn: 1})
+	}
+	applyTo(state: GameState) {
+		state.leviathanEnergy += 1;
+	}
+	undo(state: GameState): void {
+		state.leviathanEnergy -= 1;
+	}
+	get stateInfo() {
+		return "";
+	}
+	get repeatable() {
+		return true;
+	}
+}
+
 function updateSciences() {
   prerequisite = {};
 
@@ -1137,11 +1187,13 @@ function updateActions() {
 		new ZigguratBuilding("SkyPalace", {ivory: 125000, megalith: 5, tear: 500}, 1.15), // effect on ivory meteors not calculated
 		new ZigguratBuilding("UnicornUtopia", {ivory: 1000000, gold: 500, tear: 5000}, 1.15), // effect on ivory meteors not calculated
 		new ZigguratBuilding("SunSpire", {ivory: 750000, gold: 1250, tear: 25000}, 1.15), // effect on ivory meteors not calculated
+		new ZigguratBuilding("Marker", {/*spice: 50000,*/ tear: 5000, unobtainium: 2500, megalith: 750 }, 1.15),
 		// Markers, etc.
 		new ZigguratBuilding("BlackPyramid", {/*spice: 150000,*/ sorrow: 5, unobtainium: 5000, megalith: 2500}, 1.15),
 
 		new TradeshipAction(),
 		new PraiseAction(),
+		new FeedEldersAction(),
 	];
 	actions = actions.filter(a => a.available(state)).map(a => a.assess());
 	actions.sort((a,b) => a.roi - b.roi);
