@@ -66,7 +66,7 @@ function updateEconomy() {
 		new Smelting(), // only for display purposes (price is set previously)
 	];
 
-	const priceInitializer: {[R in ConvertedRes]: Conversion} = {} as any;
+	const priceInitializer = {} as {[R in ConvertedRes]: Conversion};
 	for (const conv of conversions) {
 		priceInitializer[conv.product] = conv;
 	}
