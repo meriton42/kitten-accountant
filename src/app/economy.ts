@@ -169,6 +169,7 @@ function basicProduction(state: GameState): Cart {
 	const autoParagonBonus = 1 + 0.0005 * hyperbolicLimit(state.paragon, 200);
 
 	const scienceBonus = level.Library * 0.1 
+											+ level.DataCenter * 0.1
 											+ level.Academy * 0.2 
 											+ level.Observatory * 0.25 * (1 + level.Satellite * 0.05) 
 											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35))
@@ -187,6 +188,7 @@ function basicProduction(state: GameState): Cart {
 											+ level.Factory * 2 
 											+ (upgrades.Pumpjack && level.OilWell * 1) 
 											+ (upgrades.BiofuelProcessing && level.BioLab * 1)
+											+ (level.DataCenter * (upgrades.Cryocomputing ? 1 : 2))
 											+ (!upgrades.SolarSatellites && level.Satellite * 1)
 											+ level.Accelerator * 2
 											+ level.SpaceStation * 10
@@ -291,7 +293,7 @@ function production(state: GameState): {[R in Res]: number} {
 
 type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
-	let {level, upgrades, ships} = state;
+	let {conversionProportion, level, upgrades, ships} = state;
 
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.StorageBunkers && 0.20) + (upgrades.ConcretePillars && 0.05);
@@ -299,6 +301,19 @@ function storage(state: GameState): Storage {
 	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1);
 	const paragonBonus = 1 + state.paragon * 0.001;
 	const baseMetalRatio = 1 + level.Sunforge * 0.01;
+
+	const libraryRatio = (upgrades.TitaniumReflectors && 0.02) + (upgrades.UnobtainiumReflectors && 0.02) + (upgrades.EludiumReflectors && 0.02);
+	const datacenterBoosts = (1 + (upgrades.Uplink && level.BioLab * 0.01))// * (1 + (upgrades.MachineLearning && level.AiCore * dataCenterAiRatio));
+	const spaceScienceRatio = (1 + (upgrades.AntimatterReactors && 0.95))
+	const scienceMax = (level.Library * 250 + level.DataCenter * 750 * datacenterBoosts) * (1 + level.Observatory * libraryRatio)
+										+ level.Academy * 500
+										+ level.Observatory * (upgrades.Astrolabe ? 1500 : 1000) * (1 + level.Satellite * 0.05)
+										+ level.BioLab * 1500 * (1 + (upgrades.Uplink && level.DataCenter * 0.01))
+										+ level.Temple * (level.Scholasticism && 400 + level.Scholasticism * 100)
+										+ level.Accelerator * (upgrades.LHC && 2500)
+										+ level.ResearchVessel * 10000 * spaceScienceRatio
+										+ level.SpaceBeacon * 25000 * spaceScienceRatio;
+	const scienceMaxCompendia = level.DataCenter * 1000 * datacenterBoosts; 
 	return {
 		catnip: ((5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)) 
 				+  level.Accelerator * acceleratorRatio * 30000 + level.MoonBase * 45000) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75) + level.Hydroponics * 0.1),
@@ -312,7 +327,7 @@ function storage(state: GameState): Storage {
 		oil: (1500 + level.OilWell * 1500 + level.MoonBase * 3500 + level.Cryostation * 7500) * paragonBonus,
 		gold: ((10 + level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * (1 + level.SkyPalace * 0.01) * baseMetalRatio * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
-		science: 1e9, // TODO rework if technologies are tracked too
+		science: (scienceMax + (conversionProportion.compendium && scienceMax + scienceMaxCompendia)) * paragonBonus,
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
 		faith: (100 + level.Temple * (100 + level.SunAltar * 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire * 0.1)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
@@ -779,12 +794,14 @@ export abstract class Action extends CostBenefitAnalysis {
 
 const obsoletes: {[B in Building]?: Building} = {
 	BroadcastTower: "Amphitheatre",
+	DataCenter: "Library",
 	HydroPlant: "Aqueduct",
 	SolarFarm: "Pasture",
 }
 const obsoletedBy: {[B in Building]?: Building} = {
 	Amphitheatre: "BroadcastTower",
 	Aqueduct: "HydroPlant",
+	Library: "DataCenter",
 	Pasture: "SolarFarm",
 }
 
@@ -1017,7 +1034,7 @@ function updateSciences() {
 		new ScienceInfo("Combustion", {science: 115000, blueprint: 45}, ["Ecology", "OffsetPress", "FuelInjectors", "OilRefinery"]),
 		new ScienceInfo("Metallurgy", {science: 125000, blueprint: 60}, ["ElectrolyticSmelting", "Oxidation", "MiningDrill"]),
 		new ScienceInfo("Ecology", {science: 125000, blueprint: 55}, ["SolarFarm"]),
-		new ScienceInfo("Electronics", {science: 135000, blueprint: 70}, ["Robotics", "NuclearFission", "Rocketry", "Refrigeration", "CADsystem", "SETI", "FactoryLogistics", "Telecommunication", "BroadcastTower"]), // FactoryOptimization
+		new ScienceInfo("Electronics", {science: 135000, blueprint: 70}, ["Robotics", "NuclearFission", "Rocketry", "Refrigeration", "CADsystem", "SETI", "FactoryLogistics", "Telecommunication", "BroadcastTower", "DataCenter"]), // FactoryOptimization
 		new ScienceInfo("Robotics", {science: 140000, blueprint: 80}, ["ArtificialIntelligence", "HydroPlant", "RotaryKiln", "RoboticAssistance"]), // SteelPlants, FactoryRobotics, Tanker
 		new ScienceInfo("ArtificialIntelligence", {science: 250000, blueprint: 150}, ["QuantumCryptography"]), // AICore, NeuralNetworks, AIEngineers
 		//new ScienceInfo("QuantumCryptography", {science: 1250000, relic: })
@@ -1025,19 +1042,19 @@ function updateSciences() {
 		new ScienceInfo("NuclearFission", {science: 150000, blueprint: 100}, ["Nanotechnology", "ParticlePhysics", "Reactor", "ReactorVessel", "NuclearSmelters"]),
 		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation", "OrbitalLaunch"]),
 		new ScienceInfo("OilProcessing", {science: 215000, blueprint: 150}, ["FactoryProcessing"]), // kerosene
-		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography", "OrbitalGeodesy"]),
+		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography", "OrbitalGeodesy", "Uplink"]),
 		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites"]), // SpaceEngineers
 		new ScienceInfo("Thorium", {science: 375000, blueprint: 375}, []), // ThoriumReactors, ThoriumDrive
 		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["AdvancedExogeology", "UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines", "StorageBunkers"]),
-		new ScienceInfo("AdvancedExogeology", {science: 325000, blueprint: 350}, ["PlanetBuster", "EludiumHuts", "MicroWarpReactors"]), // eludium reflectors
+		new ScienceInfo("AdvancedExogeology", {science: 325000, blueprint: 350}, ["PlanetBuster", "EludiumHuts", "MicroWarpReactors", "EludiumReflectors"]),
 		new ScienceInfo("Nanotechnology", {science: 200000, blueprint: 150}, ["Superconductors", "PhotovoltaicCells", "Nanosuits", "Augmentations", "FluidizedReactors", "SpaceElevator"]),
-		new ScienceInfo("Superconductors", {science: 225000, blueprint: 175}, ["Antimatter", "ColdFusion", "SpaceManufacturing"]),
+		new ScienceInfo("Superconductors", {science: 225000, blueprint: 175}, ["Antimatter", "ColdFusion", "SpaceManufacturing", "Cryocomputing"]),
 		new ScienceInfo("Antimatter", {science: 500000, relic: 1}, ["Terraformation", "AntimatterBases", "AntimatterReactors", "AntimatterFission", "AntimatterDrive"]),
 		new ScienceInfo("Terraformation", {science: 750000, relic: 5}, ["HydroPonics", "TerraformingStation"]),
 		new ScienceInfo("HydroPonics", {science: 1000000, relic: 25}, ["Exophysics", "Hydroponics"]), // Tectonic
 		// new ScienceInfo("Exophysics", )
 		new ScienceInfo("ParticlePhysics", {science: 185000, blueprint: 135}, ["Chronophysics", "DimensionalPhysics", "Accelerator", "EnrichedUranium", "Railgun"]),
-		new ScienceInfo("DimensionalPhysics", {science: 235000}, ["EnergyRifts"]), // LHC
+		new ScienceInfo("DimensionalPhysics", {science: 235000}, ["EnergyRifts", "LHC"]),
 		// ...
 
 		new ScienceInfo("OrbitalLaunch", {starchart: 250, catpower: 5000, science: 100000, oil: 15000}, ["Satellite", "SpaceElevator", "MoonMission", "SpaceStation"]),
@@ -1054,6 +1071,20 @@ function updateSciences() {
 	sciences = infos.filter(info => info.visible);
 }
 
+function scienceBuildings(state: GameState) {
+	return [
+		new BuildingAction("Library", {wood: 25}, 1.15, state),
+		new BuildingAction("DataCenter", {concrete: 10, steel: 100}, 1.15, state),
+		new BuildingAction("Academy", {wood: 50, minerals: 70, science: 100}, 1.15, state),
+		new BuildingAction("Observatory", {scaffold: 50, slab: 35, iron: 750, science: 1000}, 1.10, state),
+		new BuildingAction("BioLab", {slab: 100, alloy: 25, science: 1500}, 1.10, state),
+		new BuildingAction("Accelerator", {titanium: 7500, concrete: 125, uranium: 25}, 1.15, state),
+
+		new SpaceAction("ResearchVessel", {starchart: 100, alloy: 2500, titanium: 12500, kerosene: 250}, 1.15, state),
+		new SpaceAction("SpaceBeacon", {starchart: 25000, antimatter: 50, alloy: 25000, kerosene: 7500}, 1.15),
+	];
+}
+
 function updateActions() {
 	const {upgrades} = state;
 	actions = [
@@ -1065,15 +1096,11 @@ function updateActions() {
 		new BuildingAction("Hut", {wood: 5}, 2.5, state, (upgrades.IronWoodHuts && 0.5) + (upgrades.ConcreteHuts && 0.3) + (upgrades.UnobtainiumHuts && 0.25) + (upgrades.EludiumHuts && 0.1)),
 		new BuildingAction("LogHouse", {wood: 200, minerals: 250}, 1.15),
 		new BuildingAction("Mansion", {slab: 185, steel: 75, titanium: 25}, 1.15),
-		new BuildingAction("Library", {wood: 25}, 1.15),
-		new BuildingAction("Academy", {wood: 50, minerals: 70, science: 100}, 1.15),
-		new BuildingAction("Observatory", {scaffold: 50, slab: 35, iron: 750, science: 1000}, 1.10),
-		new BuildingAction("BioLab", {slab: 100, alloy: 25, science: 1500}, 1.10),
+		...scienceBuildings(state),
 		new BuildingAction("Mine", {wood: 100}, 1.15),
 		new BuildingAction("Quarry", {scaffold: 50, steel: 125, slab:1000}, 1.15),
 		new BuildingAction("LumberMill", {wood: 100, iron: 50, minerals: 250}, 1.15),
 		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15),
-		new BuildingAction("Accelerator", {titanium: 7500, concrete: 125, uranium: 25}, 1.15),
 		new BuildingAction("Steamworks", {steel: 65, gear: 20, blueprint: 1}, 1.25),
 		new BuildingAction("Magneto", {alloy: 10, gear: 5, blueprint: 1}, 1.25),
 		new BuildingAction("Smelter", {minerals: 200}, 1.15),
@@ -1096,10 +1123,8 @@ function updateActions() {
 		new SpaceAction("LunarOutpost", {starchart: 650, uranium: 500, alloy: 750, concrete: 150, science: 100000, oil: 55000}, 1.12),
 		new SpaceAction("PlanetCracker", {starchart: 2500, alloy: 1750, science: 125000, kerosene: 50}, 1.18),
 		new SpaceAction("HydraulicFracturer", {starchart: 750, alloy: 1025, science: 150000, kerosene: 100}, 1.18),
-		new SpaceAction("ResearchVessel", {starchart: 100, alloy: 2500, titanium: 12500, kerosene: 250}, 1.15),
 		new SpaceAction("OrbitalArray", {starchart: 2000, eludium: 100, science: 250000, kerosene: 500}, 1.15),
 		new SpaceAction("Sunlifter", {science: 500000, eludium: 225, kerosene: 2500}, 1.15),
-		new SpaceAction("SpaceBeacon", {starchart: 25000, antimatter: 50, alloy: 25000, kerosene: 7500}, 1.15),
 		new SpaceAction("TerraformingStation", {antimatter: 25, uranium: 5000, kerosene: 5000}, 1.25),
 		new SpaceAction("Hydroponics", {kerosene: 500}, 1.15),
 
@@ -1143,18 +1168,15 @@ function updateActions() {
 		new UpgradeAction("PrintingPress", {gear: 45, science: 7500}),
 		new UpgradeAction("OffsetPress", {gear: 250, oil: 15000, science: 100000}),
 		new UpgradeAction("Photolithography", {alloy: 1250, oil: 50000, uranium: 250, science: 250000}),
+		new UpgradeAction("Cryocomputing", {eludium: 15, science: 125000}),
 		new UpgradeAction("HighPressureEngine", {gear: 25, science: 20000, blueprint: 5}),
 		new UpgradeAction("FuelInjectors", {gear: 250, oil: 20000, science: 100000}),
 		new UpgradeAction("FactoryLogistics", {gear: 250, titanium: 2000, science: 100000}),
 		new UpgradeAction("SpaceManufacturing", {titanium: 125000, science: 250000}),
-		new UpgradeAction("Astrolabe", {titanium: 5, starchart: 75, science: 25000}),
-		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}), // effect not calculated (science storage)
-		new UpgradeAction("UnobtainiumReflectors", {unobtainium: 75, starchart: 750, science: 250000}), // effect not calculated (science storage)
 		new UpgradeAction("HydroPlantTurbines", {unobtainium: 125, science: 250000}),
 		new UpgradeAction("AntimatterBases", {eludium: 15, antimatter: 250}),
 		//new UpgradeAction("AntimatterFission", {antimatter: 175, thorium: 7500, science: 525000}), // effect not calculated (speed up eludium crafting by 25%)
 		new UpgradeAction("AntimatterDrive", {antimatter: 125, science: 450000}), // effect not calculated (routeSpeed 25)
-		new UpgradeAction("AntimatterReactors", {eludium: 35, antimatter: 750}), // effect not calculated (science storage)
 		new UpgradeAction("Pumpjack", {titanium: 250, gear: 125, science: 100000}),
 		new UpgradeAction("BiofuelProcessing", {titanium: 1250, science: 150000}),
 		new UpgradeAction("UnicornSelection", {titanium: 1500, science: 175000}),
@@ -1176,7 +1198,6 @@ function updateActions() {
 		new UpgradeAction("RoboticAssistance", {steel: 10000, gear: 250, science: 100000}),
 
 		new ReligiousAction("SolarChant", {faith: 100}),
-		// new ReligiousAction("Scholasticism", {faith: 250}), // effect not calculated (increases science storage)
 		new ReligiousAction("SunAltar", {faith: 500, gold: 250}),
 		new ReligiousAction("StainedGlass", {faith: 500, gold: 250}),
 		new ReligiousAction("Basilica", {faith: 1250, gold: 750}), // effect on culture storage not calculated
@@ -1204,6 +1225,7 @@ function updateActions() {
 
 function storageActions(state: GameState) {
 	return [
+		...scienceBuildings(state),
 		new BuildingAction("Barn", {wood: 50}, 1.75, state),
 		new BuildingAction("Warehouse", {beam: 1.5, slab: 2}, 1.15, state),
 		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
@@ -1218,7 +1240,6 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ReinforcedBarns", {science: 800, beam: 25, slab: 10, iron: 100}, state),
 		new UpgradeAction("ReinforcedWarehouses", {science: 15000, plate: 50, steel: 50, scaffold: 25}, state),
 		new UpgradeAction("Silos", {science: 50000, steel: 125, blueprint: 5}, state),
-		// LHC would give science storage
 		new UpgradeAction("ExpandedCargo", {science: 55000, blueprint: 15}, state),
 		new UpgradeAction("ReactorVessel", {science: 135000, titanium: 5000, uranium: 125}, state),
 		new UpgradeAction("TitaniumBarns", {science: 60000, titanium: 25, steel: 200, scaffold: 250}, state),
@@ -1229,10 +1250,19 @@ function storageActions(state: GameState) {
 		new UpgradeAction("ConcreteWarehouses", {science: 100000, titanium: 1250, concrete: 35}, state),
 		new UpgradeAction("StorageBunkers", {science: 25000, unobtainium: 500, concrete: 1250}, state),
 		new UpgradeAction("EnergyRifts", {science: 200000, titanium: 7500, uranium: 250}),
+		new UpgradeAction("LHC", {science: 250000, unobtainium: 100, alloy: 150}, state),
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),
+		new UpgradeAction("Uplink", {alloy: 1750, science: 75000}, state),
+		new UpgradeAction("Astrolabe", {titanium: 5, starchart: 75, science: 25000}, state),
+		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}, state),
+		new UpgradeAction("UnobtainiumReflectors", {unobtainium: 75, starchart: 750, science: 250000}, state),
+		new UpgradeAction("EludiumReflectors", {eludium: 15, science: 250000}, state),
+		new UpgradeAction("AntimatterReactors", {eludium: 35, antimatter: 750}, state),
 
-		new ReligiousAction("GoldenSpire", {faith: 350, gold: 150}),
+
+		new ReligiousAction("Scholasticism", {faith: 250}, state),
+		new ReligiousAction("GoldenSpire", {faith: 350, gold: 150}, state),
 	].filter(a => a.available(state)).map(a => a.assess());
 }
 
