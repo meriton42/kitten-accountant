@@ -308,7 +308,7 @@ function storage(state: GameState): Storage {
 	const scienceMax = (level.Library * 250 + level.DataCenter * 750 * datacenterBoosts) * (1 + level.Observatory * libraryRatio)
 										+ level.Academy * 500
 										+ level.Observatory * (upgrades.Astrolabe ? 1500 : 1000) * (1 + level.Satellite * 0.05)
-										+ level.BioLab * 1500 * (1 + (upgrades.Uplink && level.DataCenter * 0.01))
+										+ level.BioLab * 1500 * (1 + level.DataCenter * ((upgrades.Uplink && 0.01) + (upgrades.Starlink && 0.01)))
 										+ level.Temple * (level.Scholasticism && 400 + level.Scholasticism * 100)
 										+ level.Accelerator * (upgrades.LHC && 2500)
 										+ level.ResearchVessel * 10000 * spaceScienceRatio
@@ -1043,7 +1043,7 @@ function updateSciences() {
 		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation", "OrbitalLaunch"]),
 		new ScienceInfo("OilProcessing", {science: 215000, blueprint: 150}, ["FactoryProcessing"]), // kerosene
 		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography", "OrbitalGeodesy", "Uplink"]),
-		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites"]), // SpaceEngineers
+		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites", "Starlink"]), // SpaceEngineers
 		new ScienceInfo("Thorium", {science: 375000, blueprint: 375}, []), // ThoriumReactors, ThoriumDrive
 		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["AdvancedExogeology", "UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines", "StorageBunkers"]),
 		new ScienceInfo("AdvancedExogeology", {science: 325000, blueprint: 350}, ["PlanetBuster", "EludiumHuts", "MicroWarpReactors", "EludiumReflectors"]),
@@ -1254,6 +1254,7 @@ function storageActions(state: GameState) {
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),
 		new UpgradeAction("Uplink", {alloy: 1750, science: 75000}, state),
+		new UpgradeAction("Starlink", {alloy: 5000, oil: 25000, science: 175000}, state),
 		new UpgradeAction("Astrolabe", {titanium: 5, starchart: 75, science: 25000}, state),
 		new UpgradeAction("TitaniumReflectors", {titanium: 15, starchart: 20, science: 20000}, state),
 		new UpgradeAction("UnobtainiumReflectors", {unobtainium: 75, starchart: 750, science: 250000}, state),

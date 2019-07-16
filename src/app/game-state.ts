@@ -302,6 +302,7 @@ const upgrade = {
 	OffsetPress: x,
 	Photolithography: x,
 	Uplink: x,
+	Starlink: x,
 	Cryocomputing: x,
 	HighPressureEngine: x,
 	FuelInjectors: x,
