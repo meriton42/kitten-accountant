@@ -1,4 +1,5 @@
-import { state, Res, Building, Job, GameState, clone, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science } from "./game-state";
+import { state, Res, Building, Job, GameState, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science } from "./game-state";
+import { apply, GameStateUpdate } from "./game-state-changer";
 
 let currentBasicProduction: Cart;
 let price: {[R in Res]: number};
@@ -83,7 +84,7 @@ function updateEconomy() {
 }
 
 function workerProduction(job: Job, res: Res) {
-	return delta(basicProduction, (s) => s.workers[job]++)[res];
+	return delta(basicProduction, {workers: {[job]: state.workers[job] + 1}})[res];
 }
 
 function ironPrice(state: GameState, price: {[R in BasicRes]: number}) {
@@ -91,23 +92,26 @@ function ironPrice(state: GameState, price: {[R in BasicRes]: number}) {
 	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
 	// and affixing the priceMarkup to any single contribution therefore has counter intuitive side effects
 	// instead, we introduce a separate contribution to affix the priceMarkup
-	const smelter = delta(basicProduction, s => s.level.Smelter++);
+	const smelter = delta(basicProduction, {level: {Smelter: state.level.Smelter + 1}});
 	return (state.priceMarkup.iron - smelter.wood * price.wood - smelter.minerals * price.minerals) / smelter.iron;
 }
 
 type Cart = {[R in Res]?: number};
 
-function delta(metric: (state: GameState) => Cart, change: (state: GameState) => void): Cart {
-	const original = metric(state);
-	const clonedState = clone(state);
-	change(clonedState);
-	const modified = metric(clonedState);
+function delta(metric: (state: GameState) => Cart, change: GameStateUpdate): Cart {
+	const original = metric(state);	
+	const undo = apply(change);
+	try {
+		const modified = metric(state);
 
-	const delta = {};
-	for (let r in original) {
-		delta[r] = modified[r] - original[r];
+		const delta = {};
+		for (let r in original) {
+			delta[r] = modified[r] - original[r];
+		}
+		return delta;
+	} finally {
+		undo();
 	}
-	return delta;
 }
 
 function hardLimit(min: number, x: number, max: number) {
@@ -423,7 +427,11 @@ class Smelting extends Conversion {
 	}
 
 	produced(state: GameState) {
-		return delta(basicProduction, s => s.level.Smelter++);
+		return delta(basicProduction, {
+			level: {
+				Smelter: state.level.Smelter + 1
+			}
+		});
 	}
 }
 
@@ -668,7 +676,7 @@ export abstract class Action extends CostBenefitAnalysis {
 	}
 
 	assess() {
-		const deltaProduction = delta(production, state => this.applyTo(state));
+		const deltaProduction = delta(production, this.effect(1));
 		for (const r of resourceNames) {
 			if (deltaProduction[r]) {
 				this.return.add(new Expediture(deltaProduction[r], r));
@@ -686,55 +694,62 @@ export abstract class Action extends CostBenefitAnalysis {
 	private static procuringStorage = false;
 
 	procureStorage(xps: Expediture[], state: GameState) {
-		let currentState = clone(state);
-		let currentStorage = storage(currentState);
-		for (const xp of this.investment.expeditures) {
-			while (xp.amount > currentStorage[xp.res]) {
-				if (Action.procuringStorage) {
-					// don't recurse (for performance, and to avoid endless recursion if a building needs storage, and considers building itself to fix that :-)
-					this.investment.cost = Infinity;
-					return;
-				}
-				Action.procuringStorage = true;
-				try {
-					// what's the best way to expand our storage?
-					let bestRoI = 0;
-					let bestAction: Action = null;
-					let bestStorage: Storage;
-					if (this.investment.expenses.length < 9) { // limit depth to save CPU time
-						for (const sa of storageActions(currentState)) {
-							sa.applyTo(currentState);
-							let newStorage = storage(currentState);
-							sa.undo(currentState);
-	
-							const gain = newStorage[xp.res] - currentStorage[xp.res];
-							const cost = sa.investment.cost;
-							const roi = gain / cost;
-							if (roi > bestRoI) {
-								bestRoI = roi;
-								bestAction = sa;
-								bestStorage = newStorage;
-							}
-						}
-					}
-
-					if (bestAction) {
-						this.investment.addExpense({
-							name: bestAction.name,
-							cost: bestAction.investment.cost
-						});
-						bestAction.applyTo(currentState)
-						currentStorage = bestStorage;
-					} else {
-						this.investment.addExpense({
-							name: "<more storage needed>",
-							cost: Infinity,
-						});
+		const undoers: Array<() => void> = [];
+		try {
+			let currentStorage = storage(state);
+			for (const xp of this.investment.expeditures) {
+				while (xp.amount > currentStorage[xp.res]) {
+					if (Action.procuringStorage) {
+						// don't recurse (for performance, and to avoid endless recursion if a building needs storage, and considers building itself to fix that :-)
+						this.investment.cost = Infinity;
 						return;
 					}
-				} finally {
-					Action.procuringStorage = false;
+					Action.procuringStorage = true;
+					try {
+						// what's the best way to expand our storage?
+						let bestRoI = 0;
+						let bestAction: Action = null;
+						let bestStorage: Storage;
+						if (this.investment.expenses.length < 9) { // limit depth to save CPU time
+							for (const sa of storageActions(state)) {
+								const undo = apply(sa.effect(1));
+								let newStorage = storage(state);
+								undo();
+		
+								const gain = newStorage[xp.res] - currentStorage[xp.res];
+								const cost = sa.investment.cost;
+								const roi = gain / cost;
+								if (roi > bestRoI) {
+									bestRoI = roi;
+									bestAction = sa;
+									bestStorage = newStorage;
+								}
+							}
+						}
+	
+						if (bestAction) {
+							this.investment.addExpense({
+								name: bestAction.name,
+								cost: bestAction.investment.cost
+							});
+							const undo = apply(bestAction.effect(1));
+							undoers.push(undo);
+							currentStorage = bestStorage;
+						} else {
+							this.investment.addExpense({
+								name: "<more storage needed>",
+								cost: Infinity,
+							});
+							return;
+						}
+					} finally {
+						Action.procuringStorage = false;
+					}
 				}
+			}
+		} finally {
+			while (undoers.length) {
+				undoers.pop()();
 			}
 		}
 	}
@@ -754,10 +769,8 @@ export abstract class Action extends CostBenefitAnalysis {
 		return true;
 	}
 
-	abstract applyTo(state: GameState): void;
+	abstract effect(times: number): GameStateUpdate;
 	
-	abstract undo(state: GameState): void;
-
 	abstract readonly stateInfo: string | number;
 
 	abstract readonly repeatable: boolean;
@@ -805,11 +818,20 @@ class BuildingAction extends Action {
 		return ob && state.level[ob];
 	}
 
-	private obsoletePrevious(state: GameState) {
-		const o = obsoletes[this.name];
-		if (o) {
-			state.level[o] = 0;
+	private levelUpdateEffect(newLevel: number) {
+		const update: GameStateUpdate = {
+			level: {
+				[this.name]: newLevel,
+			}
+		};
+		
+		if (newLevel) {
+			const o = obsoletes[this.name];
+			if (o) {
+				update.level[o] = 0;
+			}
 		}
+		return update;
 	}
 
 	get stateInfo(): number {
@@ -817,19 +839,11 @@ class BuildingAction extends Action {
 	}
 
 	set stateInfo(newValue: number) {
-		state.level[this.name] = newValue;
-		if (newValue) {
-			this.obsoletePrevious(state);
-		}
+		apply(this.levelUpdateEffect(newValue));
 	}
 
-	applyTo(state: GameState) {
-		state.level[this.name]++;
-		this.obsoletePrevious(state);
-	}
-
-	undo(state: GameState) {
-		state.level[this.name]--;
+	effect(times: number) {
+		return this.levelUpdateEffect(state.level[this.name] + times);
 	}
 
 	get repeatable() {
@@ -881,12 +895,12 @@ class UpgradeAction extends Action {
 		return super.available(state) && state.level.Workshop && (state.showResearchedUpgrades || !state.upgrades[this.name]);
 	}
 
-	applyTo(state: GameState) {
-		state.upgrades[this.name] = true;
-	}
-
-	undo(state: GameState) {
-		state.upgrades[this.name] = false;
+	effect(times: number): GameStateUpdate {
+		return {
+			upgrades: {
+				[this.name]: times > 0,
+			}
+		}
 	}
 
 	get repeatable() {
@@ -903,14 +917,10 @@ class MetaphysicAction extends UpgradeAction {
 		return true;
 	}
 
-	applyTo(state: GameState) {
-		super.applyTo(state);
-		state.paragon -= this.paragonCost;
-	}
-
-	undo(state: GameState) {
-		super.undo(state);
-		state.paragon += this.paragonCost;
+	effect(times: number) {
+		const eff = super.effect(times);
+		eff.paragon = state.paragon - times * this.paragonCost;
+		return eff;
 	}
 }
 
@@ -919,12 +929,10 @@ class TradeshipAction extends Action {
 		super(s, "TradeShip", {scaffold: 100, plate: 150, starchart: 25});
 	}
 
-	applyTo(state: GameState) {
-		state.ships += craftRatio(state);
+	effect(times: number) {
+		return {ships: state.ships + times * craftRatio(state)}
 	}
-	undo(state: GameState) {
-		state.ships -= craftRatio(state);
-	}
+
 	get stateInfo() {
 		return "";
 	}
@@ -938,13 +946,14 @@ class PraiseAction extends Action {
 		super(state, "PraiseTheSun", {faith: 1000});
 	}
 
-	applyTo(state: GameState) {
-		state.faith.stored += 1000 * (1 + state.faith.apocryphaBonus * 0.01);
+	effect(times: number) {
+		return {
+			faith: {
+				stored: state.faith.stored + times * 1000 * (1 + state.faith.apocryphaBonus * 0.01)
+			}
+		}
 	}
 
-	undo(state: GameState) {
-		state.faith.stored -= 1000 * (1 + state.faith.apocryphaBonus * 0.01);
-	}
 	get stateInfo() {
 		return "";
 	}
@@ -957,11 +966,10 @@ class FeedEldersAction extends Action {
 	constructor() {
 		super(state, "FeedElders", {necrocorn: 1})
 	}
-	applyTo(state: GameState) {
-		state.leviathanEnergy += 1;
-	}
-	undo(state: GameState): void {
-		state.leviathanEnergy -= 1;
+	effect(times: number) {
+		return {
+			leviathanEnergy: state.leviathanEnergy + times
+		}
 	}
 	get stateInfo() {
 		return "";
@@ -1245,7 +1253,7 @@ function metaphysicActions() {
 class FurConsumptionReport extends CostBenefitAnalysis {
 	constructor(state: GameState) {
 		super();
-		const productionDelta = delta(production, (state: GameState) => state.luxury.fur = !state.luxury.fur);
+		const productionDelta = delta(production, {luxury: {fur: !state.luxury.fur}});
 		for (const r of resourceNames) {
 			if (productionDelta[r]) {
 				this.return.add(new Expediture(productionDelta[r] * (state.luxury.fur ? -1 : 1), r));

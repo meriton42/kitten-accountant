@@ -157,7 +157,7 @@
 
         <table class="table">
           <tbody>
-            <tr *ngFor="let a of actions; trackBy: sameName" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a" [class.locked]="a.investment.alsoRequiredCost">
+            <tr *ngFor="let a of actions; trackBy: sameName" (click)="apply(a, $event)" (contextmenu)="apply(a, $event)" [cba-tooltip]="a" [class.locked]="a.investment.alsoRequiredCost">
               <td>{{a.roi | number:'1.0-0'}}</td>
               <td>
                 {{a.name}}
@@ -190,7 +190,7 @@
 
         <table class="table">
           <tbody>
-            <tr *ngFor="let a of storageActions; trackBy: sameName" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
+            <tr *ngFor="let a of storageActions; trackBy: sameName" (click)="apply(a, $event)" (contextmenu)="apply(a, $event)" [cba-tooltip]="a">
               <td>{{a.name}}</td>
               <td>
                 <input type="number" [(ngModel)]="a.stateInfo" (ngModelChange)="update()" (click)="$event.stopPropagation()" style="width: 3ch" *ngIf="numeric(a.stateInfo)">
@@ -219,12 +219,12 @@
 
         <table class="table">
           <tbody>
-            <tr *ngFor="let s of sciences" (click)="apply(s, $event)" (contextmenu)="undo(s, $event)" [cba-tooltip]="s">
+            <tr *ngFor="let s of sciences" (click)="apply(s, $event)" (contextmenu)="apply(s, $event)" [cba-tooltip]="s">
               <td>{{s.name}}</td>
               <td>{{s.stateInfo}}</td>
             </tr>
             <tr style="height: 0.5em"></tr>
-            <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="undo(a, $event)" [cba-tooltip]="a">
+            <tr *ngFor="let a of metaphysicActions" (click)="apply(a, $event)" (contextmenu)="apply(a, $event)" [cba-tooltip]="a">
               <td>{{a.name}}</td>
               <td>
                 {{a.stateInfo}}

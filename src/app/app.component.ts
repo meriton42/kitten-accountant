@@ -4,6 +4,7 @@ import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolution
 import { CbaTooltipService } from './cba-tooltip.service';
 import { HelpService } from './help.service';
 import { debounceTime } from 'rxjs/operators';
+import { apply } from './game-state-changer';
 
 @Component({
   selector: 'app-root',
@@ -89,18 +90,11 @@ export class AppComponent implements OnInit {
   }
 
   apply(action: Action, click: MouseEvent) {
-    const times = click.ctrlKey ? 10 : 1;
-    for (let i = 0; i < times; i++) {
-      action.applyTo(state);
+    let times = click.button == 0 ? 1 : -1;
+    if (click.ctrlKey) {
+      times *= 10;
     }
-    this.update();
-  }
-
-  undo(action: Action, click: MouseEvent) {
-    const times = click.ctrlKey ? 10 : 1;
-    for (let i = 0; i < times; i++) {
-      action.undo(state);
-    }
+    apply(action.effect(times));
     this.update();
     return false; // suppress context menu
   }

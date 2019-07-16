@@ -80,18 +80,6 @@ export function resetGameState() {
 	window.location.reload();
 }
 
-export function clone<T>(original : T) : T {
-	if (original instanceof Object) {
-		const copy : T = <any>{};
-		for (const key in original) {
-			copy[key] = clone(original[key]);
-		}
-		return <T>copy;
-	} else {
-		return original;
-	}
-}
-
 function keyNames<T>(o: T): Array<keyof T> {
 	const keys : Array<keyof T> = <any>[];
 	for (let k in o) {
