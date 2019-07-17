@@ -702,7 +702,7 @@ export abstract class Action extends CostBenefitAnalysis {
 		}
 
 		this.roi = this.investment.cost / this.return.cost;
-		if (this.return.cost < 0 || this.roi > 1e6) {
+		if (this.return.cost <= 0 || this.roi > 1e6) {
 			this.roi = Infinity;
 		}
 		
