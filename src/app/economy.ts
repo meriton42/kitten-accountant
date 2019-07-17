@@ -181,7 +181,7 @@ function basicProduction(state: GameState): Cart {
 											+ level.Magneto * 5 
 											+ level.HydroPlant * 5 * (1 + (upgrades.HydroPlantTurbines && 0.15))
 											+ level.Reactor * (10 + (upgrades.ColdFusion && 2.5)) 
-											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5)) * 0.75 // assume worst season
+											+ level.SolarFarm * 2 * (1 + (upgrades.PhotovoltaicCells && 0.5)) * 0.75 /* assume worst season */ * (1 + (upgrades.ThinFilmCells && 0.15))
 											+ (upgrades.SolarSatellites && level.Satellite * 1)
 											+ level.Sunlifter * 30;
 	const energyConsumption = level.Calciner * 1 
@@ -1042,7 +1042,7 @@ function updateSciences() {
 		new ScienceInfo("NuclearFission", {science: 150000, blueprint: 100}, ["Nanotechnology", "ParticlePhysics", "Reactor", "ReactorVessel", "NuclearSmelters"]),
 		new ScienceInfo("Rocketry", {science: 175000, blueprint: 125}, ["Satellites", "OilProcessing", "OilDistillation", "OrbitalLaunch"]),
 		new ScienceInfo("OilProcessing", {science: 215000, blueprint: 150}, ["FactoryProcessing"]), // kerosene
-		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography", "OrbitalGeodesy", "Uplink"]),
+		new ScienceInfo("Satellites", {science: 190000, blueprint: 125}, ["OrbitalEngineering", "Satellite", "Photolithography", "OrbitalGeodesy", "Uplink", "ThinFilmCells"]),
 		new ScienceInfo("OrbitalEngineering", {science: 250000, blueprint: 250}, ["Exogeology", "Thorium", "HubbleSpaceTelescope", "AstroPhysicists", "SpaceStation", "SpaceElevator", "SolarSatellites", "Starlink"]), // SpaceEngineers
 		new ScienceInfo("Thorium", {science: 375000, blueprint: 375}, []), // ThoriumReactors, ThoriumDrive
 		new ScienceInfo("Exogeology", {science: 275000, blueprint: 250}, ["AdvancedExogeology", "UnobtainiumReflectors", "UnobtainiumHuts", "UnobtainiumDrill", "HydroPlantTurbines", "StorageBunkers"]),
@@ -1140,6 +1140,7 @@ function updateActions() {
 		new UpgradeAction("TitaniumAxe", {science: 38000, titanium: 10}),
 		new UpgradeAction("AlloyAxe", {science: 70000, alloy: 25}),
 		new UpgradeAction("PhotovoltaicCells", {titanium: 5000, science: 75000}), 
+		new UpgradeAction("ThinFilmCells", {unobtainium: 200, uranium: 1000, science: 125000}),
 		new UpgradeAction("SolarSatellites", {alloy: 750, science: 225000}),
 		new UpgradeAction("IronWoodHuts", {science: 30000, wood: 15000, iron: 3000}),
 		new UpgradeAction("ConcreteHuts", {science: 125000, concrete: 45, titanium: 3000}),

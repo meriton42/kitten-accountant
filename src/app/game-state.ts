@@ -268,6 +268,7 @@ const upgrade = {
 	EnergyRifts: x,
 	LHC: x,
 	PhotovoltaicCells: x,
+	ThinFilmCells: x,
 	SolarSatellites: x,
 	ExpandedCargo: x,
 	ReactorVessel: x,
