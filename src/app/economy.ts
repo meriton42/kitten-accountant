@@ -660,12 +660,12 @@ export class ScienceInfo extends CostBenefitAnalysis {
 		return state.researched[this.name] ? 'R' : '';
 	}
 
-	applyTo(state: GameState) {
-		state.researched[this.name] = true;
-	}
-
-	undo(state: GameState) {
-		state.researched[this.name] = false;
+	effect(times: number) {
+		return {
+			researched: {
+				[this.name]: times > 0
+			}
+		}
 	}
 }
 

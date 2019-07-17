@@ -89,7 +89,7 @@ export class AppComponent implements OnInit {
     return false; // suppress context menu
   }
 
-  apply(action: Action, click: MouseEvent) {
+  apply(action: Action | ScienceInfo, click: MouseEvent) {
     let times = click.button == 0 ? 1 : -1;
     if (click.ctrlKey) {
       times *= 10;
