@@ -1230,6 +1230,7 @@ function storageActions(state: GameState) {
 		new BuildingAction("Barn", {wood: 50}, 1.75, state),
 		new BuildingAction("Warehouse", {beam: 1.5, slab: 2}, 1.15, state),
 		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
+		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15, state),
 
 		new SpaceAction("MoonBase", {starchart: 700, titanium: 9500, concrete: 250, science: 100000, unobtainium: 50, oil: 70000}, 1.12, state),
 		new SpaceAction("Cryostation", {eludium: 25, concrete: 1500, science: 200000, kerosene: 500}, 1.12, state),
