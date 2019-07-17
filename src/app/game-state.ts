@@ -23,6 +23,7 @@ export interface GameState {
 	karma: number;
 	paragon: number;
 	leviathanEnergy: number;
+	extraKittens: number;
 
 	notes: string;
 }
@@ -68,6 +69,7 @@ function readGameState() : GameState {
 	state.karma = state.karma || 0;
 	state.paragon = state.paragon || 0;
 	state.leviathanEnergy = state.leviathanEnergy || 0;
+	state.extraKittens = 0;
 	return state;
 }
 

@@ -84,7 +84,12 @@ function updateEconomy() {
 }
 
 function workerProduction(job: Job, res: Res) {
-	return delta(basicProduction, {workers: {[job]: state.workers[job] + 1}})[res];
+	return delta(basicProduction, {
+		workers: {
+			[job]: state.workers[job] + 1,
+		},
+		extraKittens: 1,
+	})[res];
 }
 
 function ironPrice(state: GameState, price: {[R in BasicRes]: number}) {
@@ -160,9 +165,7 @@ function basicProduction(state: GameState): Cart {
 	for (let j in workers) {
 		idle -= workers[j];
 	}
-	if (idle > 0) {
-		workers.farmer += idle; // so additional kittens are known to contribute production
-	}
+	workers.farmer += idle + state.extraKittens; // so additional kittens are known to contribute production
 
 	const faithBonus = solarRevolutionProductionBonus(state);
 	const paragonBonus = 1 + 0.01 * hyperbolicLimit(state.paragon, 200);
