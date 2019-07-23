@@ -280,9 +280,17 @@ function production(state: GameState): {[R in Res]: number} {
 			continue; // the conversion is ongoing and included in basicProduction (like smelting iron)
 		}
 
-		const {primaryInput} = conversion;
-		const frequency = production[primaryInput] * state.conversionProportion[conversion.product]
-										/ conversion.resourceInvestment[primaryInput];										
+		let frequency = Infinity;
+    for (const res in conversion.resourceInvestment) {
+			let maxFrequency = production[res] / conversion.resourceInvestment[res];
+			if (res == conversion.primaryInput) {
+				maxFrequency *= state.conversionProportion[conversion.product];
+			}
+			if (frequency > maxFrequency) {
+				frequency = maxFrequency;
+			}
+		}
+
 		for (const xp of conversion.investment.expeditures) {
 			production[xp.res] -= xp.amount * frequency;
 		}
