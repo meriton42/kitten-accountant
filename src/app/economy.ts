@@ -1277,7 +1277,7 @@ function storageActions(state: GameState) {
 
 		new ReligiousAction("Scholasticism", {faith: 250}, state),
 		new ReligiousAction("GoldenSpire", {faith: 350, gold: 150}, state),
-	].filter(a => a.available(state)).map(a => a.assess());
+	].filter(a => a.available(state));
 }
 
 function metaphysicActions() {
@@ -1317,7 +1317,7 @@ export function economyReport() {
 		price, 
 		conversions,
 		actions, 
-		storageActions: storageActions(state), 
+		storageActions: storageActions(state).map(a => a.assess()), 
 		sciences,
 		metaphysicActions: metaphysicActions(),
 		furReport: new FurConsumptionReport(state),
