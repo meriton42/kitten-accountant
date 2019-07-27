@@ -1084,12 +1084,12 @@ function updateSciences() {
 
 function scienceBuildings(state: GameState) {
 	return [
+		new BuildingAction("Accelerator", {titanium: 7500, concrete: 125, uranium: 25}, 1.15, state),
 		new BuildingAction("Library", {wood: 25}, 1.15, state),
 		new BuildingAction("DataCenter", {concrete: 10, steel: 100}, 1.15, state),
 		new BuildingAction("Academy", {wood: 50, minerals: 70, science: 100}, 1.15, state),
 		new BuildingAction("Observatory", {scaffold: 50, slab: 35, iron: 750, science: 1000}, 1.10, state),
 		new BuildingAction("BioLab", {slab: 100, alloy: 25, science: 1500}, 1.10, state),
-		new BuildingAction("Accelerator", {titanium: 7500, concrete: 125, uranium: 25}, 1.15, state),
 
 		new SpaceAction("ResearchVessel", {starchart: 100, alloy: 2500, titanium: 12500, kerosene: 250}, 1.15, state),
 		new SpaceAction("SpaceBeacon", {starchart: 25000, antimatter: 50, alloy: 25000, kerosene: 7500}, 1.15),
@@ -1237,11 +1237,11 @@ function updateActions() {
 
 function storageActions(state: GameState) {
 	return [
-		...scienceBuildings(state),
 		new BuildingAction("Barn", {wood: 50}, 1.75, state),
 		new BuildingAction("Warehouse", {beam: 1.5, slab: 2}, 1.15, state),
 		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
 		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15, state),
+		...scienceBuildings(state),
 
 		new SpaceAction("MoonBase", {starchart: 700, titanium: 9500, concrete: 250, science: 100000, unobtainium: 50, oil: 70000}, 1.12, state),
 		new SpaceAction("Cryostation", {eludium: 25, concrete: 1500, science: 200000, kerosene: 500}, 1.12, state),
