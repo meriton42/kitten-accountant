@@ -110,10 +110,6 @@ export class AppComponent implements OnInit {
         alert("using geologists would be more efficient");
         state.priceMarkup.coal = 1;
       }
-      if (state.priceMarkup.uranium > 1) {
-        alert("trading with dragons would be more efficient");
-        state.priceMarkup.uranium = 1;
-      }
       this.update();
       return false;
     }
