@@ -18,7 +18,7 @@ function updateEconomy() {
 		minerals: wage / workerProduction("miner", "minerals"),
 		iron: 0, // assigned below
 		titanium: 0, // assigned below
-		uranium: 1000 * priceMarkup.uranium, // not derived from dragon trade, because uranium is usually obtained from them only very briefly
+		uranium: 100 * priceMarkup.uranium, // not derived from dragon trade, because uranium is usually obtained from them only very briefly
 		unobtainium: 1000 * priceMarkup.unobtainium,
 		coal: Math.max(0, wage - goldPrice * workerProduction("geologist", "gold")) / workerProduction("geologist", "coal") * priceMarkup.coal,
 		gold: goldPrice,
