@@ -88,7 +88,7 @@
           </p>
 
           <p>
-            You can indicate the availability of fur, ivory, and unicorns by clicking the right-most column.
+            You can indicate the availability of luxury resources (fur, ivory, unicorns and alicorns) by clicking the right-most column.
             If you hover your paw over that indicator, you can see the benefit and cost of making these resources available for consumption.
           </p>
         </ng-template>
@@ -118,10 +118,16 @@
           </tbody>
           <tbody>
             <tr>
-              <td></td><td><input type="number" step="0.01" min="0" [(ngModel)]="state.ships" (ngModelChange)="update()" style="width: 6ch"></td><td style="text-align: left">ships</td>
+              <td></td><td><input type="number" step="0.01" min="0" [(ngModel)]="state.ships" (ngModelChange)="update()" style="width: 6ch"></td>
+              <td style="text-align: left">ships</td>
             </tr>
             <tr>
-              <td></td><td><input type="number" step="1" min="0" [(ngModel)]="state.leviathanEnergy" (ngModelChange)="update()" style="width: 6ch"></td><td style="text-align: left" colspan="4">leviathan energy</td>
+              <td colspan="2"><input type="number" step="1" min="0" [(ngModel)]="state.compendia" (ngModelChange)="update()" style="width: 10ch"></td>
+              <td style="text-align: left">compendia</td>
+            </tr>
+            <tr>
+              <td></td><td><input type="number" step="1" min="0" [(ngModel)]="state.leviathanEnergy" (ngModelChange)="update()" style="width: 6ch"></td>
+              <td style="text-align: left" colspan="4">leviathan energy</td>
             </tr>
           </tbody>
         </table>

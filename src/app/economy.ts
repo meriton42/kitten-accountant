@@ -304,7 +304,7 @@ function production(state: GameState): {[R in Res]: number} {
 
 type Storage = {[R in BasicRes]: number};
 function storage(state: GameState): Storage {
-	let {conversionProportion, level, upgrades, ships} = state;
+	let {conversionProportion, level, upgrades, ships, compendia} = state;
 
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.StorageBunkers && 0.20) + (upgrades.ConcretePillars && 0.05);
@@ -312,19 +312,8 @@ function storage(state: GameState): Storage {
 	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1);
 	const paragonBonus = 1 + state.paragon * 0.001;
 	const baseMetalRatio = 1 + level.Sunforge * 0.01;
+	const science = scienceLimits(state);
 
-	const libraryRatio = (upgrades.TitaniumReflectors && 0.02) + (upgrades.UnobtainiumReflectors && 0.02) + (upgrades.EludiumReflectors && 0.02);
-	const datacenterBoosts = (1 + (upgrades.Uplink && level.BioLab * 0.01))// * (1 + (upgrades.MachineLearning && level.AiCore * dataCenterAiRatio));
-	const spaceScienceRatio = (1 + (upgrades.AntimatterReactors && 0.95))
-	const scienceMax = (level.Library * 250 + level.DataCenter * 750 * datacenterBoosts) * (1 + level.Observatory * libraryRatio)
-										+ level.Academy * 500
-										+ level.Observatory * (upgrades.Astrolabe ? 1500 : 1000) * (1 + level.Satellite * 0.05)
-										+ level.BioLab * 1500 * (1 + level.DataCenter * ((upgrades.Uplink && 0.01) + (upgrades.Starlink && 0.01)))
-										+ level.Temple * (level.Scholasticism && 400 + level.Scholasticism * 100)
-										+ level.Accelerator * (upgrades.LHC && 2500)
-										+ level.ResearchVessel * 10000 * spaceScienceRatio
-										+ level.SpaceBeacon * 25000 * spaceScienceRatio;
-	const scienceMaxCompendia = level.DataCenter * 1000 * datacenterBoosts; 
 	return {
 		catnip: ((5000 + level.Barn * 5000 + (upgrades.Silos && level.Warehouse * 750) + level.Harbor * harborRatio * 2500) * (1 + (upgrades.Silos && barnRatio * 0.25)) 
 				+  level.Accelerator * acceleratorRatio * 30000 + level.MoonBase * 45000) * paragonBonus * (1 + (upgrades.Refrigeration && 0.75) + level.Hydroponics * 0.1),
@@ -338,13 +327,35 @@ function storage(state: GameState): Storage {
 		oil: (1500 + level.OilWell * 1500 + level.MoonBase * 3500 + level.Cryostation * 7500) * paragonBonus,
 		gold: ((10 + level.Barn * 10 + level.Warehouse * 5 + level.Harbor * harborRatio * 25 + level.Mint * 100) * warehouseRatio + level.Accelerator * acceleratorRatio * 250) * (1 + level.SkyPalace * 0.01) * baseMetalRatio * paragonBonus,
 		catpower: 1e9, // I never hit the limit, so this should be ok
-		science: (scienceMax + (conversionProportion.compendium && scienceMax + scienceMaxCompendia)) * paragonBonus,
+		science: science.byBuildings + Math.min(science.byCompendia, compendia * science.perCompendium),
 		culture: 1e9, // I never hit the limit, so this should be ok  (Ziggurats would boost this)
 		faith: (100 + level.Temple * (100 + level.SunAltar * 50)) * (1 + (level.GoldenSpire && 0.4 + level.GoldenSpire * 0.1)) * paragonBonus,
 		unicorn: 1e9, // there is no limit
 		alicorn: 1e9, // there is no limit
 		necrocorn: 1e9, // there is no limit
 		antimatter: (100 + level.ContainmentChamber * 50 * (1 + level.HeatSink * 0.02)) * paragonBonus, // TODO barnRatio? warehouseRatio? harborRatio?
+	}
+}
+
+function scienceLimits(state: GameState) {
+	const {level, upgrades, paragon} = state;
+	const paragonBonus = 1 + paragon * 0.001;
+	const libraryRatio = (upgrades.TitaniumReflectors && 0.02) + (upgrades.UnobtainiumReflectors && 0.02) + (upgrades.EludiumReflectors && 0.02);
+	const datacenterBoosts = (1 + (upgrades.Uplink && level.BioLab * 0.01))// * (1 + (upgrades.MachineLearning && level.AiCore * dataCenterAiRatio));
+	const spaceScienceRatio = (1 + (upgrades.AntimatterReactors && 0.95))
+	const scienceMax = (level.Library * 250 + level.DataCenter * 750 * datacenterBoosts) * (1 + level.Observatory * libraryRatio)
+										+ level.Academy * 500
+										+ level.Observatory * (upgrades.Astrolabe ? 1500 : 1000) * (1 + level.Satellite * 0.05)
+										+ level.BioLab * 1500 * (1 + level.DataCenter * ((upgrades.Uplink && 0.01) + (upgrades.Starlink && 0.01)))
+										+ level.Temple * (level.Scholasticism && 400 + level.Scholasticism * 100)
+										+ level.Accelerator * (upgrades.LHC && 2500)
+										+ level.ResearchVessel * 10000 * spaceScienceRatio
+										+ level.SpaceBeacon * 25000 * spaceScienceRatio
+	const scienceMaxCompendia = level.DataCenter * 1000 * datacenterBoosts; 
+	return {
+		byBuildings: scienceMax * paragonBonus,
+		byCompendia: (scienceMax + scienceMaxCompendia) * paragonBonus,
+		perCompendium: 10 * paragonBonus,
 	}
 }
 
@@ -737,7 +748,7 @@ export abstract class Action extends CostBenefitAnalysis {
 						let bestAction: Action = null;
 						let bestStorage: Storage;
 						if (this.investment.expenses.length < 9) { // limit depth to save CPU time
-							for (const sa of storageActions(state)) {
+							for (const sa of storageActions(state, xp.res == "science" && xp.amount)) {
 								const undo = apply(sa.effect(1));
 								let newStorage = storage(state);
 								undo();
@@ -990,6 +1001,30 @@ class PraiseAction extends Action {
 	}
 }
 
+function compendiaAction(state: GameState, desiredScienceLimit: number) {
+	const scienceLimit = scienceLimits(state);
+	const desiredScienceByCompendia = desiredScienceLimit - scienceLimit.byBuildings;
+	const available = 0 < desiredScienceByCompendia && desiredScienceByCompendia < scienceLimit.byCompendia;
+	const desiredCompendia = desiredScienceByCompendia / scienceLimit.perCompendium + 1e-6; // guard against floating point rounding errors
+	const neededCompendia = desiredCompendia - state.compendia;
+
+	return new class A extends Action {
+		constructor() {
+			super(state, `${Math.round(neededCompendia)} compendia`, {compendium: neededCompendia}, 1);
+		}
+		available() {
+			return available;
+		}
+		effect(times: number) {
+			return {
+				compendia: desiredCompendia,
+			}
+		}
+		stateInfo = "";
+		repeatable = false;
+	}
+}
+
 class FeedEldersAction extends Action {
 	constructor() {
 		super(state, "FeedElders", {necrocorn: 1})
@@ -1235,13 +1270,14 @@ function updateActions() {
 	actions.sort((a,b) => a.roi - b.roi);
 }
 
-function storageActions(state: GameState) {
+function storageActions(state: GameState, desiredScienceLimit?: number) {
 	return [
 		new BuildingAction("Barn", {wood: 50}, 1.75, state),
 		new BuildingAction("Warehouse", {beam: 1.5, slab: 2}, 1.15, state),
 		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
 		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15, state),
 		...scienceBuildings(state),
+		compendiaAction(state, desiredScienceLimit),
 
 		new SpaceAction("MoonBase", {starchart: 700, titanium: 9500, concrete: 250, science: 100000, unobtainium: 50, oil: 70000}, 1.12, state),
 		new SpaceAction("Cryostation", {eludium: 25, concrete: 1500, science: 200000, kerosene: 500}, 1.12, state),

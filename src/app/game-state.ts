@@ -19,6 +19,7 @@ export interface GameState {
 	priceMarkup: {[R in UserPricedRes]: number};
 
 	showResearchedUpgrades: boolean;
+	compendia: number;
 	ships: number;
 	karma: number;
 	paragon: number;
@@ -66,6 +67,7 @@ function readGameState() : GameState {
 		state.showResearchedUpgrades = true;
 	}
 	state.ships = state.ships || 0;
+	state.compendia = state.compendia || 0;
 	state.karma = state.karma || 0;
 	state.paragon = state.paragon || 0;
 	state.leviathanEnergy = state.leviathanEnergy || 0;
