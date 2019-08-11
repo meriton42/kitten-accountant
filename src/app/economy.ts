@@ -290,10 +290,13 @@ function production(state: GameState): {[R in Res]: number} {
 				frequency = maxFrequency;
 			}
 		}
-
+		if (frequency < 0) { // this may happen due to rounding issues
+			frequency = 0; // don't consume resources. If we didn't do this, it might consume a little sorrow, which may have infinite price and wreck havoc with roi calcs
+		}
+		
 		for (const xp of conversion.investment.expeditures) {
 			production[xp.res] -= xp.amount * frequency;
-		}
+		}		
 		const produced = conversion.produced(state);
 		for (const product in produced) {
 			production[product] = (production[product] || 0) + produced[product] * frequency;
