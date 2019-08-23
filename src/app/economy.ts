@@ -312,7 +312,7 @@ function storage(state: GameState): Storage {
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.StorageBunkers && 0.20) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25 + (upgrades.ReactorVessel && level.Reactor * 0.05)));
-	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1) + (upgrades.StasisChambers && 0.95) + (upgrades.VoidEnergy && 0.75) + (upgrades.DarkEnergy && 2.5);
+	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1) + (upgrades.StasisChambers && 0.95) + (upgrades.VoidEnergy && 0.75) + (upgrades.DarkEnergy && 2.5) + (upgrades.TachyonAccelerators && 5);
 	const paragonBonus = 1 + state.paragon * 0.001;
 	const baseMetalRatio = 1 + level.Sunforge * 0.01;
 	const science = scienceLimits(state);
@@ -1104,7 +1104,8 @@ function updateSciences() {
 		// new ScienceInfo("Exophysics", )
 		new ScienceInfo("ParticlePhysics", {science: 185000, blueprint: 135}, [/*"Chronophysics"*/, "DimensionalPhysics", "Accelerator", "EnrichedUranium", "Railgun"]),
 		new ScienceInfo("DimensionalPhysics", {science: 235000}, ["EnergyRifts", "LHC"]),
-		new ScienceInfo("Chronophysics", {science: 250000, timecrystal: 5}, ["StasisChambers", "VoidEnergy", "DarkEnergy"]),
+		new ScienceInfo("Chronophysics", {science: 250000, timecrystal: 5}, ["TachyonTheory", "StasisChambers", "VoidEnergy", "DarkEnergy"]),
+		new ScienceInfo("TachyonTheory", {science: 750000, timecrystal: 25, relic: 1}, ["VoidSpace", "TachyonAccelerators", /*"Chronoforge"*/]),
 		// ...
 
 		new ScienceInfo("OrbitalLaunch", {starchart: 250, catpower: 5000, science: 100000, oil: 15000}, ["Satellite", "SpaceElevator", "MoonMission", "SpaceStation"]),
@@ -1306,6 +1307,7 @@ function storageActions(state: GameState, desiredScienceLimit?: number) {
 		new UpgradeAction("StasisChambers", {alloy: 200, uranium: 2000, timecrystal: 1, science: 235000}),
 		new UpgradeAction("VoidEnergy", {alloy: 250, uranium: 2500, timecrystal: 2, science: 275000}),
 		new UpgradeAction("DarkEnergy", {eludium: 75, timecrystal: 3, science: 350000}),
+		new UpgradeAction("TachyonAccelerators", {eludium: 125, timecrystal: 10, science: 500000}),
 		new UpgradeAction("LHC", {science: 250000, unobtainium: 100, alloy: 150}, state),
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),

@@ -273,6 +273,7 @@ const upgrade = {
 	StasisChambers: x,
 	VoidEnergy: x,
 	DarkEnergy: x,
+	TachyonAccelerators: x,
 	LHC: x,
 	PhotovoltaicCells: x,
 	ThinFilmCells: x,
