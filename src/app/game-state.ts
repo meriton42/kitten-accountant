@@ -271,6 +271,8 @@ const upgrade = {
 	StorageBunkers: x,
 	EnergyRifts: x,
 	StasisChambers: x,
+	VoidEnergy: x,
+	DarkEnergy: x,
 	LHC: x,
 	PhotovoltaicCells: x,
 	ThinFilmCells: x,
