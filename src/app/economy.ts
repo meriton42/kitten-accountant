@@ -312,7 +312,7 @@ function storage(state: GameState): Storage {
 	const barnRatio = (upgrades.ExpandedBarns && 0.75) + (upgrades.ReinforcedBarns && 0.80) + (upgrades.TitaniumBarns && 1.00) + (upgrades.AlloyBarns && 1.00) + (upgrades.ConcreteBarns && 0.75) + (upgrades.ConcretePillars && 0.05);
 	const warehouseRatio = 1 + (upgrades.ReinforcedWarehouses && 0.25) + (upgrades.TitaniumWarehouses && 0.50) + (upgrades.AlloyWarehouses && 0.45) + (upgrades.ConcreteWarehouses && 0.35) + (upgrades.StorageBunkers && 0.20) + (upgrades.ConcretePillars && 0.05);
 	const harborRatio = 1 + (upgrades.ExpandedCargo && hyperbolicLimit(ships * 0.01, 2.25 + (upgrades.ReactorVessel && level.Reactor * 0.05)));
-	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1);
+	const acceleratorRatio = 0 + (upgrades.EnergyRifts && 1) + (upgrades.StasisChambers && 0.95);
 	const paragonBonus = 1 + state.paragon * 0.001;
 	const baseMetalRatio = 1 + level.Sunforge * 0.01;
 	const science = scienceLimits(state);
@@ -1102,8 +1102,9 @@ function updateSciences() {
 		new ScienceInfo("Terraformation", {science: 750000, relic: 5}, ["HydroPonics", "TerraformingStation"]),
 		new ScienceInfo("HydroPonics", {science: 1000000, relic: 25}, ["Exophysics", "Hydroponics"]), // Tectonic
 		// new ScienceInfo("Exophysics", )
-		new ScienceInfo("ParticlePhysics", {science: 185000, blueprint: 135}, ["Chronophysics", "DimensionalPhysics", "Accelerator", "EnrichedUranium", "Railgun"]),
+		new ScienceInfo("ParticlePhysics", {science: 185000, blueprint: 135}, [/*"Chronophysics"*/, "DimensionalPhysics", "Accelerator", "EnrichedUranium", "Railgun"]),
 		new ScienceInfo("DimensionalPhysics", {science: 235000}, ["EnergyRifts", "LHC"]),
+		new ScienceInfo("Chronophysics", {science: 250000, timecrystal: 5}, ["StasisChambers"]),
 		// ...
 
 		new ScienceInfo("OrbitalLaunch", {starchart: 250, catpower: 5000, science: 100000, oil: 15000}, ["Satellite", "SpaceElevator", "MoonMission", "SpaceStation"]),
@@ -1302,6 +1303,7 @@ function storageActions(state: GameState, desiredScienceLimit?: number) {
 		new UpgradeAction("ConcreteWarehouses", {science: 100000, titanium: 1250, concrete: 35}, state),
 		new UpgradeAction("StorageBunkers", {science: 25000, unobtainium: 500, concrete: 1250}, state),
 		new UpgradeAction("EnergyRifts", {science: 200000, titanium: 7500, uranium: 250}),
+		new UpgradeAction("StasisChambers", {alloy: 200, uranium: 2000, timecrystal: 1, science: 235000}),
 		new UpgradeAction("LHC", {science: 250000, unobtainium: 100, alloy: 150}, state),
 		new UpgradeAction("Refrigeration", {science: 125000, titanium: 2500, blueprint: 15}, state),
 		new UpgradeAction("ConcretePillars", {science: 100000, concrete: 50}, state),

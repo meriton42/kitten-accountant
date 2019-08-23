@@ -270,6 +270,7 @@ const upgrade = {
 	ConcreteWarehouses: x,
 	StorageBunkers: x,
 	EnergyRifts: x,
+	StasisChambers: x,
 	LHC: x,
 	PhotovoltaicCells: x,
 	ThinFilmCells: x,
