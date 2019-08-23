@@ -41,9 +41,9 @@ function updateEconomy() {
 		// (this is, for each resource, the conversion that uses is primarily should appear last 
 		// among all conversions affecting that resource. This ensures that 100% conversionProportion 
 		// consumes everything)
-		new ZebraTrade(),
-		new DragonTrade(), 
 		new LeviathanTrade(),
+		new DragonTrade(), 
+		new ZebraTrade(),
 		new Hunt(),
 		new CraftingConversion("parchment", {fur: 175}),
 		new CraftingConversion("manuscript", {parchment: 25, culture: 400}),
