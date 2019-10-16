@@ -60,35 +60,31 @@
 
           <p>The columns mean, in order:</p>
           <ul>
-            <li>conversion activity slider (for converted resources)</li>
-            <li>estimated net production per second (not including resources spent in conversion)</li>
-            <li>the name of the resource</li>
-            <li>the current price for that resource<br>(left-click to increase, right-click to decrease)</li> 
-            <li>whether this rare resource is available</li>
+            <li>production slider (for converted resources)</li>
+            <li>estimated net production per second</li>
+            <li>resource name</li>
+            <li>price per unit (left-click to increase, right-click to decrease)</li> 
+            <li>availability (for rare resources)
           </ul>
 
           <p>
-            For resources produced by workers, your accountants automatically determine the price based on worker productivity 
-            (each worker earns 1 per second; if a woodcutter cuts 0.2 wood per second, the wood price is set to 1/0.2 = 5).
-            The price of coal is determined by the productivity of your geologists, but may be reduced manually in case you 
-            don't have geologists yet. Likewise, faith price may be reduced if you don't have priests.
+            For resources produced by workers, the price is set automatically such that each worker earns 1 per second.<br>
+            You can manually reduce the price of coal if you don't have geologists yet. Likewise for faith and priests.
           </p>
           
           <p>
-            For resources created through a conversion process, you can inspect conversion costs and benefits by hovering your paw over the resource.
+            For resources created through a conversion process, the price is derived from the value of the resources consumed and produced.
+            You can adjust this price if you obtain the resource from a different source (such as getting blueprints by trading rather than crafting them).
+            You can also offset the price of iron to account for the cost of building smelters.
           </p>
 
           <p>
-            For resources converted on command (crafting, trading, or similar activities), your accountants suggest a resource price
-            based on the cost of raw materials and other outputs. You may adjust this price if you obtain them from a different source 
-            (such as getting blueprints by trading rather than crafting them).           
-            For resources converted on command, the conversion activitiy slider sets the proportion of raw materials converted. 
-            For instance, for fur, it sets the proportion of catpower spent hunting
-            (your accountants need to know this value so they can calculate the benefit of conversion upgrades such as hunting armor).
+            For resources converted on command, the production slider sets the proportion of available raw materials usually converted into this resource.
+            This is used to calculate the benefit of conversion upgrades such as hunting armor or workshops.
           </p>
 
           <p>
-            You can indicate the availability of luxury resources (fur, ivory, unicorns and alicorns) by clicking the right-most column.
+            For rare resources (fur, ivory, unicorns and alicorns), you can set their availability by clicking the right-most column.
             If you hover your paw over that indicator, you can see the benefit and cost of making these resources available for consumption.
           </p>
         </ng-template>
@@ -136,14 +132,14 @@
       <panel heading="Buildings and Upgrades" [help]="buildingHelp">
         <ng-template #buildingHelp>
           <p>
-            This table shows all currently available investment opportunities, in other of efficiency. 
+            This table shows all currently available investment opportunities, in order of efficiency. 
           </p>
           <p>
             The columns mean:
           </p>
           <ul>
-            <li>break even point = number of seconds until the investment has paid for itself</li>
-            <li>Name of the investment</li>
+            <li>seconds until the investment has paid back its cost</li>
+            <li>name of the investment</li>
             <li>level of the investement (or R for a researched upgrade)</li>
           </ul>
           <p>
@@ -153,7 +149,7 @@
             Hover your paw over an investment to see a breakdown of investment cost and benefits.
           </p>
           <p>
-            Left click to implement an investment, right click to undo, or click the level to edit the value directly.
+            Left click to implement an investment (right click to undo), or click the level to edit the value directly.
           </p>
           <p>
             Note that the benefit of price reduction upgrades is currently estimated at 0, as they have no effect on ongoing production.
@@ -204,7 +200,7 @@
       <panel heading="Science" [help]="scienceHelp">
         <ng-template #scienceHelp>
           <p>
-            This table shows investments into technology and metaphysics. As Science has no value on its own, its cost is added to the investments that benefit from it, and considered when calculating their efficiency.
+            This table shows investments into technology and metaphysics. As science has no value on its own, its cost is added to the investments that benefit from it, and considered when calculating their efficiency.
           </p>
 
           <p>
