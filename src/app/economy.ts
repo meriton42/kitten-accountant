@@ -16,8 +16,8 @@ function updateEconomy() {
 		catnip: wage / workerProduction("farmer", "catnip"),
 		wood: wage / workerProduction("woodcutter", "wood"),
 		minerals: wage / workerProduction("miner", "minerals"),
-		iron: 0, // assigned below
-		titanium: 0, // assigned below
+		iron: undefined, // assigned below
+		titanium: undefined, // assigned below
 		uranium: 100 * priceMarkup.uranium, // not derived from dragon trade, because uranium is usually obtained from them only very briefly
 		unobtainium: 1000 * priceMarkup.unobtainium,
 		coal: Math.max(0, wage - goldPrice * workerProduction("geologist", "gold")) / workerProduction("geologist", "coal") * priceMarkup.coal,
@@ -41,6 +41,7 @@ function updateEconomy() {
 		// (this is, for each resource, the conversion that uses is primarily should appear last 
 		// among all conversions affecting that resource. This ensures that 100% conversionProportion 
 		// consumes everything)
+		new CraftingConversion("slab", {minerals: 250}),
 		new LeviathanTrade(),
 		new DragonTrade(), 
 		new ZebraTrade(),
@@ -50,7 +51,6 @@ function updateEconomy() {
 		new CraftingConversion("compendium", {manuscript: 50, science: 10000}),
 		new CraftingConversion("blueprint", {compendium: 25, science: 25000}),
 		new CraftingConversion("beam", {wood: 175}),
-		new CraftingConversion("slab", {minerals: 250}),
 		new CraftingConversion("steel", {coal: 100, iron: 100}),
 		new CraftingConversion("plate", {iron: 125}),
 		new CraftingConversion("megalith", {slab: 50, beam: 25, plate: 5}),
@@ -93,12 +93,36 @@ function workerProduction(job: Job, res: Res) {
 }
 
 function ironPrice(state: GameState, price: {[R in BasicRes]: number}) {
-	// proper pricing for iron is rather involved, because the relative impact of the 3 contributions 
-	// (raw material cost, smelter cost, value of other outputs) changes greatly in the course of the game
-	// and affixing the priceMarkup to any single contribution therefore has counter intuitive side effects
-	// instead, we introduce a separate contribution to affix the priceMarkup
+	/*
+		It is quite hard to find a way to price iron that appropriate for all stages of the game: 
+
+		Early on, iron comes from smelters, so we should determine iron price based on that.
+		Later though, smelters also produce coal, gold, and titanium. 
+		
+		How do we deal with that?
+		
+		We could simply ignore the value of the other outputs, but as they can be very valuable
+		at times (for instance: gold rally in early titanium age), iron price would be significantly
+		overestimated.
+
+		We could subtract the value of other outputs when setting the iron price, but their high
+		volatility would destabilize the iron price and require frequent player intervention.
+		Such hidden coupling among prices would also be hard to understand for players
+		(even I would be surprised that lowering blueprint prices massively reduces my iron price
+		due to increased titanium prices ...). Also, it would create a mutual dependency between 
+		iron and titanium prices (smelters also produce titanium, trading for titanium also produces 
+		iron), which the current pricing algorithm can not resolve.
+
+		Instead, we use a hybrid model, where large markup uses the full input costs, but small markup
+		also reduces input costs.
+	*/
+
 	const smelter = delta(basicProduction, {level: {Smelter: state.level.Smelter + 1}});
-	return (state.priceMarkup.iron - smelter.wood * price.wood - smelter.minerals * price.minerals) / smelter.iron;
+	const inputCost = -smelter.wood * price.wood - smelter.minerals * price.minerals;
+	const m = state.priceMarkup.iron;
+	const c = 0.01;
+	const cost = m < c ? inputCost * m/c : inputCost + m;
+	return cost / smelter.iron;
 }
 
 type Cart = {[R in Res]?: number};
@@ -281,7 +305,10 @@ function production(state: GameState): {[R in Res]: number} {
 		}
 
 		let frequency = Infinity;
-    for (const res in conversion.resourceInvestment) {
+		for (const res in conversion.resourceInvestment) {
+			if (production[res] === undefined) {
+				throw new Error(`invalid conversion order: ${conversion.product} requires ${res}, but ${res} is not yet initialized`);
+			}
 			let maxFrequency = production[res] / conversion.resourceInvestment[res];
 			if (res == conversion.primaryInput) {
 				maxFrequency *= state.conversionProportion[conversion.product];
@@ -372,6 +399,10 @@ class Expediture implements Expediture {
 	cost: number;
 
 	constructor(public amount: number, public res: Res) {
+		if (isNaN(amount)) {
+			debugger;
+			throw new Error("amount is NaN");
+		}
 		this.price = price[res];
 		this.cost = amount * this.price;
 	}
@@ -718,7 +749,7 @@ export abstract class Action extends CostBenefitAnalysis {
 	assess() {
 		const deltaProduction = delta(production, this.effect(1));
 		for (const r of resourceNames) {
-			if (deltaProduction[r]) {
+			if (deltaProduction[r] !== undefined) {
 				this.return.add(new Expediture(deltaProduction[r], r));
 			}
 		}
@@ -1282,7 +1313,7 @@ function storageActions(state: GameState, desiredScienceLimit?: number) {
 		new BuildingAction("Harbor", {scaffold: 5, slab: 50, plate: 75}, 1.15, state),
 		new BuildingAction("OilWell", {steel: 50, gear: 25, scaffold: 25}, 1.15, state),
 		...scienceBuildings(state),
-		compendiaAction(state, desiredScienceLimit),
+		...(desiredScienceLimit ? [compendiaAction(state, desiredScienceLimit)] : []),
 
 		new SpaceAction("MoonBase", {starchart: 700, titanium: 9500, concrete: 250, science: 100000, unobtainium: 50, oil: 70000}, 1.12, state),
 		new SpaceAction("Cryostation", {eludium: 25, concrete: 1500, science: 200000, kerosene: 500}, 1.12, state),
