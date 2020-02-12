@@ -1,4 +1,4 @@
-import { state, Res, Building, Job, GameState, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science } from "./game-state";
+import { state, Res, Building, Job, GameState, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science, ActivatableBuilding, activatableBuildingNames, buildingNames } from "./game-state";
 import { apply, GameStateUpdate } from "./game-state-changer";
 
 let currentBasicProduction: Cart;
@@ -171,12 +171,22 @@ export function solarRevolutionProductionBonus(state: GameState) {
 	return 1 + (state.upgrades.SolarRevolution && hyperbolicLimit(triValue(state.faith.stored, 1000), 1000) * 0.01);
 }
 
+function activeLevel(state: GameState) {
+	const {level, active} = state;
+	const al = <{[B in Building]: number}> {};
+	for (const b of buildingNames) {
+		al[b] = active[b] === false ? 0 : level[b]; // active is undefined for buildings that are always active
+	}
+	return al;
+}
+
 function basicProduction(state: GameState): Cart {
 	// production is per second real time (neither per tick, not per day)
 	const day = 2; // seconds
 	const year = 400 * day;
 
-	let {level, upgrades, workers, luxury} = state;
+	const {upgrades, workers, luxury} = state;
+	const level = activeLevel(state);
 
 	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1 + level.SpaceStation * 2 + level.TerraformingStation * 1;
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
@@ -1167,6 +1177,29 @@ function scienceBuildings(state: GameState) {
 	];
 }
 
+function activationActions() {
+	return activatableBuildingNames.map(building => {
+		const active = state.active[building];
+		
+		return new class A extends Action {
+			constructor() {
+				super(state, building, {});
+			}
+
+			effect(times: number) {
+				return {
+					active: {
+						[building]: !active
+					}
+				}
+			}
+		
+			stateInfo = active ? "on" : "off";
+			repeatable = false;
+		};
+	});
+}
+
 function updateActions() {
 	const {upgrades} = state;
 	actions = [
@@ -1298,6 +1331,7 @@ function updateActions() {
 		// Markers, etc.
 		new ZigguratBuilding("BlackPyramid", {/*spice: 150000,*/ sorrow: 5, unobtainium: 5000, megalith: 2500}, 1.15),
 
+		...activationActions(),
 		new TradeshipAction(),
 		new PraiseAction(),
 		new FeedEldersAction(),

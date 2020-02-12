@@ -13,6 +13,7 @@ export interface GameState {
 	};
 
 	level : {[B in Building] : number};
+	active: {[B in ActivatableBuilding]: boolean};
 	upgrades : {[U in Upgrade] : boolean};
 	researched: {[S in Science]: boolean};
 
@@ -50,6 +51,10 @@ function readGameState() : GameState {
 	state.level = state.level || <any>{};
 	for (const b of buildingNames) {
 		state.level[b] = state.level[b] || 0;
+	}
+	state.active = state.active || <any>{};
+	for (const ab of activatableBuildingNames) {
+		state.active[ab] = state.active[ab] || true;
 	}
 	state.upgrades = state.upgrades || <any>{};
 	for (const u of upgradeNames) {
@@ -245,6 +250,10 @@ const building = {
 	SpaceBeacon: x,
 	TerraformingStation: x,
 	Hydroponics: x,
+}
+const activatableBuilding = {
+	Calciner: x,
+	Steamworks: x,
 }
 const upgrade = {
 	// same order as http://bloodrizer.ru/games/kittens/wiki/index.php?page=workshop
@@ -455,6 +464,8 @@ export const jobNames = keyNames(job);
 
 export type Building = keyof typeof building;
 export const buildingNames = keyNames(building);
+export type ActivatableBuilding = keyof typeof activatableBuilding;
+export const activatableBuildingNames = keyNames(activatableBuilding);
 
 export type Upgrade = keyof typeof upgrade;
 export const upgradeNames = keyNames(upgrade);
