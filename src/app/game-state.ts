@@ -54,7 +54,9 @@ function readGameState() : GameState {
 	}
 	state.active = state.active || <any>{};
 	for (const ab of activatableBuildingNames) {
-		state.active[ab] = state.active[ab] || true;
+		if (state.active[ab] === undefined) {
+			state.active[ab] = true;
+		}
 	}
 	state.upgrades = state.upgrades || <any>{};
 	for (const u of upgradeNames) {
