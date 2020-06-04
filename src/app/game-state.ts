@@ -9,7 +9,9 @@ export interface GameState {
 	};
 	faith: {
 		stored: number,
-		apocryphaBonus: number,
+		previouslyStored: number,
+		apocryphaPoints: number,
+		transcendenceLevel: number,
 	};
 
 	level : {[B in Building] : number};
@@ -47,7 +49,9 @@ function readGameState() : GameState {
 	state.luxury.alicorn = state.luxury.alicorn || false;
 	state.faith = state.faith || <any>{};
 	state.faith.stored = state.faith.stored || 0;
-	state.faith.apocryphaBonus = state.faith.apocryphaBonus || 0;
+	state.faith.previouslyStored = state.faith.previouslyStored || 0;
+	state.faith.apocryphaPoints = state.faith.apocryphaPoints || 0;
+	state.faith.transcendenceLevel = state.faith.transcendenceLevel || 0;
 	state.level = state.level || <any>{};
 	for (const b of buildingNames) {
 		state.level[b] = state.level[b] || 0;

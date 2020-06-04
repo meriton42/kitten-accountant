@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
 import { resourceNames, Res, state, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "./game-state";
-import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo } from "./economy";
+import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo, praiseBonus, setPraiseBonus, faithReset, transcend } from "./economy";
 import { CbaTooltipService } from './cba-tooltip.service';
 import { HelpService } from './help.service';
 import { debounceTime } from 'rxjs/operators';
@@ -124,6 +124,27 @@ export class AppComponent implements OnInit {
 
   get faithBonus() {
     return solarRevolutionProductionBonus(state);
+  }
+
+  get praiseBonus() {
+    return Math.round(100 * praiseBonus(state));
+  }
+
+  set praiseBonus(praiseBonus: number) {
+    setPraiseBonus(praiseBonus / 100, state);
+    this.update(); // recalculate PraiseTheSun
+  }
+
+  faithReset(times: number) {
+    faithReset(state, times < 0);
+    this.update();
+    return false;
+  }
+
+  transcend(times: number) {
+    transcend(state, times);
+    this.update();
+    return false;
   }
 
   numeric(x: any) {

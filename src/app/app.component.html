@@ -246,11 +246,13 @@
               <td style="text-align: left">bonus</td>
             </tr>
             <tr>
-              <td><input type="number" min="0" step="0.01" [(ngModel)]="state.faith.apocryphaBonus" (ngModelChange)="update()" style="width: 6ch"> %</td>
+              <td><input type="number" min="0" [(ngModel)]="praiseBonus" style="width: 6ch"> %</td>
               <td style="text-align: left">praise bonus</td>
             </tr>
           </tbody>
         </table>
+        <button (click)="faithReset(1)" (contextmenu)="faithReset(-1)">Faith Reset</button>
+        <button (click)="transcend(1)" (contextmenu)="transcend(-1)">Transcend [{{state.faith.transcendenceLevel}}]</button>
       </panel>
       
       <panel heading="Time" [help]="timeHelp">
@@ -268,7 +270,7 @@
             </tr>
           </tbody>
         </table>
-        <a href="" style="margin-top: .2em; display: block; text-align: center" (click)="forget()">Reset</a>
+        <button (click)="forget()">Reset</button>
       </panel>
         
       <panel heading="Notes" [help]="noteHelp" style="flex-grow: 1">

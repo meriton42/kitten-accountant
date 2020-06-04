@@ -166,9 +166,50 @@ function triValue(value: number, stripe: number){
 	return (Math.sqrt(1 + 8 * value / stripe) - 1) / 2;
 }
 
+function invertTriValue(triValue: number, stripe: number) {
+	return ((triValue * 2 + 1) ** 2 - 1) / 8 * stripe;
+}
+
 /** multiplier to production caused by solar revolution */
 export function solarRevolutionProductionBonus(state: GameState) {
 	return 1 + (state.upgrades.SolarRevolution && hyperbolicLimit(triValue(state.faith.stored, 1000), 1000) * 0.01);
+}
+
+// called GetTranscendenceRatio in kittens game source code
+function transcendenceRatio(level: number) {
+  return (Math.pow(Math.exp(level)/5+1,2)-1)/80; 
+} 
+
+export function praiseBonus(state: GameState) {
+	const {faith} = state;
+
+	return triValue(faith.apocryphaPoints, 0.1) * 0.1;
+}
+
+export function setPraiseBonus(praiseBonus: number, state: GameState) {	
+	state.faith.apocryphaPoints = invertTriValue(praiseBonus / 0.1, 0.1);
+}
+
+export function faithReset(state: GameState, undo?: boolean) {
+	const {faith} = state;
+
+	const newlyStored = undo ? faith.previouslyStored : 0;
+	faith.previouslyStored = faith.stored;
+	faith.stored = newlyStored;
+
+	const converted = faith.previouslyStored - faith.stored;
+	faith.apocryphaPoints += 1.01 * (1 + faith.transcendenceLevel)**2 * converted * 1E-6;
+}
+
+export function transcend(state: GameState, times: number) {
+	const {faith} = state;
+
+	const oldLevel = faith.transcendenceLevel;
+	const newLevel = oldLevel + times;
+	const cost = transcendenceRatio(newLevel) - transcendenceRatio(oldLevel);
+	
+	faith.transcendenceLevel = newLevel;
+	faith.apocryphaPoints -= cost;
 }
 
 function activeLevel(state: GameState) {
@@ -1032,7 +1073,7 @@ class PraiseAction extends Action {
 	effect(times: number) {
 		return {
 			faith: {
-				stored: state.faith.stored + times * 1000 * (1 + state.faith.apocryphaBonus * 0.01)
+				stored: state.faith.stored + times * 1000 * (1 + praiseBonus(state))
 			}
 		}
 	}
