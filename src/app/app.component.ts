@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
-import { resourceNames, Res, state, saveGameState, resetGameState, jobNames, Job, convertedResourceNames, ConvertedRes, userPricedResourceNames } from "./game-state";
-import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo, praiseBonus, setPraiseBonus, faithReset, transcend } from "./economy";
+import { resourceNames, Res, state, saveGameState, jobNames, Job, ConvertedRes, userPricedResourceNames } from "./game-state";
+import { economyReport, Action, CostBenefitAnalysis, Conversion, solarRevolutionProductionBonus, ScienceInfo, praiseBonus, setPraiseBonus, faithReset, transcend, reset } from "./economy";
 import { CbaTooltipService } from './cba-tooltip.service';
 import { HelpService } from './help.service';
 import { debounceTime } from 'rxjs/operators';
@@ -36,8 +36,6 @@ export class AppComponent implements OnInit {
   metaphysicActions: Action[];
   furReport: CostBenefitAnalysis;
   conversions: {[R in ConvertedRes]?: Conversion};
-
-  shipsAsString: string;
 
   updateRequest = new EventEmitter();
 
@@ -78,8 +76,8 @@ export class AppComponent implements OnInit {
     }
   }
 
-  forget() {
-    resetGameState();
+  reset() {
+    reset(state);
   }
 
   addWorker(job: Job, count: number) {
@@ -94,7 +92,7 @@ export class AppComponent implements OnInit {
     if (click.ctrlKey) {
       times *= 10;
     }
-    apply(action.effect(times));
+    apply(state, action.effect(times));
     this.update();
     return false; // suppress context menu
   }

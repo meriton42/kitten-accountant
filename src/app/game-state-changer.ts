@@ -1,14 +1,10 @@
-import { GameState, state } from "./game-state";
-
-type Update<T> = {[K in keyof T]?: Update<T[K]>}
-
-export type GameStateUpdate = Update<GameState>;
+export type Update<T> = {[K in keyof T]?: Update<T[K]>}
 
 /**
  * Modifies state by patching in the new property values
  * @returns a function to undo the change
  */
-export function apply(update: GameStateUpdate) {
+export function apply<S>(state: S, update: Update<S>) {
 	// while cloning would be safer than modifying the object in place, 
 	// it turned out to be too slow (the state object is huge, and modified states are needed very often)
 	const memento = _apply(state, update);

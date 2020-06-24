@@ -1,5 +1,5 @@
-import { state, Res, Building, Job, GameState, resourceNames, Upgrade, ConvertedRes, BasicRes, basicResourceNames, Science, ActivatableBuilding, activatableBuildingNames, buildingNames } from "./game-state";
-import { apply, GameStateUpdate } from "./game-state-changer";
+import { state, Res, Building, Job, GameState, GameStateUpdate, resourceNames, Upgrade, ConvertedRes, BasicRes, Science, activatableBuildingNames, buildingNames, Metaphysic, replaceGameState } from "./game-state";
+import { apply } from "./game-state-changer";
 
 let currentBasicProduction: Cart;
 let price: {[R in Res]: number};
@@ -129,7 +129,7 @@ type Cart = {[R in Res]?: number};
 
 function delta(metric: (state: GameState) => Cart, change: GameStateUpdate): Cart {
 	const original = metric(state);	
-	const undo = apply(change);
+	const undo = apply(state, change);
 	try {
 		const modified = metric(state);
 
@@ -212,6 +212,29 @@ export function transcend(state: GameState, times: number) {
 	faith.apocryphaPoints -= cost;
 }
 
+function countKittens(state: GameState) {
+	const {level} = state;
+	return level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1 + level.SpaceStation * 2 + level.TerraformingStation * 1;
+}
+
+export function reset(state: GameState) {
+	faithReset(state);
+	// TODO: update karma
+	state.paragon += Math.max(0, countKittens(state) - 70);
+
+	const {metaphysic, faith, karma, paragon} = state;
+	const {apocryphaPoints, transcendenceLevel} = faith;
+	replaceGameState({
+		metaphysic,
+		faith: {
+			apocryphaPoints,
+			transcendenceLevel,
+		},
+		karma,
+		paragon,
+	});
+}
+
 function activeLevel(state: GameState) {
 	const {level, active} = state;
 	const al = <{[B in Building]: number}> {};
@@ -222,14 +245,14 @@ function activeLevel(state: GameState) {
 }
 
 function basicProduction(state: GameState): Cart {
-	// production is per second real time (neither per tick, not per day)
+	// production is per second real time (neither per tick, nor per day)
 	const day = 2; // seconds
 	const year = 400 * day;
 
-	const {upgrades, workers, luxury} = state;
+	const {upgrades, metaphysic, workers, luxury} = state;
 	const level = activeLevel(state);
 
-	const kittens = level.Hut * 2 + level.LogHouse * 1 + level.Mansion * 1 + level.SpaceStation * 2 + level.TerraformingStation * 1;
+	const kittens = countKittens(state);
 	const unhappiness = 0.02 * Math.max(kittens - 5, 0) * hyperbolicDecrease(level.Amphitheatre * 0.048 + level.BroadcastTower * 0.75);
 	const happiness = 1 + (luxury.fur && 0.1) + (luxury.ivory && 0.1) + (luxury.unicorn && 0.1) + (luxury.alicorn && 0.1) + (state.karma && 0.1 + state.karma * 0.01) 
 									+ (level.SunAltar && level.Temple * (0.004 + level.SunAltar * 0.001)) - unhappiness;
@@ -252,7 +275,7 @@ function basicProduction(state: GameState): Cart {
 											+ level.Observatory * 0.25 * (1 + level.Satellite * 0.05) 
 											+ level.BioLab * (0.35 + (upgrades.BiofuelProcessing && 0.35))
 											+ level.SpaceStation * 0.5;
-	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * (1 + (upgrades.Chronomancy && 0.1)) * (upgrades.Astromancy ? 2 : 1) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01 * (upgrades.Astromancy ? 2 : 1));
+	const astroChance = ((level.Library && 0.25) + level.Observatory * 0.2) * (1 + (metaphysic.Chronomancy && 0.1)) * (metaphysic.Astromancy ? 2 : 1) * 0.005 * Math.min(1, upgrades.SETI ? 1 : level.Observatory * 0.01 * (metaphysic.Astromancy ? 2 : 1));
 	const maxCatpower = (level.Hut * 75 + level.LogHouse * 50 + level.Mansion * 50 + level.Temple * (level.Templars && 50 + level.Templars * 25)) * (1 + state.paragon * 0.001);
 
 	const energyProduction = level.Steamworks * 1 
@@ -587,11 +610,11 @@ abstract class Trade extends Conversion {
 	}
 
 	produced(state: GameState) {
-		const {level, upgrades} = state;
+		const {level, metaphysic} = state;
 
 		let output = this.output(state, 1 + level.TradePost * 0.015);
 
-		const standingRatio = level.TradePost * 0.0035 + (upgrades.Diplomacy && 0.1);
+		const standingRatio = level.TradePost * 0.0035 + (metaphysic.Diplomacy && 0.1);
 		const friendlyChance = this.friendly && Math.max(1, this.friendly + standingRatio / 2);
 		const hostileChance = this.hostile && Math.max(0, this.hostile - standingRatio);
 		const expectedSuccess = 1 - hostileChance + friendlyChance * 0.25;
@@ -729,7 +752,7 @@ class AlicornSacrifice extends Conversion {
 }
 
 function craftRatio(state: GameState, res?: ConvertedRes) {
-	const {level, upgrades} = state;
+	const {level, upgrades, metaphysic} = state;
 	const ratio = 1 + level.Workshop * 0.06 + level.Factory * (0.05 + (upgrades.FactoryLogistics && 0.01))
 	let resCraftRatio = 0;
 	let globalResCraftRatio = 0;
@@ -737,8 +760,8 @@ function craftRatio(state: GameState, res?: ConvertedRes) {
 	if (res == "blueprint") {
 		resCraftRatio = upgrades.CADsystem && 0.01 * (level.Library + level.Academy + level.Observatory + level.BioLab);
 	} else if (res == "manuscript") {
-		resCraftRatio = upgrades.CodexVox && 0.25;
-		globalResCraftRatio = upgrades.CodexVox && 0.05;
+		resCraftRatio = metaphysic.CodexVox && 0.25;
+		globalResCraftRatio = metaphysic.CodexVox && 0.05;
 	}
 
 	return (ratio + resCraftRatio) * (1 + globalResCraftRatio);
@@ -834,7 +857,7 @@ export abstract class Action extends CostBenefitAnalysis {
 						let bestStorage: Storage;
 						if (this.investment.expenses.length < 9) { // limit depth to save CPU time
 							for (const sa of storageActions(state, xp.res == "science" && xp.amount)) {
-								const undo = apply(sa.effect(1));
+								const undo = apply(state, sa.effect(1));
 								let newStorage = storage(state);
 								undo();
 		
@@ -854,7 +877,7 @@ export abstract class Action extends CostBenefitAnalysis {
 								name: bestAction.name,
 								cost: bestAction.investment.cost
 							});
-							const undo = apply(bestAction.effect(1));
+							const undo = apply(state, bestAction.effect(1));
 							undoers.push(undo);
 							currentStorage = bestStorage;
 						} else {
@@ -920,14 +943,15 @@ class BuildingAction extends Action {
 
 	static priceRatio(s: GameState, ratio: number, reduction: number | null) {
 		if (reduction !== null) {
+			const {metaphysic} = s;
 			// cf. getPriceRatioWithAccessor in buildings.js
 			const ratioBase = ratio - 1;
 			const ratioDiff = reduction 
-									 + (s.upgrades.Engineering && 0.01) 
-									 + (s.upgrades.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) 
-									 + (s.upgrades.DivineProportion && 0.017) 
-									 + (s.upgrades.VitruvianFeline && 0.02)
-									 + (s.upgrades.Renaissance && 0.0225);
+									 + (metaphysic.Engineering && 0.01) 
+									 + (metaphysic.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) 
+									 + (metaphysic.DivineProportion && 0.017) 
+									 + (metaphysic.VitruvianFeline && 0.02)
+									 + (metaphysic.Renaissance && 0.0225);
 			ratio = ratio - hyperbolicLimit(ratioDiff, ratioBase);
 		}
 		return ratio;
@@ -963,7 +987,7 @@ class BuildingAction extends Action {
 	}
 
 	set stateInfo(newValue: number) {
-		apply(this.levelUpdateEffect(newValue));
+		apply(state, this.levelUpdateEffect(newValue));
 	}
 
 	effect(times: number) {
@@ -1032,19 +1056,30 @@ class UpgradeAction extends Action {
 	}
 }
 
-class MetaphysicAction extends UpgradeAction {
-	constructor(name: Upgrade, private paragonCost: number, s = state) {
-		super(name, {}, s);
+class MetaphysicAction extends Action {
+	constructor(name: Metaphysic, private paragonCost: number, s = state) {
+		super(s, name, {});
+	}
+
+	get stateInfo() {
+		return state.metaphysic[this.name] ? "R" : " ";
 	}
 
 	available(state: GameState) {
 		return true;
 	}
 
-	effect(times: number) {
-		const eff = super.effect(times);
-		eff.paragon = state.paragon - times * this.paragonCost;
-		return eff;
+	effect(times: number): GameStateUpdate {
+		return {
+			metaphysic: {
+				[this.name]: times > 0,
+			},
+			paragon: state.paragon - times * this.paragonCost,
+		}
+	}
+
+	get repeatable() {
+		return false;
 	}
 }
 

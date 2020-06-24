@@ -1,97 +1,397 @@
-export interface GameState {
-	workers : {[J in Job] : number};
-	conversionProportion: {[CR in ConvertedRes]: number};
+import { apply, Update } from './game-state-changer';
+
+// created on an ongoing basis
+const basicResources = {
+	catnip: 0,
+	wood: 0,
+	minerals: 0,
+	coal: 0,
+	iron: 0,
+	titanium: 0,
+	uranium: 0,
+	unobtainium: 0,
+	gold: 0,
+	oil: 0,
+	catpower: 0,
+	science: 0,
+	culture: 0,
+	faith: 0,
+	unicorn: 0,
+	alicorn: 0,
+	necrocorn: 0,
+	antimatter: 0,
+};
+
+/* these resources are created on command and have unlimited storage */
+const convertedResources = {
+	iron: 0,
+	titanium: 0,
+	starchart: 0,
+	uranium: 0,
+	unobtainium: 0,
+	eludium: 0,
+	fur: 0,
+	ivory: 0,
+	beam: 0,
+	slab: 0,
+	concrete: 0,
+	plate: 0,
+	steel: 0,
+	gear: 0,
+	alloy: 0,
+	scaffold: 0,
+	kerosene: 0,
+	parchment: 0,
+	manuscript: 0,
+	compendium: 0,
+	blueprint: 0,
+	megalith: 0,
+	tear: 0,
+	sorrow: 0,
+	timecrystal: 0,
+	relic: 0,
+};
+
+const initialGameState = {
+	workers: {
+		farmer: 0,
+		woodcutter: 0,
+		miner: 0,
+		hunter: 0,
+		scholar: 0,
+		priest: 0,
+		geologist: 0,
+	},
+	conversionProportion: {
+		...convertedResources
+	},
 	luxury: {
-		fur: boolean;
-		ivory: boolean;
-		unicorn: boolean;
-		alicorn: boolean;
-	};
+		fur: false,
+		ivory: false,
+		unicorn: false,
+		alicorn: false,
+	},
 	faith: {
-		stored: number,
-		previouslyStored: number,
-		apocryphaPoints: number,
-		transcendenceLevel: number,
-	};
+		stored: 0,
+		previouslyStored: 0,
+		apocryphaPoints: 0,
+		transcendenceLevel: 0,
+	},
+	level: {
+		// normal buildings
+		CatnipField: 0,
+		Pasture: 0,
+		SolarFarm: 0,
+		Aqueduct: 0,
+		HydroPlant: 0,
+		Hut: 0,
+		LogHouse: 0,
+		Mansion: 0,
+		Library: 0,
+		DataCenter: 0,
+		Academy: 0,
+		Observatory: 0,
+		BioLab: 0,
+		Barn: 0,
+		Warehouse: 0,
+		Harbor: 0,
+		Mine: 0,
+		Quarry: 0,
+		LumberMill: 0,
+		OilWell: 0,
+		Accelerator: 0, 
+		Steamworks: 0,
+		Magneto: 0,
+		Smelter: 0,
+		Calciner: 0,
+		Factory: 0,
+		Reactor: 0,
+		Amphitheatre: 0,
+		BroadcastTower: 0,
+		Chapel: 0,
+		Temple: 0,
+		Workshop: 0,
+		TradePost: 0,
+		Mint: 0,
+		UnicornPasture: 0,
+		Ziggurat: 0,
+	
+		// unicorn buildings
+		UnicornTomb: 0,
+		IvoryTower: 0,
+		IvoryCitadel: 0,
+		SkyPalace: 0,
+		UnicornUtopia: 0,
+		SunSpire: 0,
+		Marker: 0,
+		BlackPyramid: 0,
 
-	level : {[B in Building] : number};
-	active: {[B in ActivatableBuilding]: boolean};
-	upgrades : {[U in Upgrade] : boolean};
-	researched: {[S in Science]: boolean};
+		// order of the sun
+		SolarChant: 0,
+		Scholasticism: 0,
+		GoldenSpire: 0,
+		SunAltar: 0,
+		StainedGlass: 0,
+		Basilica: 0,
+		Templars: 0,
 
-	priceMarkup: {[R in UserPricedRes]: number};
+		// space buildings
+		SpaceElevator: 0,
+		Satellite: 0,
+		SpaceStation: 0,
+		LunarOutpost: 0,
+		MoonBase: 0,
+		PlanetCracker: 0,
+		HydraulicFracturer: 0,
+		SpiceRefinery: 0,
+		ResearchVessel: 0,
+		OrbitalArray: 0,
+		Sunlifter: 0,
+		ContainmentChamber: 0,
+		HeatSink: 0,
+		Sunforge: 0,
+		Cryostation: 0,
+		SpaceBeacon: 0,
+		TerraformingStation: 0,
+		Hydroponics: 0,
+	},
+	active: {
+		Calciner: true,
+		Steamworks: true,	
+	},
+	upgrades: {
+		// same order as http://bloodrizer.ru/games/kittens/wiki/index.php?page=workshop
+		MineralHoes: false,
+		IronHoes: false,
+		MineralAxe: false,
+		IronAxe: false,
+		SteelAxe: false,
+		ReinforcedSaw: false,
+		SteelSaw: false,
+		TitaniumSaw: false,
+		AlloySaw: false,
+		TitaniumAxe: false,
+		AlloyAxe: false,
+		ExpandedBarns: false,
+		ReinforcedBarns: false,
+		ReinforcedWarehouses: false,
+		TitaniumBarns: false,
+		AlloyBarns: false,
+		ConcreteBarns: false,
+		TitaniumWarehouses: false,
+		AlloyWarehouses: false,
+		ConcreteWarehouses: false,
+		StorageBunkers: false,
+		EnergyRifts: false,
+		StasisChambers: false,
+		VoidEnergy: false,
+		DarkEnergy: false,
+		TachyonAccelerators: false,
+		LHC: false,
+		PhotovoltaicCells: false,
+		ThinFilmCells: false,
+		SolarSatellites: false,
+		ExpandedCargo: false,
+		ReactorVessel: false,
+		IronWoodHuts: false,
+		ConcreteHuts: false,
+		UnobtainiumHuts: false,
+		EludiumHuts: false,
+		Silos: false,
+		Refrigeration: false,
+		CompositeBow: false,
+		Crossbow: false,
+		Railgun: false,
+		Bolas: false,
+		HuntingArmor: false,
+		SteelArmor: false,
+		AlloyArmor: false,
+		Nanosuits: false,
+		Geodesy: false,
+		ConcretePillars: false,
+		MiningDrill: false,
+		UnobtainiumDrill: false,
+		CoalFurnace: false,
+		DeepMining: false,
+		Pyrolysis: false,
+		ElectrolyticSmelting: false,
+		Oxidation: false,
+		RotaryKiln: false,
+		FluidizedReactors: false,
+		NuclearSmelters: false,
+		OrbitalGeodesy: false,
+		PrintingPress: false,
+		OffsetPress: false,
+		Photolithography: false,
+		Uplink: false,
+		Starlink: false,
+		Cryocomputing: false,
+		HighPressureEngine: false,
+		FuelInjectors: false,
+		FactoryLogistics: false,
+		SpaceManufacturing: false,
+		Astrolabe: false,
+		TitaniumReflectors: false,
+		UnobtainiumReflectors: false,
+		EludiumReflectors: false,
+		HydroPlantTurbines: false,
+		AntimatterBases: false,
+		AntimatterFission: false,
+		AntimatterDrive: false,
+		AntimatterReactors: false,
+		Pumpjack: false,
+		BiofuelProcessing: false,
+		UnicornSelection: false,
+		GMCatnip: false,
+		CADsystem: false,
+		SETI: false,
+		Logistics: false,
+		Augmentations: false,
+		EnrichedUranium: false,
+		ColdFusion: false,
+		OilRefinery: false,
+		HubbleSpaceTelescope: false,
+		AstroPhysicists: false,
+		MicroWarpReactors: false,
+		PlanetBuster: false,
+		OilDistillation: false,
+		FactoryProcessing: false,
+		Telecommunication: false,
+		RoboticAssistance: false,
 
-	showResearchedUpgrades: boolean;
-	compendia: number;
-	ships: number;
-	karma: number;
-	paragon: number;
-	leviathanEnergy: number;
-	extraKittens: number;
-
-	notes: string;
+		SolarRevolution: false,
+		Transcendence: false,
+	},
+	metaphysic: {
+		Engineering: false,
+		Diplomacy: false,
+		GoldenRatio: false,
+		DivineProportion: false,
+		VitruvianFeline: false,
+		Renaissance: false,
+		CodexVox: false,
+		Chronomancy: false,
+		Astromancy: false,
+	},
+	researched: {
+		Calendar: false,
+		Agriculture: false,
+		Archery: false,
+		AnimalHusbandry: false,
+		Mining: false,
+		MetalWorking: false,
+		Mathematics: false,
+		Construction: false,
+		CivilService: false,
+		Engineering: false,
+		Currency: false,
+		Writing: false,
+		Philosophy: false,
+		Steel: false,
+		Machinery: false,
+		Theology: false,
+		Astronomy: false,
+		Navigation: false,
+		Architecture: false,
+		Physics: false,
+		Metaphysics: false,
+		Chemistry: false,
+		Acoustics: false,
+		Geology: false,
+		DramaAndPoetry: false,
+		Electricity: false,
+		Biology: false,
+		Biochemistry: false,
+		Genetics: false,
+		Industrialization: false,
+		Mechanization: false,
+		Combustion: false,
+		Metallurgy: false,
+		Ecology: false,
+		Electronics: false,
+		Robotics: false,
+		ArtificialIntelligence: false,
+		QuantumCryptography: false,
+		Blackchain: false,
+		NuclearFission: false,
+		Rocketry: false,
+		OilProcessing: false,
+		Satellites: false,
+		OrbitalEngineering: false,
+		Thorium: false,
+		Exogeology: false,
+		AdvancedExogeology: false,
+		Nanotechnology: false,
+		Superconductors: false,
+		Antimatter: false,
+		Terraformation: false,
+		HydroPonics: false, // weird spelling to avoid name clash with building
+		Exophysics: false,
+		ParticlePhysics: false,
+		DimensionalPhysics: false,
+		Chronophysics: false,
+		TachyonTheory: false,
+		Cryptotheology: false,
+		VoidSpace: false,
+		ParadoxTheory: false,
+	
+		// space missions
+		OrbitalLaunch: false,
+		MoonMission: false,
+		DuneMission: false,
+		PiscineMission: false,
+		HeliosMission: false,
+		TMinusMission: false,
+		KairoMission: false,
+		RorschachMission: false,
+		YarnMission: false,
+		UmbraMission: false,
+		CharonMission: false,
+		CentaurusMission: false,
+		FurthestRingMission: false,	
+	},
+	priceMarkup: {
+		iron: 1,
+		coal: 1,
+		gold: 1,
+		oil: 1,
+		culture: 1,
+		faith: 1,
+		starchart: 1,
+		blueprint: 1,
+		uranium: 1,
+		unobtainium: 1,
+		unicorn: 1,
+		alicorn: 1,
+		necrocorn: 1,
+		antimatter: 1,
+		sorrow: 1,
+		timecrystal: 1,
+	},
+	showResearchedUpgrades: true,
+	compendia: 0,
+	ships: 0,
+	karma: 0,
+	paragon: 0,
+	leviathanEnergy: 0,
+	extraKittens: 0,
+	notes: "",
 }
 
-function readGameState() : GameState {
-	const state : GameState = localStorage.kittensGameState ? JSON.parse(localStorage.kittensGameState) : {};
-	state.workers = state.workers || <any>{};
-	for (const j of jobNames) {
-		state.workers[j] = state.workers[j] || 0;
-	}
-	state.conversionProportion = state.conversionProportion || <any>{};
-	for (const cr of convertedResourceNames) {
-		state.conversionProportion[cr] = state.conversionProportion[cr] ||  0;
-	}
-	state.luxury = state.luxury || <any>{};
-	state.luxury.fur = state.luxury.fur || false;
-	state.luxury.ivory = state.luxury.ivory || false;
-	state.luxury.unicorn = state.luxury.unicorn || false;
-	state.luxury.alicorn = state.luxury.alicorn || false;
-	state.faith = state.faith || <any>{};
-	state.faith.stored = state.faith.stored || 0;
-	state.faith.previouslyStored = state.faith.previouslyStored || 0;
-	state.faith.apocryphaPoints = state.faith.apocryphaPoints || 0;
-	state.faith.transcendenceLevel = state.faith.transcendenceLevel || 0;
-	state.level = state.level || <any>{};
-	for (const b of buildingNames) {
-		state.level[b] = state.level[b] || 0;
-	}
-	state.active = state.active || <any>{};
-	for (const ab of activatableBuildingNames) {
-		if (state.active[ab] === undefined) {
-			state.active[ab] = true;
-		}
-	}
-	state.upgrades = state.upgrades || <any>{};
-	for (const u of upgradeNames) {
-		state.upgrades[u] = state.upgrades[u] || false;
-	}
-	state.researched = state.researched || <any>{};
-	for (const s of scienceNames) {
-		state.researched[s] = state.researched[s] || false;
-	}
-	state.priceMarkup = state.priceMarkup || <any>{};
-	for (const r of userPricedResourceNames) {
-		state.priceMarkup[r] = state.priceMarkup[r] || 1;
-	}
-	if (state.showResearchedUpgrades === undefined) {
-		state.showResearchedUpgrades = true;
-	}
-	state.ships = state.ships || 0;
-	state.compendia = state.compendia || 0;
-	state.karma = state.karma || 0;
-	state.paragon = state.paragon || 0;
-	state.leviathanEnergy = state.leviathanEnergy || 0;
-	state.extraKittens = 0;
-	return state;
-}
+export type GameState = typeof initialGameState;
+export type GameStateUpdate = Update<GameState>;
+export const state = initialGameState;
+
+const savedState: GameStateUpdate = localStorage.kittensGameState ? JSON.parse(localStorage.kittensGameState) : {};
+apply(state, savedState);
+window["state"] = state; // helpful for debugging
 
 export function saveGameState() {
 	localStorage.kittensGameState = JSON.stringify(state);
 }
 
-export function resetGameState() {
-	localStorage.removeItem("kittensGameState");
+export function replaceGameState(newState: GameStateUpdate) {
+	localStorage.kittensGameState = JSON.stringify(newState);
 	window.location.reload();
 }
 
@@ -103,381 +403,26 @@ function keyNames<T>(o: T): Array<keyof T> {
 	return keys;
 }
 
-const x = null;
-// created on an ongoing basis
-const basicResources = {
-	catnip: x,
-	wood: x,
-	minerals: x,
-	coal: x,
-	iron: x,
-	titanium: x,
-	uranium: x,
-	unobtainium: x,
-	gold: x,
-	oil: x,
-	catpower: x,
-	science: x,
-	culture: x,
-	faith: x,
-	unicorn: x,
-	alicorn: x,
-	necrocorn: x,
-	antimatter: x,
-};
-// created on command by conversion, unlimited storage
-const convertedResources = {
-	iron: x,
-	titanium: x,
-	starchart: x,
-	uranium: x,
-	unobtainium: x,
-	eludium: x,
-	fur: x,
-	ivory: x,
-	beam: x,
-	slab: x,
-	concrete: x,
-	plate: x,
-	steel: x,
-	gear: x,
-	alloy: x,
-	scaffold: x,
-	kerosene: x,
-	parchment: x,
-	manuscript: x,
-	compendium: x,
-	blueprint: x,
-	megalith: x,
-	tear: x,
-	sorrow: x,
-	timecrystal: x,
-	relic: x,
-}
-
-const userPricedResources = {
-	iron: x,
-	coal: x,
-	gold: x,
-	oil: x,
-	culture: x,
-	faith: x,
-	starchart: x,
-	blueprint: x,
-	uranium: x,
-	unobtainium: x,
-	unicorn: x,
-	alicorn: x,
-	necrocorn: x,
-	antimatter: x,
-	sorrow: x,
-	timecrystal: x,
-}
-
-const job = {
-	farmer: x,
-	woodcutter: x,
-	miner: x,
-	hunter: x,
-	scholar: x,
-	priest: x,
-	geologist: x,
-}
-const building = {
-	CatnipField: x,
-	Pasture: x,
-	SolarFarm: x,
-	Aqueduct: x,
-	HydroPlant: x,
-	Hut: x,
-	LogHouse: x,
-	Mansion: x,
-	Library: x,
-	DataCenter: x,
-	Academy: x,
-	Observatory: x,
-	BioLab: x,
-	Barn: x,
-	Warehouse: x,
-	Harbor: x,
-	Mine: x,
-	Quarry: x,
-	LumberMill: x,
-	OilWell: x,
-	Accelerator: x, 
-	Steamworks: x,
-	Magneto: x,
-	Smelter: x,
-	Calciner: x,
-	Factory: x,
-	Reactor: x,
-	Amphitheatre: x,
-	BroadcastTower: x,
-	Chapel: x,
-	Temple: x,
-	Workshop: x,
-	TradePost: x,
-	Mint: x,
-	UnicornPasture: x,
-	Ziggurat: x,
-
-	UnicornTomb: x,
-	IvoryTower: x,
-	IvoryCitadel: x,
-	SkyPalace: x,
-	UnicornUtopia: x,
-	SunSpire: x,
-	Marker: x,
-	BlackPyramid: x,
-
-	SolarChant: x,
-	Scholasticism: x,
-	GoldenSpire: x,
-	SunAltar: x,
-	StainedGlass: x,
-	Basilica: x,
-	Templars: x,
-
-	SpaceElevator: x,
-	Satellite: x,
-	SpaceStation: x,
-	LunarOutpost: x,
-	MoonBase: x,
-	PlanetCracker: x,
-	HydraulicFracturer: x,
-	SpiceRefinery: x,
-	ResearchVessel: x,
-	OrbitalArray: x,
-	Sunlifter: x,
-	ContainmentChamber: x,
-	HeatSink: x,
-	Sunforge: x,
-	Cryostation: x,
-	SpaceBeacon: x,
-	TerraformingStation: x,
-	Hydroponics: x,
-}
-const activatableBuilding = {
-	Calciner: x,
-	Steamworks: x,
-}
-const upgrade = {
-	// same order as http://bloodrizer.ru/games/kittens/wiki/index.php?page=workshop
-	MineralHoes: x,
-	IronHoes: x,
-	MineralAxe: x,
-	IronAxe: x,
-	SteelAxe: x,
-	ReinforcedSaw: x,
-	SteelSaw: x,
-	TitaniumSaw: x,
-	AlloySaw: x,
-	TitaniumAxe: x,
-	AlloyAxe: x,
-	ExpandedBarns: x,
-	ReinforcedBarns: x,
-	ReinforcedWarehouses: x,
-	TitaniumBarns: x,
-	AlloyBarns: x,
-	ConcreteBarns: x,
-	TitaniumWarehouses: x,
-	AlloyWarehouses: x,
-	ConcreteWarehouses: x,
-	StorageBunkers: x,
-	EnergyRifts: x,
-	StasisChambers: x,
-	VoidEnergy: x,
-	DarkEnergy: x,
-	TachyonAccelerators: x,
-	LHC: x,
-	PhotovoltaicCells: x,
-	ThinFilmCells: x,
-	SolarSatellites: x,
-	ExpandedCargo: x,
-	ReactorVessel: x,
-	IronWoodHuts: x,
-	ConcreteHuts: x,
-	UnobtainiumHuts: x,
-	EludiumHuts: x,
-	Silos: x,
-	Refrigeration: x,
-	CompositeBow: x,
-	Crossbow: x,
-	Railgun: x,
-	Bolas: x,
-	HuntingArmor: x,
-	SteelArmor: x,
-	AlloyArmor: x,
-	Nanosuits: x,
-	Geodesy: x,
-	ConcretePillars: x,
-	MiningDrill: x,
-	UnobtainiumDrill: x,
-	CoalFurnace: x,
-	DeepMining: x,
-	Pyrolysis: x,
-	ElectrolyticSmelting: x,
-	Oxidation: x,
-	RotaryKiln: x,
-	FluidizedReactors: x,
-	NuclearSmelters: x,
-	OrbitalGeodesy: x,
-	PrintingPress: x,
-	OffsetPress: x,
-	Photolithography: x,
-	Uplink: x,
-	Starlink: x,
-	Cryocomputing: x,
-	HighPressureEngine: x,
-	FuelInjectors: x,
-	FactoryLogistics: x,
-	SpaceManufacturing: x,
-	Astrolabe: x,
-	TitaniumReflectors: x,
-	UnobtainiumReflectors: x,
-	EludiumReflectors: x,
-	HydroPlantTurbines: x,
-	AntimatterBases: x,
-	AntimatterFission: x,
-	AntimatterDrive: x,
-	AntimatterReactors: x,
-	Pumpjack: x,
-	BiofuelProcessing: x,
-	UnicornSelection: x,
-	GMCatnip: x,
-	CADsystem: x,
-	SETI: x,
-	Logistics: x,
-	Augmentations: x,
-	EnrichedUranium: x,
-	ColdFusion: x,
-	OilRefinery: x,
-	HubbleSpaceTelescope: x,
-	AstroPhysicists: x,
-	MicroWarpReactors: x,
-	PlanetBuster: x,
-	OilDistillation: x,
-	FactoryProcessing: x,
-	Telecommunication: x,
-	RoboticAssistance: x,
-
-	SolarRevolution: x,
-	Transcendence: x,
-
-	Engineering: x,
-	Diplomacy: x,
-	GoldenRatio: x,
-	DivineProportion: x,
-	VitruvianFeline: x,
-	Renaissance: x,
-	CodexVox: x,
-	Chronomancy: x,
-	Astromancy: x,
-}
-
-const science = {
-	Calendar: x,
-	Agriculture: x,
-	Archery: x,
-	AnimalHusbandry: x,
-	Mining: x,
-	MetalWorking: x,
-	Mathematics: x,
-	Construction: x,
-	CivilService: x,
-	Engineering: x,
-	Currency: x,
-	Writing: x,
-	Philosophy: x,
-	Steel: x,
-	Machinery: x,
-	Theology: x,
-	Astronomy: x,
-	Navigation: x,
-	Architecture: x,
-	Physics: x,
-	Metaphysics: x,
-	Chemistry: x,
-	Acoustics: x,
-	Geology: x,
-	DramaAndPoetry: x,
-	Electricity: x,
-	Biology: x,
-	Biochemistry: x,
-	Genetics: x,
-	Industrialization: x,
-	Mechanization: x,
-	Combustion: x,
-	Metallurgy: x,
-	Ecology: x,
-	Electronics: x,
-	Robotics: x,
-	ArtificialIntelligence: x,
-	QuantumCryptography: x,
-	Blackchain: x,
-	NuclearFission: x,
-	Rocketry: x,
-	OilProcessing: x,
-	Satellites: x,
-	OrbitalEngineering: x,
-	Thorium: x,
-	Exogeology: x,
-	AdvancedExogeology: x,
-	Nanotechnology: x,
-	Superconductors: x,
-	Antimatter: x,
-	Terraformation: x,
-	HydroPonics: x, // weird spelling to avoid name clash with building
-	Exophysics: x,
-	ParticlePhysics: x,
-	DimensionalPhysics: x,
-	Chronophysics: x,
-	TachyonTheory: x,
-	Cryptotheology: x,
-	VoidSpace: x,
-	ParadoxTheory: x,
-
-	// space missions
-	OrbitalLaunch: x,
-	MoonMission: x,
-	DuneMission: x,
-	PiscineMission: x,
-	HeliosMission: x,
-	TMinusMission: x,
-	KairoMission: x,
-	RorschachMission: x,
-	YarnMission: x,
-	UmbraMission: x,
-	CharonMission: x,
-	CentaurusMission: x,
-	FurthestRingMission: x,
-}
-
 export type BasicRes = keyof typeof basicResources;
 export const basicResourceNames = keyNames(basicResources);
 
 export type ConvertedRes = keyof typeof convertedResources;
 export const convertedResourceNames = keyNames(convertedResources);
 
-export type UserPricedRes = keyof typeof userPricedResources;
-export const userPricedResourceNames = keyNames(userPricedResources);
+export type UserPricedRes = keyof typeof state.priceMarkup;
+export const userPricedResourceNames = keyNames(state.priceMarkup);
 
 export type Res = BasicRes | ConvertedRes;
-export const resourceNames = keyNames(Object.assign({}, basicResources, convertedResources));
+export const resourceNames = [...basicResourceNames, ...convertedResourceNames];
 
-export type Job = keyof typeof job;
-export const jobNames = keyNames(job);
+export type Job = keyof typeof state.workers;
+export const jobNames = keyNames(state.workers);
 
-export type Building = keyof typeof building;
-export const buildingNames = keyNames(building);
-export type ActivatableBuilding = keyof typeof activatableBuilding;
-export const activatableBuildingNames = keyNames(activatableBuilding);
+export type Building = keyof typeof state.level;
+export const buildingNames = keyNames(state.level);
+export type ActivatableBuilding = keyof typeof state.active;
+export const activatableBuildingNames = keyNames(state.active);
 
-export type Upgrade = keyof typeof upgrade;
-export const upgradeNames = keyNames(upgrade);
-
-export type Science = keyof typeof science;
-export const scienceNames = keyNames(science);
-
-export const state = readGameState();
-window["state"] = state; // helpful for debugging
+export type Upgrade = keyof typeof state.upgrades;
+export type Metaphysic = keyof typeof state.metaphysic;
+export type Science = keyof typeof state.researched;
