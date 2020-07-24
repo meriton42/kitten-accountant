@@ -413,7 +413,7 @@ export type UserPricedRes = keyof typeof state.priceMarkup;
 export const userPricedResourceNames = keyNames(state.priceMarkup);
 
 export type Res = BasicRes | ConvertedRes;
-export const resourceNames = [...basicResourceNames, ...convertedResourceNames];
+export const resourceNames = keyNames({...basicResources, ...convertedResources}); // duplicates are removed by the object spread operator
 
 export type Job = keyof typeof state.workers;
 export const jobNames = keyNames(state.workers);
