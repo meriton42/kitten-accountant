@@ -949,7 +949,7 @@ class BuildingAction extends Action {
 			const ratioDiff = reduction 
 									 + (metaphysic.Engineering && 0.01) 
 									 + (metaphysic.GoldenRatio && (1+Math.sqrt(5))/2 * 0.01) 
-									 + (metaphysic.DivineProportion && 0.017) 
+									 + (metaphysic.DivineProportion && 0.16 / 9) 
 									 + (metaphysic.VitruvianFeline && 0.02)
 									 + (metaphysic.Renaissance && 0.0225);
 			ratio = ratio - hyperbolicLimit(ratioDiff, ratioBase);
